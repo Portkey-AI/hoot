@@ -1,0 +1,56 @@
+# Development files
+.git
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Development folders
+.vscode
+.idea
+docs/
+tests/
+examples/
+
+# Source files (we include dist/ for production)
+src/
+
+# Test and config files
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+.hoot-mcp.db
+.hoot-mcp.db-shm
+.hoot-mcp.db-wal
+
+# Proxy server (optional)
+proxy-server.js
+
+# Build artifacts not needed in npm
+node_modules/
+coverage/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.gitattributes
+

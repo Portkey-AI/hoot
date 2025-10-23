@@ -16,36 +16,51 @@
 
 ## 🚀 Quick Start
 
-### Install Dependencies
+### Run with npx (Recommended)
 ```bash
-npm install
+npx -y @portkey-ai/hoot
 ```
 
-### Start Application (with Backend)
+That's it! This command will:
+- ✅ Install Hoot if not already installed
+- ✅ Start the backend server on `http://localhost:3002`
+- ✅ Start the frontend UI on `http://localhost:5173`
+- ✅ Open your browser automatically
+
+Press `Ctrl+C` to stop both servers.
+
+### Install Globally (Alternative)
 ```bash
+npm install -g @portkey-ai/hoot
+hoot
+```
+
+### Development Setup
+If you want to contribute or develop locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/hoot.git
+cd hoot
+
+# Install dependencies
+npm install
+
+# Start both backend and frontend
 npm run dev:full
+
+# Or start them separately
+npm run backend  # Terminal 1
+npm run dev      # Terminal 2
 ```
 
 This starts:
 - **Backend MCP Server** on `http://localhost:3002` (handles MCP connections)
 - **Hoot UI** on `http://localhost:5173` (Vite dev server)
 
-The backend eliminates CORS issues by acting as the MCP client, while the browser UI relays requests through it.
-
-### Manual Start (Alternative)
-```bash
-# Terminal 1: Start backend
-npm run backend
-
-# Terminal 2: Start frontend
-npm run dev
-```
-
-Then open http://localhost:5173
-
 ## 📖 Usage
 
-1. **Start Hoot** - Run `npm run dev:full`
+1. **Start Hoot** - Run `npx -y @portkey-ai/hoot`
 2. **Add Server** - Click "+ Add Server"
 3. **Configure**:
    - Name: "My MCP Server"
@@ -55,7 +70,7 @@ Then open http://localhost:5173
 4. **Connect** - Server appears in sidebar with tool count
 5. **Select Tool** - Click any tool to test it
 6. **Execute** - Fill params, click "EXECUTE TOOL"
-8. **View Results** - Response, Raw JSON, or Request tabs
+7. **View Results** - Response, Raw JSON, or Request tabs
 
 ## 🏗️ Architecture
 
@@ -70,7 +85,7 @@ Browser App (React) → Backend Server (Node.js) → MCP Servers
 - **Backend**: Node.js server with MCP SDK (handles actual connections)
 - **Communication**: REST API over localhost (no CORS issues)
 
-See [BACKEND_ARCHITECTURE.md](./BACKEND_ARCHITECTURE.md) for detailed architecture documentation.
+See [docs/BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) for detailed architecture documentation.
 
 ## 🌐 No More CORS Issues!
 
@@ -84,7 +99,7 @@ The backend relay architecture completely eliminates CORS issues. The Node.js ba
 
 **Old CORS Proxy (deprecated)**: The old proxy method is still available via `npm run dev:with-proxy`, but the backend relay is now the recommended approach.
 
-**See [BACKEND_ARCHITECTURE.md](./BACKEND_ARCHITECTURE.md) for detailed architecture documentation.**
+**See [docs/BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) for detailed architecture documentation.**
 
 ## 🔐 OAuth 2.1 Support
 
@@ -93,10 +108,10 @@ Hoot supports full OAuth 2.1 authorization flow:
 - ✅ Authorization redirect with PKCE
 - ✅ Automatic token exchange  
 - ✅ Token refresh
-- ✅ Secure storage (localStorage)
+- ✅ Secure storage (SQLite database)
 - ✅ Multiple servers with different auth
 
-**See [AUTHENTICATION.md](./AUTHENTICATION.md) for details.**
+**See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) for details.**
 
 ## 🎨 UI Features
 
@@ -129,14 +144,14 @@ hootLogger.count()     // Get log count
 ## 📂 Project Structure
 
 ```
-screech/
+hoot/
+├── bin/
+│   └── hoot.js          # CLI entry point
 ├── src/
-│   ├── components/       # React components
+│   ├── components/      # React components
 │   │   ├── ServerSidebar.tsx
 │   │   ├── ToolsSidebar.tsx
 │   │   ├── MainArea.tsx
-│   │   ├── Toast.tsx
-│   │   ├── EmptyState.tsx
 │   │   └── ...
 │   ├── stores/          # Zustand state management
 │   │   ├── appStore.ts
@@ -146,20 +161,37 @@ screech/
 │   │   └── useAutoReconnect.ts
 │   ├── lib/             # Core libraries
 │   │   ├── mcpClient.ts      # MCP SDK wrapper
+│   │   ├── backendClient.ts  # Backend API client
 │   │   ├── oauthProvider.ts  # OAuth implementation
-│   │   ├── proxy.ts          # CORS proxy utils
 │   │   └── logger.ts         # Dev logger
 │   └── types/           # TypeScript types
-├── proxy-server.js      # CORS proxy server
+├── docs/                # Documentation
+│   ├── ARCHITECTURE.md
+│   ├── AUTHENTICATION.md
+│   ├── BACKEND_ARCHITECTURE.md
+│   └── ...
+├── mcp-backend-server.js  # Backend MCP relay server
 └── package.json
 ```
+
+## 📚 Documentation
+
+- [Architecture Overview](./docs/ARCHITECTURE.md)
+- [Backend Architecture](./docs/BACKEND_ARCHITECTURE.md)
+- [Authentication & OAuth](./docs/AUTHENTICATION.md)
+- [Design System](./docs/DESIGN_HOOT.md)
+- [Quick Start Guide](./docs/QUICKSTART.md)
+- [Troubleshooting](./docs/TROUBLESHOOTING.md)
+- [Full Documentation Index](./docs/README.md)
 
 ## 🛠️ npm Scripts
 
 ```bash
+npx -y @portkey-ai/hoot  # Run Hoot (recommended)
+npm start                # Start both backend + frontend
 npm run dev              # Start Hoot UI only
-npm run proxy            # Start CORS proxy only
-npm run dev:with-proxy   # Start both (recommended)
+npm run backend          # Start backend server only
+npm run dev:full         # Start both (concurrently)
 npm run build            # Build for production
 npm run preview          # Preview production build
 ```

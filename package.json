@@ -1,25 +1,44 @@
 {
-  "name": "hoot",
+  "name": "@portkey-ai/hoot",
   "version": "0.2.0",
   "description": "Postman for MCP Servers - A fast, lightweight testing tool with full OAuth 2.1 support",
   "type": "module",
+  "bin": {
+    "hoot": "./bin/hoot.js"
+  },
   "scripts": {
+    "start": "node bin/hoot.js",
     "dev": "vite",
     "backend": "node mcp-backend-server.js",
     "proxy": "node proxy-server.js",
     "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
     "dev:with-proxy": "concurrently \"npm run proxy\" \"npm run dev\"",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
     "testing",
     "developer-tools",
-    "model-context-protocol"
+    "model-context-protocol",
+    "oauth",
+    "postman",
+    "api-testing"
   ],
-  "author": "",
+  "author": "Hoot Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/portkey-ai/hoot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/portkey-ai/hoot/issues"
+  },
+  "homepage": "https://github.com/portkey-ai/hoot#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
