@@ -1,0 +1,119 @@
+.toast-container {
+    position: fixed;
+    top: var(--spacing-2xl);
+    right: var(--spacing-2xl);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    pointer-events: none;
+}
+
+.toast {
+    min-width: 320px;
+    max-width: 480px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-lg);
+    pointer-events: all;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+}
+
+.toast-success .toast-icon {
+    color: var(--green-500);
+    background: rgba(186, 230, 126, 0.15);
+}
+
+.toast-error .toast-icon {
+    color: var(--red-500);
+    background: rgba(242, 135, 121, 0.15);
+}
+
+.toast-warning .toast-icon {
+    color: var(--orange-500);
+    background: rgba(255, 178, 115, 0.15);
+}
+
+.toast-info .toast-icon {
+    color: var(--blue-500);
+    background: rgba(115, 208, 255, 0.15);
+}
+
+.toast-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-message {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-white);
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.toast-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.toast-close {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.toast-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .toast-container {
+        top: var(--spacing-lg);
+        right: var(--spacing-lg);
+        left: var(--spacing-lg);
+    }
+
+    .toast {
+        min-width: unset;
+        width: 100%;
+    }
+}

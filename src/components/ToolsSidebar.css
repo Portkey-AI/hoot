@@ -1,0 +1,146 @@
+.tools-sidebar {
+    width: 300px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    transform: translateZ(0);
+}
+
+.tools-header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tools-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-white);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tools-count {
+    background: var(--bg-hover);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--blue-500);
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.tools-search {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.search-box {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 13px;
+    transition: all var(--transition-fast);
+    font-family: var(--font-sans);
+}
+
+.search-box:focus {
+    border-color: var(--blue-500);
+    background: var(--bg-hover);
+    box-shadow: 0 0 0 3px rgba(92, 207, 230, 0.1);
+    outline: none;
+}
+
+.search-box::placeholder {
+    color: var(--text-tertiary);
+}
+
+.tools-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    -webkit-overflow-scrolling: touch;
+}
+
+.tool-item {
+    padding: 12px var(--spacing-md);
+    margin-bottom: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+}
+
+.tool-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-bright);
+    transform: translateX(2px);
+}
+
+.tool-item.active {
+    background: var(--bg-active);
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 1px var(--blue-500) inset;
+}
+
+.tool-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-white);
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    word-break: break-word;
+}
+
+.tool-description {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tools-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: var(--spacing-2xl);
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.6;
+}
+
+.tools-empty p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.no-results {
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    text-align: center;
+}
+
+.no-results p {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+}

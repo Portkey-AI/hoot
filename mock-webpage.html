@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Postman</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #242424;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .add-server-btn {
+            width: 100%;
+            padding: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .add-server-btn:hover {
+            background: #2563eb;
+        }
+
+        .servers-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .server-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #2a2a2a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .server-item:hover {
+            background: #333;
+        }
+
+        .server-item.active {
+            background: #1e3a5f;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .server-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        .server-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .tool-count {
+            margin-left: auto;
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .server-transport {
+            font-size: 12px;
+            color: #888;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tools-section {
+            margin-top: 16px;
+            padding: 0 12px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .tool-item {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background: #2a2a2a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tool-item:hover {
+            background: #333;
+        }
+
+        .tool-item.active {
+            background: #1e3a5f;
+        }
+
+        .tool-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .tool-description {
+            font-size: 12px;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .main-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #333;
+            background: #1f1f1f;
+        }
+
+        .main-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .main-header p {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .schema-viewer {
+            background: #242424;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #e0e0e0;
+        }
+
+        .input-section {
+            margin-top: 24px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .mode-btn {
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: #999;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .json-editor {
+            width: 100%;
+            min-height: 200px;
+            background: #242424;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 16px;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .json-editor:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-field {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #e0e0e0;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #242424;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .execute-btn {
+            padding: 12px 24px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-top: 16px;
+        }
+
+        .execute-btn:hover {
+            background: #16a34a;
+        }
+
+        .execute-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            margin-top: 32px;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #1a3a1a;
+            border-radius: 6px;
+            border-left: 3px solid #22c55e;
+        }
+
+        .result-header.error {
+            background: #3a1a1a;
+            border-left-color: #ef4444;
+        }
+
+        .result-status {
+            font-size: 14px;
+            font-weight: 600;
+            color: #22c55e;
+        }
+
+        .result-status.error {
+            color: #ef4444;
+        }
+
+        .result-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .result-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #333;
+        }
+
+        .result-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .result-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .result-content {
+            background: #242424;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #242424;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 24px;
+            border: 1px solid #333;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #404040;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-option input[type="radio"] {
+            accent-color: #3b82f6;
+        }
+
+        .radio-option label {
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Mock data
+        const mockServers = [
+            {
+                id: '1',
+                name: 'Local MCP Server',
+                transport: 'stdio',
+                command: 'node server.js',
+                connected: true,
+                tools: [
+                    {
+                        name: 'search_web',
+                        description: 'Search the web for information',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                query: { type: 'string', description: 'Search query' },
+                                limit: { type: 'number', description: 'Max results' }
+                            },
+                            required: ['query']
+                        }
+                    },
+                    {
+                        name: 'read_file',
+                        description: 'Read contents of a file',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                path: { type: 'string', description: 'File path' }
+                            },
+                            required: ['path']
+                        }
+                    },
+                    {
+                        name: 'execute_command',
+                        description: 'Execute a shell command',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                command: { type: 'string', description: 'Command to execute' },
+                                timeout: { type: 'number', description: 'Timeout in seconds' }
+                            },
+                            required: ['command']
+                        }
+                    }
+                ]
+            }
+        ];
+
+        function App() {
+            const [servers, setServers] = useState(mockServers);
+            const [selectedServer, setSelectedServer] = useState(mockServers[0]);
+            const [selectedTool, setSelectedTool] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [inputMode, setInputMode] = useState('form'); // 'form' or 'json'
+            const [inputValues, setInputValues] = useState({});
+            const [jsonInput, setJsonInput] = useState('{}');
+            const [result, setResult] = useState(null);
+            const [resultTab, setResultTab] = useState('response');
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [isExecuting, setIsExecuting] = useState(false);
+
+            const filteredTools = selectedServer?.tools.filter(tool =>
+                tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+            ) || [];
+
+            const handleToolSelect = (tool) => {
+                setSelectedTool(tool);
+                setInputValues({});
+                setJsonInput(JSON.stringify({}, null, 2));
+                setResult(null);
+            };
+
+            const handleExecute = () => {
+                setIsExecuting(true);
+                
+                // Simulate API call
+                setTimeout(() => {
+                    const mockResult = {
+                        success: true,
+                        time: Math.floor(Math.random() * 300) + 50,
+                        data: {
+                            message: 'Tool executed successfully',
+                            results: ['Result 1', 'Result 2', 'Result 3'],
+                            metadata: {
+                                timestamp: new Date().toISOString(),
+                                version: '1.0.0'
+                            }
+                        }
+                    };
+                    setResult(mockResult);
+                    setIsExecuting(false);
+                }, 800);
+            };
+
+            return (
+                <div className="app">
+                    <Sidebar 
+                        servers={servers}
+                        selectedServer={selectedServer}
+                        onSelectServer={setSelectedServer}
+                        onAddServer={() => setShowAddModal(true)}
+                        tools={filteredTools}
+                        selectedTool={selectedTool}
+                        onSelectTool={handleToolSelect}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                    />
+                    <MainArea 
+                        selectedTool={selectedTool}
+                        inputMode={inputMode}
+                        setInputMode={setInputMode}
+                        inputValues={inputValues}
+                        setInputValues={setInputValues}
+                        jsonInput={jsonInput}
+                        setJsonInput={setJsonInput}
+                        onExecute={handleExecute}
+                        result={result}
+                        resultTab={resultTab}
+                        setResultTab={setResultTab}
+                        isExecuting={isExecuting}
+                    />
+                    {showAddModal && (
+                        <AddServerModal onClose={() => setShowAddModal(false)} />
+                    )}
+                </div>
+            );
+        }
+
+        function Sidebar({ servers, selectedServer, onSelectServer, onAddServer, tools, selectedTool, onSelectTool, searchQuery, onSearchChange }) {
+            return (
+                <div className="sidebar">
+                    <div className="sidebar-header">
+                        <h1>MCP Postman</h1>
+                        <button className="add-server-btn" onClick={onAddServer}>
+                            + Add Server
+                        </button>
+                    </div>
+                    
+                    <div className="servers-list">
+                        {servers.map(server => (
+                            <div 
+                                key={server.id}
+                                className={`server-item ${selectedServer?.id === server.id ? 'active' : ''}`}
+                                onClick={() => onSelectServer(server)}
+                            >
+                                <div className="server-header">
+                                    <div className={`status-dot ${server.connected ? '' : 'disconnected'}`} />
+                                    <span className="server-name">{server.name}</span>
+                                    <span className="tool-count">{server.tools.length}</span>
+                                </div>
+                                <div className="server-transport">{server.transport}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {selectedServer && (
+                        <div className="tools-section">
+                            <input 
+                                type="text"
+                                className="search-box"
+                                placeholder="Search tools..."
+                                value={searchQuery}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                            />
+                            {tools.map(tool => (
+                                <div 
+                                    key={tool.name}
+                                    className={`tool-item ${selectedTool?.name === tool.name ? 'active' : ''}`}
+                                    onClick={() => onSelectTool(tool)}
+                                >
+                                    <div className="tool-name">{tool.name}</div>
+                                    <div className="tool-description">{tool.description}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function MainArea({ selectedTool, inputMode, setInputMode, inputValues, setInputValues, jsonInput, setJsonInput, onExecute, result, resultTab, setResultTab, isExecuting }) {
+            if (!selectedTool) {
+                return (
+                    <div className="main-area">
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🔧</div>
+                            <h3>Select a tool to get started</h3>
+                            <p>Choose a tool from the sidebar to test it</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="main-area">
+                    <div className="main-header">
+                        <h2>{selectedTool.name}</h2>
+                        <p>{selectedTool.description}</p>
+                    </div>
+                    
+                    <div className="content-area">
+                        <div className="section">
+                            <div className="section-title">Input Schema</div>
+                            <div className="schema-viewer">
+                                {JSON.stringify(selectedTool.inputSchema, null, 2)}
+                            </div>
+                        </div>
+
+                        <div className="input-section">
+                            <div className="section-title">Input Parameters</div>
+                            
+                            <div className="mode-toggle">
+                                <button 
+                                    className={`mode-btn ${inputMode === 'form' ? 'active' : ''}`}
+                                    onClick={() => setInputMode('form')}
+                                >
+                                    Form
+                                </button>
+                                <button 
+                                    className={`mode-btn ${inputMode === 'json' ? 'active' : ''}`}
+                                    onClick={() => setInputMode('json')}
+                                >
+                                    JSON
+                                </button>
+                            </div>
+
+                            {inputMode === 'form' ? (
+                                <FormInput 
+                                    schema={selectedTool.inputSchema}
+                                    values={inputValues}
+                                    onChange={setInputValues}
+                                />
+                            ) : (
+                                <textarea 
+                                    className="json-editor"
+                                    value={jsonInput}
+                                    onChange={(e) => setJsonInput(e.target.value)}
+                                    placeholder="Enter JSON input..."
+                                />
+                            )}
+
+                            <button 
+                                className="execute-btn" 
+                                onClick={onExecute}
+                                disabled={isExecuting}
+                            >
+                                {isExecuting ? 'Executing...' : 'Execute Tool'}
+                            </button>
+                        </div>
+
+                        {result && (
+                            <div className="result-section">
+                                <div className={`result-header ${result.success ? '' : 'error'}`}>
+                                    <span className={`result-status ${result.success ? '' : 'error'}`}>
+                                        {result.success ? '✓ Success' : '✗ Error'}
+                                    </span>
+                                    <span className="result-time">({result.time}ms)</span>
+                                </div>
+
+                                <div className="result-tabs">
+                                    <button 
+                                        className={`result-tab ${resultTab === 'response' ? 'active' : ''}`}
+                                        onClick={() => setResultTab('response')}
+                                    >
+                                        Response
+                                    </button>
+                                    <button 
+                                        className={`result-tab ${resultTab === 'raw' ? 'active' : ''}`}
+                                        onClick={() => setResultTab('raw')}
+                                    >
+                                        Raw JSON
+                                    </button>
+                                    <button 
+                                        className={`result-tab ${resultTab === 'request' ? 'active' : ''}`}
+                                        onClick={() => setResultTab('request')}
+                                    >
+                                        Request
+                                    </button>
+                                </div>
+
+                                <div className="result-content">
+                                    {resultTab === 'response' && JSON.stringify(result.data, null, 2)}
+                                    {resultTab === 'raw' && JSON.stringify(result, null, 2)}
+                                    {resultTab === 'request' && JSON.stringify({ tool: selectedTool.name, input: inputValues }, null, 2)}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function FormInput({ schema, values, onChange }) {
+            const properties = schema.properties || {};
+            const required = schema.required || [];
+
+            return (
+                <div>
+                    {Object.entries(properties).map(([key, prop]) => (
+                        <div key={key} className="form-field">
+                            <label className="form-label">
+                                {key} {required.includes(key) && '*'}
+                            </label>
+                            <input 
+                                type={prop.type === 'number' ? 'number' : 'text'}
+                                className="form-input"
+                                placeholder={prop.description || ''}
+                                value={values[key] || ''}
+                                onChange={(e) => onChange({ ...values, [key]: e.target.value })}
+                            />
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        function AddServerModal({ onClose }) {
+            const [transport, setTransport] = useState('stdio');
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">Add MCP Server</div>
+                        
+                        <div className="modal-body">
+                            <div className="form-field">
+                                <label className="form-label">Server Name</label>
+                                <input 
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="My MCP Server"
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label className="form-label">Transport</label>
+                                <div className="radio-group">
+                                    <div className="radio-option">
+                                        <input 
+                                            type="radio" 
+                                            id="stdio" 
+                                            name="transport" 
+                                            value="stdio"
+                                            checked={transport === 'stdio'}
+                                            onChange={(e) => setTransport(e.target.value)}
+                                        />
+                                        <label htmlFor="stdio">stdio</label>
+                                    </div>
+                                    <div className="radio-option">
+                                        <input 
+                                            type="radio" 
+                                            id="sse" 
+                                            name="transport" 
+                                            value="sse"
+                                            checked={transport === 'sse'}
+                                            onChange={(e) => setTransport(e.target.value)}
+                                        />
+                                        <label htmlFor="sse">SSE</label>
+                                    </div>
+                                    <div className="radio-option">
+                                        <input 
+                                            type="radio" 
+                                            id="http" 
+                                            name="transport" 
+                                            value="http"
+                                            checked={transport === 'http'}
+                                            onChange={(e) => setTransport(e.target.value)}
+                                        />
+                                        <label htmlFor="http">HTTP</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-field">
+                                <label className="form-label">
+                                    {transport === 'stdio' ? 'Command' : 'URL'}
+                                </label>
+                                <input 
+                                    type="text"
+                                    className="form-input"
+                                    placeholder={transport === 'stdio' ? 'node server.js' : 'http://localhost:3000'}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={onClose}>
+                                Cancel
+                            </button>
+                            <button className="btn btn-primary">
+                                Connect
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

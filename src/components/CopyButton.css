@@ -1,0 +1,40 @@
+.copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.copy-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-bright);
+    color: var(--text-primary);
+}
+
+.copy-btn:active {
+    transform: scale(0.98);
+}
+
+.copy-btn svg {
+    flex-shrink: 0;
+}
+
+.copy-btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* Success state */
+.copy-btn:has(svg.lucide-check) {
+    color: var(--green-500);
+    border-color: var(--green-500);
+    background: rgba(186, 230, 126, 0.1);
+}
