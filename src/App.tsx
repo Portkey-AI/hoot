@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ServerSidebar } from './components/ServerSidebar';
 import { ToolsSidebar } from './components/ToolsSidebar';
 import { MainArea } from './components/MainArea';
@@ -16,14 +16,25 @@ import './App.css';
 function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingServer, setEditingServer] = useState<ServerConfig | null>(null);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
 
   // Auto-reconnect to saved servers with cached tools
   useAutoReconnect();
 
+  // Listen for navigation events
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Check if we're on the OAuth callback path
-  const isOAuthCallback = window.location.pathname === '/oauth/callback';
+  const isOAuthCallback = currentPath === '/oauth/callback';
 
   if (isOAuthCallback) {
     return <OAuthCallback />;

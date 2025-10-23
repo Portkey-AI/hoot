@@ -85,12 +85,11 @@ export function OAuthCallback() {
             sessionStorage.removeItem('oauth_pending_server');
             sessionStorage.removeItem('oauth_last_redirect');
 
-            // Set a flag to skip auto-reconnect on next load
-            sessionStorage.setItem('skip_auto_reconnect', 'true');
-
-            // Navigate back (this will cause a reload, but skip_auto_reconnect prevents issues)
+            // Navigate back WITHOUT reload to preserve connection state
             setTimeout(() => {
-                window.location.href = '/';
+                window.history.pushState({}, '', '/');
+                // Trigger a popstate event to update the UI
+                window.dispatchEvent(new PopStateEvent('popstate'));
             }, 1000);
         } catch (error) {
             console.error('OAuth callback error:', error);
