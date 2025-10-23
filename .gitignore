@@ -1,3 +1,4 @@
 .hoot-mcp.db
 .hoot-mcp.db-shm
 .hoot-mcp.db-wal
+node_modules
