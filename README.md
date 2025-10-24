@@ -1,5 +1,4 @@
-# hoot
-
+# 🦉 hoot
 > **⚠️ early beta** - things might break. if they do, [open an issue](https://github.com/Portkey-AI/hoot/issues).
 > 
 > **🤝 contributions welcome** - see something that could be better? PRs are appreciated!
