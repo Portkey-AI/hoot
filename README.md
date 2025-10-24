@@ -7,7 +7,7 @@ testing tool for MCP servers. like postman but for MCP.
 
 ## why
 
-needed a quick way to test MCP servers without spinning up a whole AI chat interface. built this in a weekend.
+needed a quick way to test MCP servers without spinning up a whole AI chat interface.
 
 ## install
 
