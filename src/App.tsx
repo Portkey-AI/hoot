@@ -5,6 +5,7 @@ import { MainArea } from './components/MainArea';
 import { AddServerModal } from './components/AddServerModal';
 import { EditServerModal } from './components/EditServerModal';
 import { OAuthCallback } from './components/OAuthCallback';
+import { TryInHootHandler } from './components/TryInHootHandler';
 import { ToastContainer } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAutoReconnect } from './hooks/useAutoReconnect';
@@ -51,6 +52,7 @@ function App() {
         <MainArea />
         {showAddModal && <AddServerModal onClose={() => setShowAddModal(false)} />}
         {editingServer && <EditServerModal server={editingServer} onClose={() => setEditingServer(null)} />}
+        <TryInHootHandler />
         <ToastContainer toasts={toasts} onDismiss={removeToast} />
       </div>
     </ErrorBoundary>

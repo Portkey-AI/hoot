@@ -7,6 +7,10 @@
     transform: translateZ(0);
 }
 
+.tools-sidebar .empty-state-description {
+    max-width: 200px
+}
+
 .tools-header {
     padding: var(--spacing-lg) var(--spacing-xl);
     border-bottom: 1px solid var(--border-color);

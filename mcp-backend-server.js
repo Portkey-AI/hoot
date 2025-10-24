@@ -6,10 +6,15 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import Database from 'better-sqlite3';
 import { homedir } from 'os';
 import { join } from 'path';
-import { mkdirSync, existsSync } from 'fs';
+import { mkdirSync, existsSync, appendFileSync } from 'fs';
+import { randomBytes } from 'crypto';
 
 const app = express();
 const PORT = 8008;
+
+// Generate session token for authentication
+// This provides protection against unauthorized localhost access
+const SESSION_TOKEN = process.env.HOOT_SESSION_TOKEN || randomBytes(32).toString('hex');
 
 // Enable CORS for browser app
 app.use(cors({
@@ -26,7 +31,9 @@ if (!existsSync(hootDir)) {
     mkdirSync(hootDir, { recursive: true });
 }
 const dbPath = join(hootDir, 'hoot-mcp.db');
+const auditLogPath = join(hootDir, 'audit.log');
 console.log(`📁 Database location: ${dbPath}`);
+console.log(`📝 Audit log: ${auditLogPath}`);
 const db = new Database(dbPath);
 
 // Use WAL mode for better concurrency
@@ -59,9 +66,106 @@ db.pragma('wal_checkpoint(TRUNCATE)');
 
 console.log('✓ SQLite database initialized');
 
+// Security: Audit logging
+function logAuditEvent(event, details = {}) {
+    const entry = {
+        timestamp: new Date().toISOString(),
+        event,
+        ...details
+    };
+    try {
+        appendFileSync(auditLogPath, JSON.stringify(entry) + '\n');
+    } catch (err) {
+        console.error('Failed to write audit log:', err.message);
+    }
+}
+
+// Security: Rate limiting state
+const rateLimitMap = new Map(); // clientId -> { count, resetTime }
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute
+
+function checkRateLimit(clientId) {
+    const now = Date.now();
+    const clientLimit = rateLimitMap.get(clientId);
+
+    if (!clientLimit || now > clientLimit.resetTime) {
+        rateLimitMap.set(clientId, {
+            count: 1,
+            resetTime: now + RATE_LIMIT_WINDOW
+        });
+        return { allowed: true };
+    }
+
+    if (clientLimit.count >= RATE_LIMIT_MAX_REQUESTS) {
+        return {
+            allowed: false,
+            resetIn: Math.ceil((clientLimit.resetTime - now) / 1000)
+        };
+    }
+
+    clientLimit.count++;
+    return { allowed: true };
+}
+
 // In-memory storage for active connections (transports can't be serialized)
 const clients = new Map();
 const transports = new Map();
+
+// Security: Authentication middleware
+function authenticateRequest(req, res, next) {
+    // Allow health check and token endpoint without auth
+    if (req.path === '/health' || req.path === '/auth/token') {
+        return next();
+    }
+
+    const token = req.headers['x-hoot-token'];
+    if (!token || token !== SESSION_TOKEN) {
+        logAuditEvent('auth_failed', {
+            path: req.path,
+            ip: req.ip,
+            origin: req.headers.origin
+        });
+        return res.status(401).json({
+            success: false,
+            error: 'Unauthorized',
+            message: 'Missing or invalid authentication token'
+        });
+    }
+
+    next();
+}
+
+// Apply authentication to all routes
+app.use(authenticateRequest);
+
+/**
+ * Get authentication token
+ * GET /auth/token
+ * This allows the frontend to retrieve the session token
+ */
+app.get('/auth/token', (req, res) => {
+    // Only allow requests from configured CORS origins
+    const origin = req.headers.origin;
+    const allowedOrigins = ['http://localhost:3000', 'http://localhost:8009'];
+
+    if (!origin || !allowedOrigins.includes(origin)) {
+        logAuditEvent('token_request_denied', {
+            origin,
+            ip: req.ip
+        });
+        return res.status(403).json({
+            success: false,
+            error: 'Forbidden'
+        });
+    }
+
+    logAuditEvent('token_retrieved', { origin });
+    res.json({
+        success: true,
+        token: SESSION_TOKEN
+    });
+});
 
 /**
  * Health check endpoint
@@ -91,6 +195,14 @@ app.get('/health', (req, res) => {
 app.post('/mcp/connect', async (req, res) => {
     try {
         const { serverId, serverName, url, transport, auth, authorizationCode } = req.body;
+
+        logAuditEvent('mcp_connect_attempt', {
+            serverId,
+            serverName,
+            url,
+            transport,
+            authType: auth?.type
+        });
 
         console.log(`🔌 Connecting to MCP server: ${serverName}`, {
             serverId,
@@ -168,11 +280,24 @@ app.post('/mcp/connect', async (req, res) => {
 
                 tokens: async () => {
                     const row = db.prepare('SELECT tokens FROM oauth_tokens WHERE server_id = ?').get(serverId);
-                    return row ? JSON.parse(row.tokens) : undefined;
+                    const tokens = row ? JSON.parse(row.tokens) : undefined;
+
+                    if (tokens) {
+                        // Log token status for debugging
+                        const hasRefresh = !!tokens.refresh_token;
+                        const expiresIn = tokens.expires_in || 'unknown';
+                        console.log(`🔐 Loading tokens for ${serverId}: expires_in=${expiresIn}s, has_refresh=${hasRefresh}`);
+                    } else {
+                        console.log(`🔐 No stored tokens found for ${serverId}`);
+                    }
+
+                    return tokens;
                 },
 
                 saveTokens: async (tokens) => {
-                    console.log(`🔐 Saving tokens for ${serverId}`);
+                    const hasRefresh = !!tokens.refresh_token;
+                    const expiresIn = tokens.expires_in || 'unknown';
+                    console.log(`🔐 Saving tokens for ${serverId}: expires_in=${expiresIn}s, has_refresh=${hasRefresh}`);
                     db.prepare('INSERT OR REPLACE INTO oauth_tokens (server_id, tokens) VALUES (?, ?)')
                         .run(serverId, JSON.stringify(tokens));
                     // Force write to disk
@@ -268,6 +393,11 @@ app.post('/mcp/connect', async (req, res) => {
 
         console.log(`✅ Successfully connected to ${serverName}`);
 
+        logAuditEvent('mcp_connect_success', {
+            serverId,
+            serverName
+        });
+
         res.json({
             success: true,
             serverId,
@@ -296,6 +426,128 @@ app.post('/mcp/connect', async (req, res) => {
             success: false,
             error: error.message || 'Connection failed',
             needsAuth: false,
+        });
+    }
+});
+
+/**
+ * Discover if a server requires OAuth
+ * POST /mcp/discover-oauth
+ * Body: {
+ *   url: string,
+ *   transport: 'sse' | 'http'
+ * }
+ */
+app.post('/mcp/discover-oauth', async (req, res) => {
+    try {
+        const { url, transport } = req.body;
+
+        console.log(`🔍 Discovering OAuth for: ${url} (${transport})`);
+
+        // Create a temporary transport with OAuth provider
+        const tempServerId = `temp-${Date.now()}`;
+        const callbackUrl = 'http://localhost:8009/oauth/callback';
+
+        const transportOptions = {
+            authProvider: {
+                get redirectUrl() {
+                    return callbackUrl;
+                },
+
+                get clientMetadata() {
+                    return {
+                        client_name: 'Hoot MCP Testing Tool',
+                        client_uri: 'http://localhost:8009',
+                        redirect_uris: [callbackUrl],
+                        grant_types: ['authorization_code', 'refresh_token'],
+                        response_types: ['code'],
+                        token_endpoint_auth_method: 'none',
+                    };
+                },
+
+                state: async () => {
+                    const crypto = await import('crypto');
+                    return crypto.randomBytes(32).toString('hex');
+                },
+
+                clientInformation: async () => undefined,
+                saveClientInformation: async () => { },
+                tokens: async () => undefined,
+                saveTokens: async () => { },
+
+                redirectToAuthorization: async (authUrl) => {
+                    // Don't actually redirect, just capture the URL
+                    const error = new Error('OAuth authorization required');
+                    error.name = 'UnauthorizedError';
+                    error.authorizationUrl = authUrl.toString();
+                    throw error;
+                },
+
+                saveCodeVerifier: async () => { },
+                codeVerifier: async () => {
+                    throw new Error('Code verifier not needed for discovery');
+                },
+                invalidateCredentials: async () => { },
+            }
+        };
+
+        // Create transport
+        let mcpTransport;
+        if (transport === 'sse') {
+            mcpTransport = new SSEClientTransport(new URL(url), transportOptions);
+        } else if (transport === 'http') {
+            mcpTransport = new StreamableHTTPClientTransport(new URL(url), transportOptions);
+        } else {
+            throw new Error(`Unsupported transport: ${transport}`);
+        }
+
+        // Create temporary MCP client
+        const client = new Client(
+            {
+                name: 'hoot-discovery',
+                version: '0.2.0',
+            },
+            {
+                capabilities: {},
+            }
+        );
+
+        // Try to connect - this will trigger OAuth discovery if needed
+        try {
+            await client.connect(mcpTransport);
+            // Connection succeeded without OAuth
+            await client.close();
+
+            return res.json({
+                success: true,
+                requiresOAuth: false,
+            });
+        } catch (connectError) {
+            // Check if it's an OAuth UnauthorizedError
+            const isUnauthorizedError = connectError.name === 'UnauthorizedError' ||
+                (connectError.message && connectError.message.includes('401'));
+
+            if (isUnauthorizedError) {
+                console.log(`✅ OAuth detected for ${url}`);
+                return res.json({
+                    success: true,
+                    requiresOAuth: true,
+                });
+            }
+
+            // Some other error - might be network issue, invalid URL, etc.
+            // Return success=false so we don't auto-select OAuth
+            console.log(`⚠️  Could not determine OAuth requirement: ${connectError.message}`);
+            return res.json({
+                success: false,
+                error: connectError.message || 'Discovery failed',
+            });
+        }
+    } catch (error) {
+        console.error('❌ OAuth discovery error:', error);
+        res.json({
+            success: false,
+            error: error.message || 'Discovery failed',
         });
     }
 });
@@ -376,6 +628,21 @@ app.post('/mcp/execute', async (req, res) => {
     try {
         const { serverId, toolName, arguments: args } = req.body;
 
+        // Rate limiting
+        const rateLimit = checkRateLimit(serverId);
+        if (!rateLimit.allowed) {
+            logAuditEvent('rate_limit_exceeded', {
+                serverId,
+                toolName,
+                resetIn: rateLimit.resetIn
+            });
+            return res.status(429).json({
+                success: false,
+                error: 'Rate limit exceeded',
+                message: `Too many requests. Please try again in ${rateLimit.resetIn} seconds.`
+            });
+        }
+
         const client = clients.get(serverId);
         if (!client) {
             return res.status(404).json({
@@ -384,10 +651,22 @@ app.post('/mcp/execute', async (req, res) => {
             });
         }
 
+        // Security: Log tool execution
+        logAuditEvent('tool_execution', {
+            serverId,
+            toolName,
+            argsPreview: JSON.stringify(args).substring(0, 200)
+        });
+
         console.log(`⚡ Executing tool: ${toolName} on server: ${serverId}`, args);
         const response = await client.callTool({
             name: toolName,
             arguments: args,
+        });
+
+        logAuditEvent('tool_execution_success', {
+            serverId,
+            toolName
         });
 
         res.json({
@@ -495,9 +774,19 @@ const server = app.listen(PORT, () => {
 ✓ Running on: http://localhost:${PORT}
 ✓ Health check: http://localhost:${PORT}/health
 ✓ Database: ${dbPath}
-✓ API endpoints:
+✓ Audit log: ${auditLogPath}
+
+🔒 Security Features Enabled:
+✓ Session token authentication
+✓ Rate limiting (30 req/min per server)
+✓ Audit logging
+✓ CORS protection (localhost only)
+
+📋 API endpoints:
+  - GET  /auth/token (get session token)
   - POST /mcp/connect
   - POST /mcp/disconnect
+  - POST /mcp/discover-oauth
   - GET  /mcp/tools/:serverId
   - POST /mcp/execute
   - GET  /mcp/status/:serverId
@@ -508,6 +797,11 @@ eliminating CORS issues when connecting to
 MCP servers from the browser.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   `);
+
+    logAuditEvent('server_started', {
+        port: PORT,
+        pid: process.pid
+    });
 });
 
 // Handle server errors

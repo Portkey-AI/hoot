@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import type { TransportType, AuthType, AuthConfig } from '../types';
+import * as backendClient from '../lib/backendClient';
+import { toast } from '../stores/toastStore';
 import './Modal.css';
 
 interface AddServerModalProps {
@@ -13,7 +15,7 @@ export const AddServerModal = memo(function AddServerModal({
   onClose,
 }: AddServerModalProps) {
   const [name, setName] = useState('');
-  const [transport, setTransport] = useState<TransportType>('sse'); // Default to SSE for browser
+  const [transport, setTransport] = useState<TransportType>('http'); // Default to streamableHttp
   const [command, setCommand] = useState('');
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
@@ -23,6 +25,44 @@ export const AddServerModal = memo(function AddServerModal({
   const [headerKey, setHeaderKey] = useState('');
   const [headerValue, setHeaderValue] = useState('');
   const [accessToken, setAccessToken] = useState('');
+
+  // OAuth discovery state
+  const [isDiscovering, setIsDiscovering] = useState(false);
+
+  // Auto-detect OAuth based on URL using MCP SDK discovery
+  const handleUrlBlur = async () => {
+    // Only attempt discovery if URL looks valid
+    if (!url.trim() || !url.startsWith('http')) {
+      return;
+    }
+
+    // Only auto-detect if user hasn't manually selected a non-none auth type
+    if (authType !== 'none') {
+      return;
+    }
+
+    // Only discover for SSE and HTTP transports (not stdio)
+    if (transport !== 'sse' && transport !== 'http') {
+      return;
+    }
+
+    setIsDiscovering(true);
+    try {
+      const result = await backendClient.discoverOAuth(url, transport);
+
+      if (result.requiresOAuth) {
+        console.log('🔍 OAuth detected for URL:', url);
+        setAuthType('oauth');
+        // Show toast notification
+        toast.info('OAuth Required', 'This server requires OAuth authentication');
+      }
+    } catch (error) {
+      // Silently fail - don't bother the user with discovery errors
+      console.error('OAuth discovery error:', error);
+    } finally {
+      setIsDiscovering(false);
+    }
+  };
 
   const addServer = useAppStore((state) => state.addServer);
   const { connect, isConnecting } = useMCPConnection();
@@ -132,6 +172,45 @@ export const AddServerModal = memo(function AddServerModal({
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-field">
+            <label className="form-label">
+              {transport === 'stdio' ? 'Command' : 'URL'}
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                className="form-input"
+                style={isDiscovering ? { paddingRight: '40px' } : {}}
+                placeholder={
+                  transport === 'stdio'
+                    ? 'node server.js'
+                    : 'http://localhost:3000'
+                }
+                value={transport === 'stdio' ? command : url}
+                onChange={(e) =>
+                  transport === 'stdio'
+                    ? setCommand(e.target.value)
+                    : setUrl(e.target.value)
+                }
+                onBlur={transport !== 'stdio' ? handleUrlBlur : undefined}
+                autoFocus
+              />
+              {isDiscovering && (
+                <div style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <div className="spinner-small" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-field">
             <label className="form-label">Server Name</label>
             <input
               type="text"
@@ -139,7 +218,6 @@ export const AddServerModal = memo(function AddServerModal({
               placeholder="My MCP Server"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              autoFocus
             />
           </div>
 
@@ -150,13 +228,11 @@ export const AddServerModal = memo(function AddServerModal({
                 <input
                   type="radio"
                   name="transport"
-                  value="stdio"
-                  checked={transport === 'stdio'}
+                  value="http"
+                  checked={transport === 'http'}
                   onChange={(e) => setTransport(e.target.value as TransportType)}
-                  disabled
-                  title="stdio requires desktop app (coming soon)"
                 />
-                <span style={{ opacity: 0.5 }}>stdio (desktop only)</span>
+                <span>HTTP</span>
               </label>
               <label className="radio-option">
                 <input
@@ -172,11 +248,13 @@ export const AddServerModal = memo(function AddServerModal({
                 <input
                   type="radio"
                   name="transport"
-                  value="http"
-                  checked={transport === 'http'}
+                  value="stdio"
+                  checked={transport === 'stdio'}
                   onChange={(e) => setTransport(e.target.value as TransportType)}
+                  disabled
+                  title="stdio requires desktop app (coming soon)"
                 />
-                <span>HTTP</span>
+                <span style={{ opacity: 0.5 }}>stdio (desktop only)</span>
               </label>
             </div>
             {transport === 'stdio' && (
@@ -184,27 +262,6 @@ export const AddServerModal = memo(function AddServerModal({
                 stdio transport requires a desktop app. Use SSE or HTTP for browser testing.
               </div>
             )}
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">
-              {transport === 'stdio' ? 'Command' : 'URL'}
-            </label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder={
-                transport === 'stdio'
-                  ? 'node server.js'
-                  : 'http://localhost:3000'
-              }
-              value={transport === 'stdio' ? command : url}
-              onChange={(e) =>
-                transport === 'stdio'
-                  ? setCommand(e.target.value)
-                  : setUrl(e.target.value)
-              }
-            />
           </div>
 
           {/* Authentication Section */}
@@ -272,24 +329,19 @@ export const AddServerModal = memo(function AddServerModal({
 
           {/* OAuth Auth Fields */}
           {authType === 'oauth' && (
-            <>
-              <div className="info-message" style={{ marginTop: '8px', marginBottom: '16px' }}>
-                ✓ Full OAuth 2.1 flow with PKCE and automatic token refresh is now supported!
+            <div className="form-field">
+              <label className="form-label">Access Token (Optional)</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Leave empty to start OAuth flow automatically"
+                value={accessToken}
+                onChange={(e) => setAccessToken(e.target.value)}
+              />
+              <div className="info-message" style={{ marginTop: '8px', fontSize: '13px', opacity: 0.8 }}>
+                Hoot supports OAuth 2.1 with PKCE and automatic token refresh. Leave empty to let Hoot handle the OAuth flow.
               </div>
-              <div className="form-field">
-                <label className="form-label">Access Token (Optional)</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Leave empty to start OAuth flow"
-                  value={accessToken}
-                  onChange={(e) => setAccessToken(e.target.value)}
-                />
-              </div>
-              <div className="info-message" style={{ marginTop: '8px' }}>
-                If you don't provide a token, Hoot will automatically discover OAuth endpoints and redirect you to authorize.
-              </div>
-            </>
+            </div>
           )}
         </div>
 

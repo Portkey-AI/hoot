@@ -6,11 +6,13 @@
   bottom: 0;
   background: rgba(31, 36, 48, 0.9);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 9999;
   backdrop-filter: blur(8px);
   animation: fadeIn 0.2s ease-out;
+  padding-top: 80px;
+  overflow-y: auto;
 }
 
 .modal {
@@ -23,6 +25,7 @@
   box-shadow: var(--shadow-lg);
   animation: slideUp 0.25s ease-out;
   transform: translateZ(0);
+  margin-bottom: 80px;
 }
 
 .modal-small {
@@ -195,4 +198,20 @@
   font-size: 14px;
   color: var(--text-primary);
   font-weight: 500;
+}
+
+/* Small spinner for inline loading states */
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--blue-500);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

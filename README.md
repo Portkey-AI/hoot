@@ -5,6 +5,16 @@
 
 testing tool for MCP servers. like postman but for MCP.
 
+## 🔒 security
+
+hoot includes built-in security features for safe local development:
+- ✅ session-based authentication
+- ✅ rate limiting
+- ✅ audit logging
+- ✅ localhost-only access
+
+runs securely on your local machine. [read more](./SECURITY.md)
+
 ## why
 
 needed a quick way to test MCP servers without spinning up a whole AI chat interface.
@@ -31,6 +41,7 @@ hoot
 - view responses
 - oauth 2.1 if your server needs it
 - copy stuff to clipboard
+- **🚀 "try in hoot" links** - share one-click server configs ([docs](./docs/TRY_IN_HOOT.md))
 
 ## how it works
 

@@ -7,6 +7,108 @@ import type { ServerConfig, ToolSchema } from '../types';
 
 const BACKEND_URL = 'http://localhost:8008';
 
+// Session token for authentication
+let sessionToken: string | null = null;
+
+/**
+ * Retrieve and cache the session token from backend
+ * This happens automatically on first request - completely transparent to users
+ */
+async function getSessionToken(): Promise<string> {
+    if (sessionToken) {
+        return sessionToken;
+    }
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/auth/token`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to retrieve session token');
+        }
+
+        const data = await response.json();
+        sessionToken = data.token;
+
+        if (!sessionToken) {
+            throw new Error('No token received from backend');
+        }
+
+        return sessionToken;
+    } catch (error) {
+        console.error('Failed to get session token:', error);
+        // Provide a user-friendly error message
+        throw new Error('Cannot connect to Hoot backend. Make sure it\'s running on port 8008.');
+    }
+}
+
+/**
+ * Make an authenticated request to the backend
+ * Retries once if authentication fails (to refresh token)
+ */
+async function authenticatedFetch(url: string, options: RequestInit = {}, retry = true): Promise<Response> {
+    try {
+        const token = await getSessionToken();
+
+        const headers = new Headers(options.headers);
+        headers.set('x-hoot-token', token);
+        headers.set('Content-Type', 'application/json');
+
+        const response = await fetch(url, {
+            ...options,
+            headers,
+        });
+
+        // If auth fails, clear token and retry once
+        if (response.status === 401 && retry) {
+            console.log('Auth token expired, refreshing...');
+            sessionToken = null;
+            return authenticatedFetch(url, options, false);
+        }
+
+        return response;
+    } catch (error) {
+        // If token fetch fails initially, user may have restarted backend
+        // Clear cache and retry once
+        if (retry) {
+            sessionToken = null;
+            return authenticatedFetch(url, options, false);
+        }
+        throw error;
+    }
+}
+
+/**
+ * Discover if a server URL requires OAuth
+ */
+export async function discoverOAuth(
+    url: string,
+    transport: 'sse' | 'http'
+): Promise<{ requiresOAuth: boolean; error?: string }> {
+    try {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/discover-oauth`, {
+            method: 'POST',
+            body: JSON.stringify({ url, transport }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            return { requiresOAuth: false, error: data.error };
+        }
+
+        return { requiresOAuth: data.requiresOAuth || false };
+    } catch (error) {
+        console.error('OAuth discovery error:', error);
+        return {
+            requiresOAuth: false,
+            error: error instanceof Error ? error.message : 'Discovery failed'
+        };
+    }
+}
+
 /**
  * Check if backend server is running
  */
@@ -30,11 +132,8 @@ export async function connectToServer(
     authorizationCode?: string
 ): Promise<{ success: boolean; error?: string; needsAuth?: boolean; authorizationUrl?: string }> {
     try {
-        const response = await fetch(`${BACKEND_URL}/mcp/connect`, {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/connect`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 serverId: config.id,
                 serverName: config.name,
@@ -71,11 +170,8 @@ export async function connectToServer(
  */
 export async function disconnectFromServer(serverId: string): Promise<void> {
     try {
-        await fetch(`${BACKEND_URL}/mcp/disconnect`, {
+        await authenticatedFetch(`${BACKEND_URL}/mcp/disconnect`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({ serverId }),
         });
     } catch (error) {
@@ -89,7 +185,7 @@ export async function disconnectFromServer(serverId: string): Promise<void> {
  */
 export async function listTools(serverId: string): Promise<ToolSchema[]> {
     try {
-        const response = await fetch(`${BACKEND_URL}/mcp/tools/${serverId}`, {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/tools/${serverId}`, {
             method: 'GET',
         });
 
@@ -115,11 +211,8 @@ export async function executeTool(
     args: Record<string, unknown>
 ): Promise<unknown> {
     try {
-        const response = await fetch(`${BACKEND_URL}/mcp/execute`, {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/execute`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 serverId,
                 toolName,
@@ -145,7 +238,7 @@ export async function executeTool(
  */
 export async function getConnectionStatus(serverId: string): Promise<boolean> {
     try {
-        const response = await fetch(`${BACKEND_URL}/mcp/status/${serverId}`, {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/status/${serverId}`, {
             method: 'GET',
         });
 
@@ -166,7 +259,7 @@ export async function getConnectionStatus(serverId: string): Promise<boolean> {
  */
 export async function getConnections(): Promise<string[]> {
     try {
-        const response = await fetch(`${BACKEND_URL}/mcp/connections`, {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/connections`, {
             method: 'GET',
         });
 

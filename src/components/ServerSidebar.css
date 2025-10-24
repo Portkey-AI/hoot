@@ -1,6 +1,6 @@
 .server-sidebar {
     width: 260px;
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Servers - Try in Hoot</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #1f2430;
+            color: #cccac2;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: #d9d7ce;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header p {
+            color: #707a8c;
+            font-size: 16px;
+        }
+
+        .server-card {
+            background: #232834;
+            border: 1px solid #33415e;
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+
+        .server-card:hover {
+            border-color: #5ccfe6;
+            transform: translateY(-2px);
+        }
+
+        .server-card h3 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: #d9d7ce;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #2a2f3d;
+            color: #5ccfe6;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #33415e;
+        }
+
+        .badge.auth {
+            color: #ffae57;
+        }
+
+        .badge.oauth {
+            color: #d4bfff;
+        }
+
+        .server-card p {
+            color: #707a8c;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .features {
+            list-style: none;
+            margin-bottom: 20px;
+            color: #707a8c;
+            font-size: 14px;
+        }
+
+        .features li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .features li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #5ccfe6;
+            font-weight: bold;
+        }
+
+        .try-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 24px;
+            background: linear-gradient(135deg, #5ccfe6 0%, #73d0ff 100%);
+            color: #1f2430;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.15s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(92, 207, 230, 0.2);
+            letter-spacing: 0;
+        }
+
+        .try-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(92, 207, 230, 0.3);
+        }
+
+        .try-button:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #232834;
+            border-left: 3px solid #5ccfe6;
+            padding: 20px;
+            margin: 32px 0;
+            border-radius: 6px;
+            border: 1px solid #33415e;
+            border-left-width: 3px;
+            border-left-color: #5ccfe6;
+        }
+
+        .info-box.warning {
+            border-left-color: #ffae57;
+        }
+
+        .info-box h4 {
+            margin-bottom: 8px;
+            color: #d9d7ce;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .info-box p {
+            color: #707a8c;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .code {
+            background: #1f2430;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 12px 0;
+            border: 1px solid #33415e;
+            color: #bae67e;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #33415e;
+            color: #5c6773;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #5ccfe6;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span>🦉</span> MCP Servers</h1>
+            <p>Try these servers instantly with Hoot</p>
+        </div>
+
+        <div class="server-card">
+            <h3>
+                Weather MCP Server
+                <span class="badge">HTTP</span>
+            </h3>
+            <p>Get real-time weather data for any location. Current conditions, forecasts, and alerts.</p>
+            <ul class="features">
+                <li>Current weather conditions</li>
+                <li>5-day forecasts</li>
+                <li>Weather alerts</li>
+            </ul>
+            <a href="http://localhost:8009/?try=eyJuYW1lIjoiV2VhdGhlciBNQ1AgU2VydmVyIiwidHJhbnNwb3J0IjoiaHR0cCIsInVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJ9"
+                class="try-button">
+                <span>🦉</span>
+                <span>Try in Hoot</span>
+            </a>
+        </div>
+
+        <div class="server-card">
+            <h3>
+                GitHub MCP Server
+                <span class="badge">HTTP</span>
+                <span class="badge auth">AUTH</span>
+            </h3>
+            <p>Interact with GitHub repos, issues, and pull requests through MCP.</p>
+            <ul class="features">
+                <li>Repository management</li>
+                <li>Issue tracking</li>
+                <li>Code search</li>
+            </ul>
+            <a href="http://localhost:8009/?try=eyJuYW1lIjoiR2l0SHViIE1DUCBTZXJ2ZXIiLCJ0cmFuc3BvcnQiOiJodHRwIiwidXJsIjoiaHR0cHM6Ly9naXRodWItbWNwLmV4YW1wbGUuY29tIiwiYXV0aCI6eyJ0eXBlIjoiaGVhZGVycyIsImhlYWRlcnMiOnsiQXV0aG9yaXphdGlvbiI6IkJlYXJlciBnaHBfdGVzdDEyMyJ9fX0="
+                class="try-button">
+                <span>🦉</span>
+                <span>Try in Hoot</span>
+            </a>
+        </div>
+
+        <div class="server-card">
+            <h3>
+                Google Drive MCP
+                <span class="badge">HTTP</span>
+                <span class="badge oauth">OAUTH</span>
+            </h3>
+            <p>Access and manage Google Drive files through MCP with full OAuth 2.1 support.</p>
+            <ul class="features">
+                <li>File upload/download</li>
+                <li>Folder management</li>
+                <li>Sharing & permissions</li>
+            </ul>
+            <a href="http://localhost:8009/?try=eyJuYW1lIjoiR29vZ2xlIERyaXZlIE1DUCIsInRyYW5zcG9ydCI6Imh0dHAiLCJ1cmwiOiJodHRwczovL2RyaXZlLW1jcC5leGFtcGxlLmNvbSIsImF1dGgiOnsidHlwZSI6Im9hdXRoIn19"
+                class="try-button">
+                <span>🦉</span>
+                <span>Try in Hoot</span>
+            </a>
+        </div>
+
+        <div class="server-card">
+            <h3>
+                Real-time Notifications
+                <span class="badge">SSE</span>
+            </h3>
+            <p>Stream real-time events and notifications using Server-Sent Events.</p>
+            <ul class="features">
+                <li>Live event streaming</li>
+                <li>Push notifications</li>
+                <li>Activity monitoring</li>
+            </ul>
+            <a href="http://localhost:8009/?try=eyJuYW1lIjoiUmVhbC10aW1lIE5vdGlmaWNhdGlvbnMiLCJ0cmFuc3BvcnQiOiJzc2UiLCJ1cmwiOiJodHRwczovL25vdGlmaWNhdGlvbnMtbWNwLmV4YW1wbGUuY29tL2V2ZW50cyJ9"
+                class="try-button">
+                <span>🦉</span>
+                <span>Try in Hoot</span>
+            </a>
+        </div>
+
+        <div class="info-box">
+            <h4>💡 How it works</h4>
+            <p>
+                Click any "Try in Hoot" button. You'll see a confirmation dialog with server details. Confirm and Hoot
+                connects automatically. No config needed.
+            </p>
+        </div>
+
+        <div class="info-box warning">
+            <h4>🔒 Security first</h4>
+            <p>
+                All configs are verified before adding. Never include real credentials in shared links. For auth
+                servers, you'll add your own keys or complete OAuth flows.
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h4>🛠️ Build your own</h4>
+            <p>Want to add a "Try in Hoot" button to your MCP server? Use the generator:</p>
+            <div class="code">examples/try-in-hoot-generator.html</div>
+            <p>Open it in your browser to create your own shareable links.</p>
+        </div>
+
+        <div class="footer">
+            <p>
+                Made with 🦉 by the Hoot team<br>
+                <a href="https://github.com/Portkey-AI/hoot">GitHub</a> · <a
+                    href="../docs/TRY_IN_HOOT.md">Documentation</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Add subtle feedback on click
+        document.querySelectorAll('.try-button').forEach(button => {
+            button.addEventListener('click', function (e) {
+                this.style.transform = 'scale(0.97) translateY(-2px)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -6,6 +6,10 @@
   "bin": {
     "hoot": "./bin/hoot.js"
   },
+  "exports": {
+    ".": "./dist/index.html",
+    "./lib/tryInHootLinks": "./dist/lib/tryInHootLinks.js"
+  },
   "scripts": {
     "start": "node bin/hoot.js",
     "dev": "vite",
@@ -22,7 +26,8 @@
     "model-context-protocol",
     "oauth",
     "postman",
-    "api-testing"
+    "api-testing",
+    "try-in-hoot"
   ],
   "author": "Hoot Contributors",
   "license": "MIT",
