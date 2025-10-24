@@ -42,7 +42,7 @@ process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 
 // Start backend server
-console.log('📡 Starting backend server on port 3002...');
+console.log('📡 Starting backend server on port 8008...');
 const backend = spawn('node', [join(rootDir, 'mcp-backend-server.js')], {
     cwd: rootDir,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -78,7 +78,7 @@ async function waitForBackend() {
     const maxAttempts = 30; // 30 seconds max
     for (let i = 0; i < maxAttempts; i++) {
         try {
-            const response = await fetch('http://localhost:3002/health');
+            const response = await fetch('http://localhost:8008/health');
             if (response.ok) {
                 return true;
             }
@@ -107,11 +107,11 @@ setTimeout(async () => {
     const srcExists = existsSync(join(rootDir, 'src'));
     const mode = srcExists ? 'development' : 'production';
 
-    console.log(`🌐 Starting frontend in ${mode} mode on port 5173...`);
+    console.log(`🌐 Starting frontend in ${mode} mode on port 8009...`);
 
     // Start vite - use dev mode if src exists, preview mode if using built dist/
     const viteCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    const viteArgs = srcExists ? ['vite', '--open'] : ['vite', 'preview', '--open', '--port', '5173'];
+    const viteArgs = srcExists ? ['vite', '--open'] : ['vite', 'preview', '--open', '--port', '8009'];
 
     const frontend = spawn(viteCommand, viteArgs, {
         cwd: rootDir,
@@ -149,12 +149,12 @@ setTimeout(async () => {
 
     // Wait a bit for frontend to fully start, then show success message
     setTimeout(() => {
-        const port = srcExists ? 5173 : 4173;
+        const port = srcExists ? 8009 : 8010;
         console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Hoot is running!
    
-   Backend:  http://localhost:3002
+   Backend:  http://localhost:8008
    Frontend: http://localhost:${port}
    
    Press Ctrl+C to stop

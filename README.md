@@ -15,7 +15,7 @@ needed a quick way to test MCP servers without spinning up a whole AI chat inter
 npx -y @portkey-ai/hoot
 ```
 
-that's it. opens on localhost:5173
+that's it. opens on localhost:8009
 
 or install globally if you want:
 ```bash
@@ -50,7 +50,7 @@ npm install
 npm run dev:full
 ```
 
-backend runs on 3002, frontend on 5173.
+backend runs on 8008, frontend on 8009.
 
 ## debugging
 

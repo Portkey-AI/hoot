@@ -6,11 +6,11 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import Database from 'better-sqlite3';
 
 const app = express();
-const PORT = 3002;
+const PORT = 8008;
 
 // Enable CORS for browser app
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'], // Vite dev server ports
+    origin: ['http://localhost:3000', 'http://localhost:8009'], // Vite dev server ports
     credentials: true,
 }));
 
@@ -107,7 +107,7 @@ app.post('/mcp/connect', async (req, res) => {
         } else if (auth && auth.type === 'oauth') {
             // Create OAuth provider that works in Node.js (no localStorage)
             // Uses in-memory Maps instead
-            const callbackUrl = 'http://localhost:5173/oauth/callback';
+            const callbackUrl = 'http://localhost:8009/oauth/callback';
 
             // Load existing client info if available to reuse client_id
             const existingClientInfo = (() => {
@@ -127,7 +127,7 @@ app.post('/mcp/connect', async (req, res) => {
                 get clientMetadata() {
                     return {
                         client_name: 'Hoot MCP Testing Tool',
-                        client_uri: 'http://localhost:5173',
+                        client_uri: 'http://localhost:8009',
                         redirect_uris: [callbackUrl],
                         grant_types: ['authorization_code', 'refresh_token'],
                         response_types: ['code'],

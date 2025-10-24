@@ -5,7 +5,7 @@
 
 import type { ServerConfig, ToolSchema } from '../types';
 
-const BACKEND_URL = 'http://localhost:3002';
+const BACKEND_URL = 'http://localhost:8008';
 
 /**
  * Check if backend server is running

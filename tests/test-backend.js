@@ -5,7 +5,7 @@
  * Tests basic connectivity and API endpoints
  */
 
-const BASE_URL = 'http://localhost:3002';
+const BASE_URL = 'http://localhost:8008';
 
 async function testEndpoint(name, method, url, body) {
     console.log(`\n🧪 Testing: ${name}`);

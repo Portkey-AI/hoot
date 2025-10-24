@@ -7,7 +7,7 @@ const PORT = 3001;
 
 // Enable CORS for all routes
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'], // Vite dev server ports
+    origin: ['http://localhost:3000', 'http://localhost:8009'], // Vite dev server ports
     credentials: true,
 }));
 
