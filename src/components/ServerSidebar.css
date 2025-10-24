@@ -361,3 +361,56 @@
 .spinning {
     animation: spin 1s linear infinite;
 }
+
+/* Sidebar Footer */
+.sidebar-footer {
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-lg);
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.footer-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    background: var(--bg-hover);
+    border-color: var(--blue-500);
+    color: var(--blue-500);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(92, 207, 230, 0.2);
+}
+
+.footer-link:active {
+    transform: translateY(0);
+}
+
+.footer-version {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-align: center;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
