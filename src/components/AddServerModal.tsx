@@ -71,7 +71,7 @@ export const AddServerModal = memo(function AddServerModal({
       }
     }
 
-    // Add server to store
+    // Build server config
     const serverConfig = {
       name: name.trim(),
       transport,
@@ -79,17 +79,22 @@ export const AddServerModal = memo(function AddServerModal({
       ...(auth && { auth }),
     };
 
+    // Add server to store temporarily to get an ID and test connection
     addServer(serverConfig);
 
-    // Try to connect immediately
+    // Get the newly added server
     const servers = useAppStore.getState().servers;
     const newServer = servers[servers.length - 1];
 
+    // Try to connect immediately
     const success = await connect(newServer);
 
     if (success) {
       onClose();
     } else {
+      // Remove the server if connection failed
+      const removeServer = useAppStore.getState().removeServer;
+      removeServer(newServer.id);
       setError('Failed to connect. Check configuration and try again.');
     }
   };
