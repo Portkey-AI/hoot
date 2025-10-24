@@ -5,15 +5,9 @@
 
 testing tool for MCP servers. like postman but for MCP.
 
-## 🔒 security
 
-hoot includes built-in security features for safe local development:
-- ✅ session-based authentication
-- ✅ rate limiting
-- ✅ audit logging
-- ✅ localhost-only access
+https://github.com/user-attachments/assets/76bad3b4-9206-4b68-ba3d-a1e299802740
 
-runs securely on your local machine. [read more](./SECURITY.md)
 
 ## why
 
@@ -77,6 +71,16 @@ there's a logger in the console:
 ```javascript
 hootLogger.download()  // get logs
 ```
+
+## 🔒 security
+
+hoot includes built-in security features for safe local development:
+- ✅ session-based authentication
+- ✅ rate limiting
+- ✅ audit logging
+- ✅ localhost-only access
+
+runs securely on your local machine. [read more](./SECURITY.md)
 
 ## what's missing
 
