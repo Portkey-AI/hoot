@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Ayu Mirage Bordered Color Palette */
+  /* Ayu Mirage Color Palette (Official Theme) */
   --ayu-bg-primary: #1f2430;
-  --ayu-bg-secondary: #232834;
+  --ayu-bg-secondary: #242936;
   --ayu-bg-tertiary: #2a2f3d;
   --ayu-bg-hover: #2d3241;
   --ayu-bg-active: #34405e;
 
-  --ayu-border: #191f2d;
+  --ayu-border: #1c212b;
   --ayu-border-bright: #3e4b59;
 
   --ayu-text-primary: #cccac2;

@@ -14,7 +14,7 @@
 }
 
 .main-header h2 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-white);
   margin-bottom: var(--spacing-sm);
@@ -35,6 +35,7 @@
 .main-tool-description {
   font-size: 14px;
   color: var(--text-secondary);
+  font-family: var(--font-sans);
   line-height: 1.5;
   margin: 0;
   white-space: pre-wrap;
@@ -163,7 +164,7 @@
   border-radius: var(--radius-md);
   color: var(--red-500);
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   line-height: 1.5;
 }
 
@@ -230,11 +231,14 @@
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 13px;
+  font-family: var(--font-sans);
   transition: border-color var(--transition-fast);
 }
 
 .form-input:focus {
   border-color: var(--blue-500);
+  box-shadow: 0 0 0 1px rgba(92, 207, 230, 0.25);
+  outline: none;
 }
 
 .form-textarea {
@@ -253,22 +257,24 @@
 
 .form-textarea:focus {
   border-color: var(--blue-500);
+  box-shadow: 0 0 0 1px rgba(92, 207, 230, 0.25);
+  outline: none;
 }
 
 .execute-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 100%);
+  background: var(--green-500);
   color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.3px;
   margin-top: var(--spacing-lg);
   transition: all var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(186, 230, 126, 0.2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(186, 230, 126, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,13 +283,12 @@
 
 .execute-timer {
   font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 4px 12px;
-  background: rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.15);
   border-radius: var(--radius-sm);
   font-weight: 600;
   letter-spacing: 0.5px;
-  animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -301,8 +306,9 @@
 }
 
 .execute-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(186, 230, 126, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(186, 230, 126, 0.25);
+  background: #c7f099;
 }
 
 .execute-btn:active:not(:disabled) {
@@ -319,6 +325,10 @@
   background: var(--bg-hover);
   opacity: 0.5;
   box-shadow: none;
+}
+
+.execute-btn.executing {
+  background: var(--blue-500);
 }
 
 .result-section {

@@ -59,7 +59,7 @@
 .search-box:focus {
     border-color: var(--blue-500);
     background: var(--bg-hover);
-    box-shadow: 0 0 0 3px rgba(92, 207, 230, 0.1);
+    box-shadow: 0 0 0 2px rgba(92, 207, 230, 0.15);
     outline: none;
 }
 
@@ -106,8 +106,9 @@
 }
 
 .tool-description {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-secondary);
+    font-family: var(--font-sans);
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;

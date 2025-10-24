@@ -25,6 +25,7 @@
     font-size: 20px;
     font-weight: 700;
     color: var(--text-white);
+    font-family: var(--font-mono);
     margin-bottom: var(--spacing-sm);
     letter-spacing: -0.3px;
 }
@@ -32,6 +33,7 @@
 .empty-state-description {
     font-size: 14px;
     color: var(--text-secondary);
+    font-family: var(--font-sans);
     line-height: 1.6;
     max-width: 400px;
     margin-bottom: var(--spacing-xl);
