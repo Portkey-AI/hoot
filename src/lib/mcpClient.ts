@@ -10,8 +10,9 @@ class MCPClientManager {
 
   /**
    * Connect to an MCP server through the backend
+   * Returns: true if connected, false if OAuth redirect is happening, throws on error
    */
-  async connect(config: ServerConfig, authorizationCode?: string, skipOAuthRedirect = false): Promise<void> {
+  async connect(config: ServerConfig, authorizationCode?: string, skipOAuthRedirect = false): Promise<boolean> {
     // Disconnect existing connection if any
     if (this.connectedServers.has(config.id)) {
       await this.disconnect(config.id);
@@ -49,7 +50,7 @@ class MCPClientManager {
           if (skipOAuthRedirect) {
             // Silent fail for auto-reconnect - don't throw error
             console.log(`🔐 ${config.name} needs OAuth authorization (skipped during auto-reconnect)`);
-            return;
+            return false;
           }
 
           // Trigger OAuth redirect using the provider
@@ -57,7 +58,7 @@ class MCPClientManager {
           if (provider) {
             console.log(`🔐 Redirecting to OAuth: ${result.authorizationUrl}`);
             await provider.redirectToAuthorization(new URL(result.authorizationUrl));
-            return; // Redirect will happen, don't throw error
+            return false; // Redirect will happen, return false to indicate OAuth flow started (not an error)
           }
         }
 
@@ -68,6 +69,7 @@ class MCPClientManager {
       this.connectedServers.add(config.id);
 
       console.log(`✅ Connected to ${config.name}`);
+      return true;
     } catch (error) {
       // Clean up on failure
       this.oauthProviders.delete(config.id);

@@ -285,6 +285,10 @@ function ResultSection({
     const resultContent = useMemo(() => {
         switch (resultTab) {
             case 'response':
+                // Show error message in a readable format for errors
+                if (!result.success && result.error) {
+                    return result.error;
+                }
                 return JSON.stringify(result.data, null, 2);
             case 'raw':
                 return JSON.stringify(result, null, 2);

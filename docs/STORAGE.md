@@ -47,14 +47,24 @@ Your settings are remembered:
 ## Storage Details
 
 ### Location
-- Browser: `localStorage['hoot-storage']`
-- Key format: `hoot-storage` 
+- **Browser (Frontend)**: `localStorage['hoot-storage']`
+  - Server configurations
+  - Tools cache
+  - Execution history
+  - User preferences
+  
+- **Backend Database**: `~/.hoot/hoot-mcp.db`
+  - OAuth tokens (encrypted in transit)
+  - OAuth client information
+  - OAuth verifiers
+  - Stored in your home directory for persistence across npx runs
 
 ### Storage Size
 Typical usage: **< 500KB**
 - Server configs: ~1KB each
 - Tools cache: ~5-10KB per server
 - History: ~5KB (50 entries)
+- Backend DB: ~10-50KB (OAuth data)
 
 ### Version Management
 Current version: **v1**
@@ -103,12 +113,22 @@ Console message:
 
 ### Clearing Storage
 
-**Browser DevTools**:
+**Browser Storage (Frontend)**:
 ```javascript
+// In browser DevTools console:
 localStorage.removeItem('hoot-storage')
 ```
 
-**Or clear all site data** in browser settings.
+**Backend Database** (OAuth tokens):
+```bash
+# Remove the entire database file
+rm ~/.hoot/hoot-mcp.db
+
+# Or remove the entire .hoot directory
+rm -rf ~/.hoot
+```
+
+**Or clear all site data** in browser settings (for frontend only).
 
 ## Benefits
 

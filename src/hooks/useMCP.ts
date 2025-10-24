@@ -21,7 +21,13 @@ export function useMCPConnection() {
                 hasAuthCode: !!authorizationCode
             });
 
-            await mcpClient.connect(server, authorizationCode, skipOAuthRedirect);
+            const connected = await mcpClient.connect(server, authorizationCode, skipOAuthRedirect);
+
+            if (!connected) {
+                // OAuth redirect is happening - return false but don't show error
+                console.log(`🔐 OAuth redirect initiated for ${server.name}`);
+                return false;
+            }
 
             // If we reach here, connection succeeded
             updateServer(server.id, {

@@ -4,6 +4,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import Database from 'better-sqlite3';
+import { homedir } from 'os';
+import { join } from 'path';
+import { mkdirSync, existsSync } from 'fs';
 
 const app = express();
 const PORT = 8008;
@@ -16,8 +19,15 @@ app.use(cors({
 
 app.use(express.json());
 
-// Initialize SQLite database
-const db = new Database('.hoot-mcp.db');
+// Initialize SQLite database in user's home directory
+// This ensures persistence across npx runs and npm cache clears
+const hootDir = join(homedir(), '.hoot');
+if (!existsSync(hootDir)) {
+    mkdirSync(hootDir, { recursive: true });
+}
+const dbPath = join(hootDir, 'hoot-mcp.db');
+console.log(`📁 Database location: ${dbPath}`);
+const db = new Database(dbPath);
 
 // Use WAL mode for better concurrency
 db.pragma('journal_mode = WAL');
@@ -484,6 +494,7 @@ const server = app.listen(PORT, () => {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✓ Running on: http://localhost:${PORT}
 ✓ Health check: http://localhost:${PORT}/health
+✓ Database: ${dbPath}
 ✓ API endpoints:
   - POST /mcp/connect
   - POST /mcp/disconnect

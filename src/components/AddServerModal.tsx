@@ -87,12 +87,20 @@ export const AddServerModal = memo(function AddServerModal({
     const newServer = servers[servers.length - 1];
 
     // Try to connect immediately
-    const success = await connect(newServer);
+    try {
+      const success = await connect(newServer);
 
-    if (success) {
-      onClose();
-    } else {
-      // Remove the server if connection failed
+      if (success) {
+        // Connection successful - close modal
+        onClose();
+      } else {
+        // OAuth redirect is happening (success = false but no error thrown)
+        // Keep the server in the list - don't close modal yet
+        // The user will be redirected to OAuth and come back via callback
+        console.log('🔐 OAuth redirect initiated - keeping server in list');
+      }
+    } catch (error) {
+      // Real connection error - remove the server
       const removeServer = useAppStore.getState().removeServer;
       removeServer(newServer.id);
       setError('Failed to connect. Check configuration and try again.');

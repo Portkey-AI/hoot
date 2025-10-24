@@ -42,6 +42,13 @@ browser → backend → mcp servers
 
 no cors issues. backend handles oauth tokens in sqlite.
 
+### persistence
+
+- **server configs & tools**: saved in browser localStorage (survives page refreshes)
+- **oauth tokens**: stored in `~/.hoot/hoot-mcp.db` (persists across npx runs)
+
+your servers stay configured between sessions, even when running with `npx`!
+
 ## running from source
 
 ```bash
