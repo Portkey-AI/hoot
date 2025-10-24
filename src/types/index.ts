@@ -119,5 +119,6 @@ export interface AppState {
   history: ExecutionHistory[];
   inputMode: InputMode;
   searchQuery: string;
+  executingTools: string[]; // Array of "serverId:toolName" keys for tools currently executing
 }
 

@@ -1,5 +1,6 @@
-import { memo, useState, useMemo, useEffect } from 'react';
+import { memo, useState, useMemo, useEffect, useCallback } from 'react';
 import { useAppStore } from '../stores/appStore';
+import { useToolStateStore } from '../stores/toolStateStore';
 import { useMCPExecution } from '../hooks/useMCP';
 import { EmptyState as EmptyStateComponent } from './EmptyState';
 import { CopyButton } from './CopyButton';
@@ -8,6 +9,15 @@ import { JsonEditor } from './JsonEditor';
 import { Wrench } from 'lucide-react';
 import type { ExecutionResult, ToolSchema } from '../types';
 import './MainArea.css';
+
+// Store execution states per tool to persist across tool switches
+const toolExecutionStates = new Map<string, {
+    result: ExecutionResult | null;
+    resultTab: 'response' | 'raw' | 'request';
+    elapsedTime: number;
+    isExecuting: boolean;
+    abortController: AbortController | null;
+}>();
 
 export const MainArea = memo(function MainArea() {
     const selectedServerId = useAppStore((state) => state.selectedServerId);
@@ -48,11 +58,42 @@ interface ToolExecutionViewProps {
 function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     const inputMode = useAppStore((state) => state.inputMode);
     const setInputMode = useAppStore((state) => state.setInputMode);
-    const [result, setResult] = useState<ExecutionResult | null>(null);
-    const [resultTab, setResultTab] = useState<'response' | 'raw' | 'request'>('response');
-    const [elapsedTime, setElapsedTime] = useState(0);
+    const setToolExecuting = useAppStore((state) => state.setToolExecuting);
+
+    // Get a unique key for this tool
+    const toolKey = `${serverId}:${tool.name}`;
+
+    // Get or initialize execution state for this tool
+    if (!toolExecutionStates.has(toolKey)) {
+        toolExecutionStates.set(toolKey, {
+            result: null,
+            resultTab: 'response',
+            elapsedTime: 0,
+            isExecuting: false,
+            abortController: null,
+        });
+    }
+
+    // Force re-render when we need to update from the Map
+    const [, forceUpdate] = useState({});
+
+    // Always read from the Map - single source of truth
+    const executionState = toolExecutionStates.get(toolKey)!;
+
+    // Helper to update state in Map and force re-render
+    const updateExecutionState = useCallback((updates: Partial<typeof executionState>) => {
+        const newState = { ...toolExecutionStates.get(toolKey)!, ...updates };
+        toolExecutionStates.set(toolKey, newState);
+        forceUpdate({});
+    }, [toolKey]);
+
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-    const { execute, isExecuting } = useMCPExecution();
+    const { execute } = useMCPExecution();
+
+    // Tool state store for persisting parameters and execution state
+    const getToolParameters = useToolStateStore((state) => state.getToolParameters);
+    const saveToolParameters = useToolStateStore((state) => state.saveToolParameters);
+    const recordToolExecution = useToolStateStore((state) => state.recordToolExecution);
 
     // Check if description is long (more than 150 characters)
     const isDescriptionLong = tool.description && tool.description.length > 150;
@@ -81,22 +122,56 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
         return defaults;
     }, [tool.inputSchema]);
 
+    // Load saved parameters or use defaults
+    const initialValues = useMemo(() => {
+        const saved = getToolParameters(serverId, tool.name);
+        if (saved) {
+            // Merge saved values with defaults to handle schema changes
+            return { ...defaultValues, ...saved };
+        }
+        return defaultValues;
+    }, [serverId, tool.name, defaultValues, getToolParameters]);
+
     // Single source of truth for input values
-    const [inputValues, setInputValues] = useState<Record<string, unknown>>(defaultValues);
+    const [inputValues, setInputValues] = useState<Record<string, unknown>>(initialValues);
 
     // Keep JSON editor content in sync with inputValues
     const [jsonInput, setJsonInput] = useState('');
     const [jsonError, setJsonError] = useState('');
 
-    // Reset state when tool changes
+    // Load parameters when tool changes
     useEffect(() => {
-        setResult(null);
-        setInputValues(defaultValues);
+        // Load saved parameters
+        const saved = getToolParameters(serverId, tool.name);
+        const values = saved ? { ...defaultValues, ...saved } : defaultValues;
+        setInputValues(values);
         setJsonInput('');
         setJsonError('');
-        setResultTab('response');
         setIsDescriptionExpanded(false);
-    }, [tool.name, defaultValues]);
+
+        // Force re-render to ensure we show correct execution state
+        forceUpdate({});
+    }, [tool.name, serverId, toolKey, defaultValues, getToolParameters, forceUpdate]);
+
+    // Save parameters whenever they change (debounced effect)
+    useEffect(() => {
+        // Don't save empty default values
+        const hasNonDefaultValues = Object.entries(inputValues).some(([, value]) => {
+            if (value === undefined || value === null || value === '') return false;
+            if (typeof value === 'boolean' && value === false) return false;
+            if (Array.isArray(value) && value.length === 0) return false;
+            if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) return false;
+            return true;
+        });
+
+        if (hasNonDefaultValues) {
+            const timer = setTimeout(() => {
+                saveToolParameters(serverId, tool.name, inputValues);
+            }, 500); // Debounce 500ms
+
+            return () => clearTimeout(timer);
+        }
+    }, [inputValues, serverId, tool.name, saveToolParameters]);
 
     // Update JSON when inputValues change or when switching to JSON mode
     useMemo(() => {
@@ -120,15 +195,18 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
         }
     };
 
-    const handleExecute = async () => {
+    const handleExecute = useCallback(async () => {
         try {
             // If in JSON mode and there's a parse error, show it
             if (inputMode === 'json' && jsonError) {
-                setResult({
-                    success: false,
-                    time: 0,
-                    error: `Invalid JSON: ${jsonError}`,
-                    timestamp: new Date(),
+                updateExecutionState({
+                    result: {
+                        success: false,
+                        time: 0,
+                        error: `Invalid JSON: ${jsonError}`,
+                        timestamp: new Date(),
+                    },
+                    isExecuting: false,
                 });
                 return;
             }
@@ -138,29 +216,122 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                 Object.entries(inputValues).filter(([_, value]) => value !== undefined)
             );
 
-            // Start timer
-            setElapsedTime(0);
+            // Create abort controller for cancellation
+            const abortController = new AbortController();
+
+            // Capture the current tool key for this execution
+            const executingToolKey = toolKey;
+            const executingServerId = serverId;
+            const executingToolName = tool.name;
+
+            // Start execution - update Map directly
+            toolExecutionStates.set(executingToolKey, {
+                ...toolExecutionStates.get(executingToolKey)!,
+                elapsedTime: 0,
+                isExecuting: true,
+                abortController,
+                result: null,
+            });
+            forceUpdate({});
+
+            // Mark tool as executing in global state
+            setToolExecuting(executingServerId, executingToolName, true);
+
             const startTime = Date.now();
             const timerInterval = setInterval(() => {
-                setElapsedTime(Date.now() - startTime);
+                const currentState = toolExecutionStates.get(executingToolKey);
+                if (currentState && currentState.isExecuting) {
+                    toolExecutionStates.set(executingToolKey, {
+                        ...currentState,
+                        elapsedTime: Date.now() - startTime,
+                    });
+                    // Only force update if we're still viewing this tool
+                    if (toolKey === executingToolKey) {
+                        forceUpdate({});
+                    }
+                }
             }, 10); // Update every 10ms for smooth animation
 
             try {
-                const executionResult = await execute(serverId, tool.name, cleanedInputs);
-                setResult(executionResult);
+                const executionResult = await execute(executingServerId, executingToolName, cleanedInputs);
+
+                // Update the state in the Map for this specific tool
+                if (!abortController.signal.aborted) {
+                    toolExecutionStates.set(executingToolKey, {
+                        ...toolExecutionStates.get(executingToolKey)!,
+                        result: executionResult,
+                        isExecuting: false,
+                        abortController: null,
+                    });
+
+                    // Only force update if we're still viewing this tool
+                    if (toolKey === executingToolKey) {
+                        forceUpdate({});
+                    }
+
+                    // Record successful execution
+                    if (executionResult.success) {
+                        recordToolExecution(executingServerId, executingToolName);
+                    }
+                }
+            } catch (execError) {
+                // Handle execution errors
+                const errorResult = {
+                    success: false,
+                    time: Date.now() - startTime,
+                    error: execError instanceof Error ? execError.message : 'Execution failed',
+                    timestamp: new Date(),
+                };
+
+                toolExecutionStates.set(executingToolKey, {
+                    ...toolExecutionStates.get(executingToolKey)!,
+                    result: errorResult,
+                    isExecuting: false,
+                    abortController: null,
+                });
+
+                // Only force update if we're still viewing this tool
+                if (toolKey === executingToolKey) {
+                    forceUpdate({});
+                }
             } finally {
                 clearInterval(timerInterval);
+                // Always clean up the executing state
+                setToolExecuting(executingServerId, executingToolName, false);
             }
         } catch (error) {
             console.error('Execution error:', error);
-            setResult({
-                success: false,
-                time: 0,
-                error: error instanceof Error ? error.message : 'Execution failed',
-                timestamp: new Date(),
+            updateExecutionState({
+                result: {
+                    success: false,
+                    time: 0,
+                    error: error instanceof Error ? error.message : 'Execution failed',
+                    timestamp: new Date(),
+                },
+                isExecuting: false,
+                abortController: null,
             });
+            setToolExecuting(serverId, tool.name, false);
         }
-    };
+    }, [inputMode, jsonError, inputValues, toolKey, serverId, tool.name, execute, setToolExecuting, recordToolExecution, updateExecutionState, forceUpdate]);
+
+    const handleCancel = useCallback(() => {
+        const currentState = toolExecutionStates.get(toolKey)!;
+        if (currentState.abortController) {
+            currentState.abortController.abort();
+            updateExecutionState({
+                result: {
+                    success: false,
+                    time: currentState.elapsedTime,
+                    error: 'Execution cancelled by user',
+                    timestamp: new Date(),
+                },
+                isExecuting: false,
+                abortController: null,
+            });
+            setToolExecuting(serverId, tool.name, false);
+        }
+    }, [toolKey, serverId, tool.name, setToolExecuting, updateExecutionState]);
 
     return (
         <div className="main-area">
@@ -222,14 +393,14 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                     )}
 
                     <button
-                        className={`execute-btn ${isExecuting ? 'executing' : ''}`}
-                        onClick={handleExecute}
-                        disabled={isExecuting}
+                        className={`execute-btn ${executionState.isExecuting ? 'executing' : ''}`}
+                        onClick={executionState.isExecuting ? handleCancel : handleExecute}
                     >
-                        {isExecuting ? (
+                        {executionState.isExecuting ? (
                             <>
                                 <span>Executing</span>
-                                <span className="execute-timer">{elapsedTime}ms</span>
+                                <span className="execute-timer">{executionState.elapsedTime}ms</span>
+                                <span className="execute-cancel-hint">(click to cancel)</span>
                             </>
                         ) : (
                             'Execute Tool'
@@ -237,11 +408,11 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                     </button>
                 </section>
 
-                {result && (
+                {executionState.result && (
                     <ResultSection
-                        result={result}
-                        resultTab={resultTab}
-                        setResultTab={setResultTab}
+                        result={executionState.result}
+                        resultTab={executionState.resultTab}
+                        setResultTab={(tab) => updateExecutionState({ resultTab: tab })}
                         toolName={tool.name}
                         input={inputValues}
                     />

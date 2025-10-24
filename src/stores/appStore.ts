@@ -7,6 +7,7 @@ import type {
     ExecutionHistory,
     InputMode,
 } from '../types';
+import { useToolStateStore } from './toolStateStore';
 
 interface AppStore extends AppState {
     // Server actions
@@ -22,6 +23,7 @@ interface AppStore extends AppState {
     // Execution actions
     addToHistory: (entry: Omit<ExecutionHistory, 'id' | 'timestamp'>) => void;
     clearHistory: () => void;
+    setToolExecuting: (serverId: string, toolName: string, executing: boolean) => void;
 
     // UI actions
     setInputMode: (mode: InputMode) => void;
@@ -77,6 +79,7 @@ export const useAppStore = create<AppStore>()(
             history: [],
             inputMode: 'form',
             searchQuery: '',
+            executingTools: [],
 
             // Server actions
             addServer: (server) =>
@@ -92,14 +95,19 @@ export const useAppStore = create<AppStore>()(
                 })),
 
             removeServer: (serverId) =>
-                set((state) => ({
-                    servers: state.servers.filter((s) => s.id !== serverId),
-                    selectedServerId:
-                        state.selectedServerId === serverId ? null : state.selectedServerId,
-                    tools: Object.fromEntries(
-                        Object.entries(state.tools).filter(([id]) => id !== serverId)
-                    ),
-                })),
+                set((state) => {
+                    // Clean up tool state for this server
+                    useToolStateStore.getState().clearServerData(serverId);
+
+                    return {
+                        servers: state.servers.filter((s) => s.id !== serverId),
+                        selectedServerId:
+                            state.selectedServerId === serverId ? null : state.selectedServerId,
+                        tools: Object.fromEntries(
+                            Object.entries(state.tools).filter(([id]) => id !== serverId)
+                        ),
+                    };
+                }),
 
             updateServer: (serverId, updates) =>
                 set((state) => ({
@@ -134,6 +142,23 @@ export const useAppStore = create<AppStore>()(
 
             clearHistory: () => set({ history: [] }),
 
+            setToolExecuting: (serverId, toolName, executing) =>
+                set((state) => {
+                    const toolKey = `${serverId}:${toolName}`;
+                    if (executing) {
+                        // Add to executing list if not already there
+                        if (!state.executingTools.includes(toolKey)) {
+                            return { executingTools: [...state.executingTools, toolKey] };
+                        }
+                    } else {
+                        // Remove from executing list
+                        return {
+                            executingTools: state.executingTools.filter(key => key !== toolKey)
+                        };
+                    }
+                    return state;
+                }),
+
             // UI actions
             setInputMode: (mode) => set({ inputMode: mode }),
             setSearchQuery: (query) => set({ searchQuery: query }),
@@ -155,6 +180,7 @@ export const useAppStore = create<AppStore>()(
                 selectedServerId: null, // Reset selected server on load
                 selectedToolName: null, // Reset selected tool on load
                 searchQuery: '', // Reset search on load
+                executingTools: [], // Don't persist executing state
             }),
         }
     )

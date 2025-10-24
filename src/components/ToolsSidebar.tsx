@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 import { useAppStore } from '../stores/appStore';
+import { useToolStateStore } from '../stores/toolStateStore';
 import { NoToolsState, EmptyState } from './EmptyState';
 import { Server } from 'lucide-react';
 import './ToolsSidebar.css';
@@ -11,6 +12,10 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
     const setSelectedTool = useAppStore((state) => state.setSelectedTool);
     const searchQuery = useAppStore((state) => state.searchQuery);
     const setSearchQuery = useAppStore((state) => state.setSearchQuery);
+    const executingTools = useAppStore((state) => state.executingTools);
+
+    // Get tool state for showing saved parameters indicator
+    const getToolParameters = useToolStateStore((state) => state.getToolParameters);
 
     // Get tools for selected server - memoized to prevent re-renders
     const tools = useMemo(() => {
@@ -70,16 +75,31 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                         <p>No tools match "{searchQuery}"</p>
                     </div>
                 ) : (
-                    filteredTools.map((tool) => (
-                        <div
-                            key={tool.name}
-                            className={`tool-item ${selectedToolName === tool.name ? 'active' : ''}`}
-                            onClick={() => setSelectedTool(tool.name)}
-                        >
-                            <div className="tool-name">{tool.name}</div>
-                            <div className="tool-description">{tool.description}</div>
-                        </div>
-                    ))
+                    filteredTools.map((tool) => {
+                        const hasParameters = selectedServerId ? getToolParameters(selectedServerId, tool.name) : undefined;
+                        const toolKey = selectedServerId ? `${selectedServerId}:${tool.name}` : tool.name;
+                        const isExecuting = executingTools.includes(toolKey);
+
+                        return (
+                            <div
+                                key={tool.name}
+                                className={`tool-item ${selectedToolName === tool.name ? 'active' : ''} ${isExecuting ? 'executing' : ''}`}
+                                onClick={() => setSelectedTool(tool.name)}
+                            >
+                                <div className="tool-name">
+                                    {isExecuting && <span className="tool-pulse" />}
+                                    {tool.name}
+                                    {hasParameters && (
+                                        <span
+                                            className="tool-has-params-dot"
+                                            title="Has saved parameters"
+                                        />
+                                    )}
+                                </div>
+                                <div className="tool-description">{tool.description}</div>
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>
