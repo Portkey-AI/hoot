@@ -94,16 +94,30 @@ export const AddServerModal = memo(function AddServerModal({
         // Connection successful - close modal
         onClose();
       } else {
-        // OAuth redirect is happening (success = false but no error thrown)
-        // Keep the server in the list - don't close modal yet
-        // The user will be redirected to OAuth and come back via callback
-        console.log('🔐 OAuth redirect initiated - keeping server in list');
+        // Connection returned false - could be OAuth redirect OR an error
+        // Check if the server has an error stored on it
+        const updatedServer = useAppStore.getState().servers.find(s => s.id === newServer.id);
+
+        if (updatedServer?.error) {
+          // Real connection error - remove the server and show error
+          const removeServer = useAppStore.getState().removeServer;
+          removeServer(newServer.id);
+          setError(updatedServer.error);
+        } else {
+          // OAuth redirect is happening (success = false but no error)
+          // Keep the server in the list - don't close modal yet
+          // The user will be redirected to OAuth and come back via callback
+          console.log('🔐 OAuth redirect initiated - keeping server in list');
+        }
       }
     } catch (error) {
-      // Real connection error - remove the server
+      // Unexpected error during connection attempt
       const removeServer = useAppStore.getState().removeServer;
       removeServer(newServer.id);
-      setError('Failed to connect. Check configuration and try again.');
+
+      // Show the detailed error message from the connection attempt
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect. Check configuration and try again.';
+      setError(errorMessage);
     }
   };
 

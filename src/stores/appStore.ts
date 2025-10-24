@@ -26,7 +26,6 @@ interface AppStore extends AppState {
     // UI actions
     setInputMode: (mode: InputMode) => void;
     setSearchQuery: (query: string) => void;
-    setUseProxy: (useProxy: boolean) => void;
 }
 
 // Custom storage with proper Date handling
@@ -78,7 +77,6 @@ export const useAppStore = create<AppStore>()(
             history: [],
             inputMode: 'form',
             searchQuery: '',
-            useProxy: false,
 
             // Server actions
             addServer: (server) =>
@@ -139,7 +137,6 @@ export const useAppStore = create<AppStore>()(
             // UI actions
             setInputMode: (mode) => set({ inputMode: mode }),
             setSearchQuery: (query) => set({ searchQuery: query }),
-            setUseProxy: (useProxy: boolean) => set({ useProxy }),
         }),
         {
             name: 'hoot-storage',
@@ -158,7 +155,6 @@ export const useAppStore = create<AppStore>()(
                 selectedServerId: null, // Reset selected server on load
                 selectedToolName: null, // Reset selected tool on load
                 searchQuery: '', // Reset search on load
-                useProxy: state.useProxy, // Persist proxy setting
             }),
         }
     )

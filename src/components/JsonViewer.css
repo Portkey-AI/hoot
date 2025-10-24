@@ -1,0 +1,92 @@
+.json-viewer {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+    line-height: 1.6;
+    color: var(--text-primary);
+    user-select: text;
+}
+
+/* Ayu Mirage syntax highlighting colors */
+.json-key {
+    color: var(--ayu-accent-blue);
+    /* cyan-blue for keys */
+    font-weight: 500;
+}
+
+.json-string {
+    color: var(--ayu-accent-green);
+    /* green for string values */
+}
+
+.json-number {
+    color: var(--ayu-accent-orange);
+    /* orange for numbers */
+}
+
+.json-boolean {
+    color: var(--ayu-accent-purple);
+    /* purple for booleans */
+    font-weight: 600;
+}
+
+.json-null {
+    color: var(--ayu-accent-purple);
+    /* purple for null */
+    font-weight: 600;
+    font-style: italic;
+}
+
+.json-bracket {
+    color: var(--ayu-text-secondary);
+    /* muted for brackets */
+    font-weight: 600;
+}
+
+.json-punctuation {
+    color: var(--ayu-text-tertiary);
+    /* subtle for punctuation */
+}
+
+/* Collapse/expand toggle */
+.json-collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: color var(--transition-fast);
+    vertical-align: middle;
+    user-select: none;
+}
+
+.json-collapse-toggle:hover {
+    color: var(--blue-500);
+}
+
+.json-collapse-toggle svg {
+    flex-shrink: 0;
+}
+
+.json-ellipsis {
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin: 0 4px;
+}
+
+/* Selection styling for JSON viewer */
+.json-viewer::selection,
+.json-viewer *::selection {
+    background: var(--ayu-accent-blue);
+    color: var(--bg-primary);
+}

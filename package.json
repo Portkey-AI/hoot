@@ -10,9 +10,7 @@
     "start": "node bin/hoot.js",
     "dev": "vite",
     "backend": "node mcp-backend-server.js",
-    "proxy": "node proxy-server.js",
     "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
-    "dev:with-proxy": "concurrently \"npm run proxy\" \"npm run dev\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
@@ -53,7 +51,6 @@
     "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "http-proxy-middleware": "^3.0.5",
     "lucide-react": "^0.546.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

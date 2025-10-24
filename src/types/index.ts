@@ -119,6 +119,5 @@ export interface AppState {
   history: ExecutionHistory[];
   inputMode: InputMode;
   searchQuery: string;
-  useProxy: boolean; // Whether to use CORS proxy
 }
 

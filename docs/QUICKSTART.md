@@ -113,15 +113,12 @@ This would give us:
 - Better performance
 
 ### Quick Workaround: Backend Proxy
-Alternatively, we could create a small Node.js backend that:
+We have created a Node.js backend that:
 1. Accepts connections from the browser
 2. Proxies to stdio MCP servers
-3. Returns results via WebSocket/SSE
+3. Returns results via HTTP
 
-Would you like me to:
-1. **Build an Electron version** (full desktop app)?
-2. **Create a backend proxy** (browser + Node.js backend)?
-3. **Continue with SSE/HTTP only** (simplest, works now)?
+You should use `npm run dev:full` to run both the backend and frontend together.
 
 ## 🐛 Troubleshooting
 

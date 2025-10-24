@@ -90,12 +90,28 @@ export const EditServerModal = memo(function EditServerModal({
                 sessionStorage.setItem('oauth_server_id', updatedServer.id);
             }
 
-            const success = await connect(updatedServer);
+            try {
+                const success = await connect(updatedServer);
 
-            if (success) {
-                onClose();
-            } else {
-                setError('Failed to connect with new configuration. Check settings and try again.');
+                if (success) {
+                    onClose();
+                } else {
+                    // Connection returned false - could be OAuth redirect OR an error
+                    // Check if the server has an error stored on it
+                    const serverAfterConnect = useAppStore.getState().servers.find(s => s.id === server.id);
+
+                    if (serverAfterConnect?.error) {
+                        // Real connection error - show descriptive message
+                        setError(serverAfterConnect.error);
+                    } else {
+                        // OAuth redirect is happening - don't show as error
+                        console.log('🔐 OAuth redirect initiated');
+                    }
+                }
+            } catch (error) {
+                // Unexpected error during connection attempt - show descriptive message
+                const errorMessage = error instanceof Error ? error.message : 'Failed to connect with new configuration. Check settings and try again.';
+                setError(errorMessage);
             }
         }
     };

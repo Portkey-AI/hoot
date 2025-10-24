@@ -1,10 +1,9 @@
 import { memo, useState, useRef, useEffect } from 'react';
-import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings, Wifi, WifiOff } from 'lucide-react';
+import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import { NoServersState } from './EmptyState';
 import { toast } from '../stores/toastStore';
-import { isProxyAvailable } from '../lib/proxy';
 import type { ServerConfig } from '../types';
 import './ServerSidebar.css';
 
@@ -23,40 +22,6 @@ export const ServerSidebar = memo(function ServerSidebar({ onAddServer, onEditSe
 });
 
 function SidebarHeader({ onAddServer }: { onAddServer: () => void }) {
-    const useProxy = useAppStore((state) => state.useProxy);
-    const setUseProxy = useAppStore((state) => state.setUseProxy);
-    const [proxyAvailable, setProxyAvailable] = useState(false);
-
-    // Check proxy availability on mount and when toggle changes
-    useEffect(() => {
-        checkProxy();
-    }, []);
-
-    const checkProxy = async () => {
-        const available = await isProxyAvailable();
-        setProxyAvailable(available);
-        if (useProxy && !available) {
-            toast.warning('CORS Proxy not running', 'Run `npm run proxy` to enable');
-        }
-    };
-
-    const handleProxyToggle = async () => {
-        if (!useProxy) {
-            // Enabling proxy - check if it's available
-            const available = await isProxyAvailable();
-            if (!available) {
-                toast.error('CORS Proxy not running', 'Start proxy with `npm run proxy`');
-                return;
-            }
-            setProxyAvailable(true);
-        }
-        setUseProxy(!useProxy);
-        toast.info(
-            !useProxy ? 'CORS Proxy enabled' : 'CORS Proxy disabled',
-            !useProxy ? 'Requests will go through localhost:3001' : 'Direct connections'
-        );
-    };
-
     return (
         <div className="sidebar-header">
             <div className="logo">
@@ -64,12 +29,6 @@ function SidebarHeader({ onAddServer }: { onAddServer: () => void }) {
                 <h1>Hoot</h1>
             </div>
             <p className="tagline">MCP Testing Tool</p>
-
-            <div className="proxy-toggle" onClick={handleProxyToggle} title={useProxy ? 'Disable CORS proxy' : 'Enable CORS proxy'}>
-                {useProxy ? <Wifi size={14} /> : <WifiOff size={14} />}
-                <span>{useProxy ? 'Proxy ON' : 'Proxy OFF'}</span>
-                {useProxy && !proxyAvailable && <span className="proxy-warning">⚠️</span>}
-            </div>
 
             <button className="add-server-btn" onClick={onAddServer}>
                 <span className="btn-icon">+</span>

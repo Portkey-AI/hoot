@@ -3,6 +3,8 @@ import { useAppStore } from '../stores/appStore';
 import { useMCPExecution } from '../hooks/useMCP';
 import { EmptyState as EmptyStateComponent } from './EmptyState';
 import { CopyButton } from './CopyButton';
+import { JsonViewer } from './JsonViewer';
+import { JsonEditor } from './JsonEditor';
 import { Wrench } from 'lucide-react';
 import type { ExecutionResult, ToolSchema } from '../types';
 import './MainArea.css';
@@ -49,7 +51,11 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     const [result, setResult] = useState<ExecutionResult | null>(null);
     const [resultTab, setResultTab] = useState<'response' | 'raw' | 'request'>('response');
     const [elapsedTime, setElapsedTime] = useState(0);
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const { execute, isExecuting } = useMCPExecution();
+
+    // Check if description is long (more than 150 characters)
+    const isDescriptionLong = tool.description && tool.description.length > 150;
 
     // Generate default values from schema
     const defaultValues = useMemo(() => {
@@ -61,8 +67,8 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                 defaults[key] = prop.default;
             } else if (prop.type === 'string') {
                 defaults[key] = '';
-            } else if (prop.type === 'number') {
-                defaults[key] = 0;
+            } else if (prop.type === 'number' || prop.type === 'integer') {
+                defaults[key] = undefined; // Don't pre-fill numbers
             } else if (prop.type === 'boolean') {
                 defaults[key] = false;
             } else if (prop.type === 'array') {
@@ -89,6 +95,7 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
         setJsonInput('');
         setJsonError('');
         setResultTab('response');
+        setIsDescriptionExpanded(false);
     }, [tool.name, defaultValues]);
 
     // Update JSON when inputValues change or when switching to JSON mode
@@ -126,6 +133,11 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                 return;
             }
 
+            // Clean up input values - remove undefined values
+            const cleanedInputs = Object.fromEntries(
+                Object.entries(inputValues).filter(([_, value]) => value !== undefined)
+            );
+
             // Start timer
             setElapsedTime(0);
             const startTime = Date.now();
@@ -134,7 +146,7 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
             }, 10); // Update every 10ms for smooth animation
 
             try {
-                const executionResult = await execute(serverId, tool.name, inputValues);
+                const executionResult = await execute(serverId, tool.name, cleanedInputs);
                 setResult(executionResult);
             } finally {
                 clearInterval(timerInterval);
@@ -154,7 +166,19 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
         <div className="main-area">
             <div className="main-header">
                 <h2>{tool.name}</h2>
-                <p>{tool.description}</p>
+                <div className="description-container">
+                    <p className={`main-tool-description ${!isDescriptionExpanded && isDescriptionLong ? 'collapsed' : ''}`}>
+                        {tool.description}
+                    </p>
+                    {isDescriptionLong && (
+                        <button
+                            className="description-toggle"
+                            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                        >
+                            {isDescriptionExpanded ? 'Show less' : 'Show more'}
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="content-area">
@@ -184,12 +208,10 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                         />
                     ) : (
                         <>
-                            <textarea
-                                className="json-editor"
+                            <JsonEditor
                                 value={jsonInput}
-                                onChange={(e) => handleJsonChange(e.target.value)}
+                                onChange={handleJsonChange}
                                 placeholder="Enter JSON input..."
-                                spellCheck={false}
                             />
                             {jsonError && (
                                 <div className="json-error">
@@ -242,27 +264,113 @@ const FormInput = memo(function FormInput({ schema, values, onChange }: FormInpu
     const properties = schema.properties || {};
     const required = schema.required || [];
 
+    const handleChange = (key: string, prop: any, value: string | boolean) => {
+        let parsedValue: unknown = value;
+
+        // Convert values based on schema type
+        if (prop.type === 'number' || prop.type === 'integer') {
+            parsedValue = value === '' ? undefined : Number(value);
+        } else if (prop.type === 'boolean') {
+            parsedValue = value;
+        } else if (prop.type === 'array' || prop.type === 'object') {
+            // For complex types, try to parse as JSON
+            try {
+                parsedValue = value === '' ? (prop.type === 'array' ? [] : {}) : JSON.parse(value as string);
+            } catch {
+                parsedValue = value; // Keep as string if invalid JSON
+            }
+        }
+
+        onChange({
+            ...values,
+            [key]: parsedValue,
+        });
+    };
+
+    const getInputValue = (key: string, prop: any): string => {
+        const value = values[key];
+
+        if (value === undefined || value === null) {
+            return '';
+        }
+
+        if (prop.type === 'array' || prop.type === 'object') {
+            return JSON.stringify(value);
+        }
+
+        return String(value);
+    };
+
     return (
         <div className="form-fields">
-            {Object.entries(properties).map(([key, prop]) => (
-                <div key={key} className="form-field">
-                    <label className="form-label">
-                        {key} {required.includes(key) && <span className="required">*</span>}
-                    </label>
-                    <input
-                        type={prop.type === 'number' ? 'number' : 'text'}
-                        className="form-input"
-                        placeholder={prop.description || ''}
-                        value={(values[key] as string) || ''}
-                        onChange={(e) =>
-                            onChange({
-                                ...values,
-                                [key]: prop.type === 'number' ? Number(e.target.value) : e.target.value,
-                            })
-                        }
-                    />
-                </div>
-            ))}
+            {Object.entries(properties).map(([key, prop]) => {
+                // Handle boolean as checkbox
+                if (prop.type === 'boolean') {
+                    return (
+                        <div key={key} className="form-field">
+                            <label className="form-label checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    className="form-checkbox"
+                                    checked={Boolean(values[key])}
+                                    onChange={(e) => handleChange(key, prop, e.target.checked)}
+                                />
+                                <span>
+                                    <span className="param-name" title={prop.description}>
+                                        {key}
+                                    </span>
+                                    {required.includes(key) && <span className="required">*</span>}
+                                </span>
+                            </label>
+                        </div>
+                    );
+                }
+
+                // Handle array/object as textarea
+                if (prop.type === 'array' || prop.type === 'object') {
+                    return (
+                        <div key={key} className="form-field">
+                            <label className="form-label">
+                                <span className="param-name" title={prop.description}>
+                                    {key}
+                                </span>
+                                {required.includes(key) && <span className="required">*</span>}
+                                <span className="field-type">({prop.type})</span>
+                            </label>
+                            <textarea
+                                className="form-textarea"
+                                placeholder={prop.description || `Enter JSON ${prop.type}...`}
+                                value={getInputValue(key, prop)}
+                                onChange={(e) => handleChange(key, prop, e.target.value)}
+                                rows={3}
+                            />
+                        </div>
+                    );
+                }
+
+                // Handle string, number, integer as input
+                return (
+                    <div key={key} className="form-field">
+                        <label className="form-label">
+                            <span className="param-name" title={prop.description}>
+                                {key}
+                            </span>
+                            {required.includes(key) && <span className="required">*</span>}
+                            {(prop.type === 'number' || prop.type === 'integer') && (
+                                <span className="field-type">({prop.type})</span>
+                            )}
+                        </label>
+                        <input
+                            type={prop.type === 'number' || prop.type === 'integer' ? 'number' : 'text'}
+                            className="form-input"
+                            placeholder={prop.description || `Enter ${key}...`}
+                            value={getInputValue(key, prop)}
+                            onChange={(e) => handleChange(key, prop, e.target.value)}
+                            step={prop.type === 'number' ? 'any' : undefined}
+                        />
+                    </div>
+                );
+            })}
         </div>
     );
 });
@@ -332,7 +440,11 @@ function ResultSection({
                 </button>
             </div>
 
-            <pre className="result-content">{resultContent}</pre>
+            <JsonViewer
+                content={resultContent}
+                className="result-content"
+                preserveQuotes={resultTab === 'raw'}
+            />
         </section>
     );
 }

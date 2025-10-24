@@ -42,38 +42,6 @@
     font-weight: 500;
 }
 
-.proxy-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: 8px 12px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    margin-bottom: var(--spacing-md);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.proxy-toggle:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-bright);
-    color: var(--text-primary);
-}
-
-.proxy-toggle svg {
-    flex-shrink: 0;
-}
-
-.proxy-warning {
-    margin-left: auto;
-    font-size: 14px;
-    animation: pulse 2s ease-in-out infinite;
-}
-
 .add-server-btn {
     width: 100%;
     padding: 12px 16px;

@@ -228,13 +228,6 @@ npm run backend
 npm run dev
 ```
 
-### Old Proxy Method (deprecated)
-
-The old CORS proxy (`proxy-server.js`) is still available but **not recommended** for the new architecture:
-
-```bash
-npm run dev:with-proxy  # Don't use this anymore
-```
 
 ## Migration Notes
 
@@ -368,8 +361,7 @@ curl http://localhost:3002/mcp/tools/test-server
 
 ### Why Port 3002?
 
-- Port 3001 is used by old CORS proxy (deprecated)
-- Port 3002 is available and not commonly used
+- Port 3002 is available and commonly used for backend services
 - Can be changed if needed (update `BACKEND_URL` in `backendClient.ts`)
 
 ## Conclusion

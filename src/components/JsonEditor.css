@@ -1,0 +1,97 @@
+.json-editor-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
+}
+
+.json-editor-wrapper:focus-within {
+    border-color: var(--blue-500);
+}
+
+.json-editor-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--spacing-lg);
+    pointer-events: none;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    color: transparent;
+}
+
+.json-editor-highlight pre {
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.json-editor-input {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    padding: var(--spacing-lg);
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    caret-color: var(--text-primary);
+}
+
+.json-editor-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Syntax highlighting colors matching JsonViewer */
+.json-editor-highlight .json-key {
+    color: var(--ayu-accent-blue);
+    font-weight: 500;
+}
+
+.json-editor-highlight .json-string {
+    color: var(--ayu-accent-green);
+}
+
+.json-editor-highlight .json-number {
+    color: var(--ayu-accent-orange);
+}
+
+.json-editor-highlight .json-boolean {
+    color: var(--ayu-accent-purple);
+    font-weight: 600;
+}
+
+.json-editor-highlight .json-null {
+    color: var(--ayu-accent-purple);
+    font-weight: 600;
+    font-style: italic;
+}
+
+.json-editor-highlight .json-bracket {
+    color: var(--ayu-text-secondary);
+    font-weight: 600;
+}
+
+.json-editor-highlight .json-punctuation {
+    color: var(--ayu-text-tertiary);
+}

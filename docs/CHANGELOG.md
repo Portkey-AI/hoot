@@ -43,9 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New `src/lib/backendClient.ts` for backend API communication
   - Frontend no longer makes direct connections to MCP servers (eliminates CORS)
 
-- **Configuration**: Updated Vite config and removed CORS proxy
+- **Configuration**: Updated Vite config
   - Explicit frontend port configuration (5173)
-  - Removed http-proxy-middleware (no longer needed with backend relay)
 
 ### Fixed
 - **CORS Errors**: Completely eliminated CORS errors by moving MCP client to Node.js backend

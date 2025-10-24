@@ -13,7 +13,6 @@ Browser → [MCP SDK Client] → MCP Server (CORS errors!)
 
 Problems:
 - ❌ CORS errors with most MCP servers
-- ❌ Required CORS proxy workaround
 - ❌ Credentials exposed in browser
 - ❌ No persistent connections
 
@@ -68,14 +67,6 @@ npm run backend
 npm run dev
 ```
 
-### Old Proxy Method (Deprecated)
-
-The old CORS proxy is still available but **not needed anymore**:
-```bash
-npm run dev:with-proxy  # Don't use this
-```
-
-The backend relay is superior and should be used instead.
 
 ## API Changes
 
@@ -186,7 +177,7 @@ npm run dev:with-proxy
 ```bash
 npm run dev:full
 # Wait for backend + UI
-# Connect to servers (no toggle needed)
+# Connect to servers
 ```
 
 Simpler and more reliable!
@@ -205,15 +196,7 @@ Simpler and more reliable!
 
 ## Rollback (if needed)
 
-If you need to go back to the old architecture:
-
-```bash
-git checkout HEAD~1 src/lib/mcpClient.ts
-rm mcp-backend-server.js src/lib/backendClient.ts
-npm run dev:with-proxy
-```
-
-But you shouldn't need to - the new architecture is better in every way!
+If you need to go back to the old architecture, contact the maintainers for assistance.
 
 ## Next Steps
 
