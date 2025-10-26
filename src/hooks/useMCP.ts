@@ -118,8 +118,12 @@ export function useMCPConnection() {
             });
 
             // Show toast for non-OAuth errors
+            // During OAuth callback flow, we shouldn't show toasts as the callback page handles the UI
             const isOAuthFlow = finalErrorMessage.includes('OAuth authorization required') ||
                 finalErrorMessage.includes('Redirecting to authorization') ||
+                finalErrorMessage.includes('Code verifier') ||
+                finalErrorMessage.includes('PKCE') ||
+                !!authorizationCode || // We're in the OAuth callback flow
                 error instanceof UnauthorizedError;
 
             if (!isOAuthFlow) {

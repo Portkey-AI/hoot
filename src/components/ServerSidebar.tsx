@@ -6,6 +6,7 @@ import { NoServersState } from './EmptyState';
 import { toast } from '../stores/toastStore';
 import type { ServerConfig } from '../types';
 import packageJson from '../../package.json';
+import * as backendClient from '../lib/backendClient';
 import './ServerSidebar.css';
 
 interface ServerSidebarProps {
@@ -177,12 +178,20 @@ const ServerItem = memo(function ServerItem({
 
         if (!server.auth) return;
 
-        // Clear OAuth tokens if OAuth
+        // Clear OAuth tokens from backend database if OAuth
         if (server.auth.type === 'oauth') {
+            try {
+                await backendClient.clearOAuthTokens(server.id);
+                console.log(`🔐 Cleared OAuth credentials from backend for ${server.name}`);
+            } catch (error) {
+                console.error('Failed to clear OAuth tokens from backend:', error);
+                // Continue anyway - clear frontend state
+            }
+
+            // Also clear any stale frontend state (legacy)
             localStorage.removeItem(`oauth_tokens_${server.id}`);
             localStorage.removeItem(`oauth_client_${server.id}`);
             sessionStorage.removeItem(`oauth_verifier_${server.id}`);
-            console.log(`🔐 Cleared OAuth credentials for ${server.name}`);
         }
 
         // Disconnect server
@@ -203,8 +212,17 @@ const ServerItem = memo(function ServerItem({
             await disconnect(server.id);
         }
 
-        // Clear auth state
+        // Clear OAuth tokens from backend database if OAuth
         if (server.auth?.type === 'oauth') {
+            try {
+                await backendClient.clearOAuthTokens(server.id);
+                console.log(`🔐 Cleared OAuth tokens from backend for re-authentication: ${server.name}`);
+            } catch (error) {
+                console.error('Failed to clear OAuth tokens from backend:', error);
+                // Continue anyway
+            }
+
+            // Also clear any stale frontend state (legacy)
             localStorage.removeItem(`oauth_tokens_${server.id}`);
             sessionStorage.removeItem(`oauth_verifier_${server.id}`);
         }

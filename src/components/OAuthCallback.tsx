@@ -31,33 +31,54 @@ export function OAuthCallback() {
 
             // Check for errors from OAuth provider
             if (error) {
-                throw new Error(errorDescription || `OAuth error: ${error}`);
+                // Provide user-friendly error messages based on OAuth error codes
+                const friendlyErrors: Record<string, string> = {
+                    'access_denied': 'Authorization was cancelled or denied. You can try again if you change your mind.',
+                    'invalid_request': 'Invalid OAuth request. The server may have incorrect OAuth configuration.',
+                    'unauthorized_client': 'This client is not authorized. Please check the server\'s OAuth client ID configuration.',
+                    'unsupported_response_type': 'OAuth configuration error. The server may not support the required response type.',
+                    'invalid_scope': 'The requested permissions are invalid or not available.',
+                    'server_error': 'The authorization server encountered an error. Please try again later.',
+                    'temporarily_unavailable': 'The authorization server is temporarily unavailable. Please try again in a few moments.',
+                };
+
+                const friendlyMessage = friendlyErrors[error] || errorDescription || `OAuth error: ${error}`;
+                throw new Error(friendlyMessage);
             }
 
             // Validate authorization code
             if (!code) {
-                throw new Error('No authorization code received');
+                throw new Error('No authorization code was received from the OAuth provider. This may indicate a configuration issue with the server.');
             }
 
             // Get the server ID that initiated OAuth (check both keys for compatibility)
             const serverId = sessionStorage.getItem('oauth_server_id') || sessionStorage.getItem('oauth_pending_server');
             if (!serverId) {
-                throw new Error('OAuth session expired. Please try connecting again.');
+                throw new Error('OAuth session expired. Please return to Hoot and try connecting again.');
             }
 
             // Find the server
             const server = getServers.find(s => s.id === serverId);
             if (!server) {
-                throw new Error('Server not found. It may have been deleted.');
+                throw new Error('Server not found. It may have been deleted while you were authorizing.');
             }
 
             setMessage(`Exchanging authorization code for ${server.name}...`);
 
             // The SDK will handle the token exchange via the transport's finishAuth method
             // We need to connect with the authorization code
-            const success = await connect(server, code);
+            let success = false;
+            let connectionError: Error | null = null;
 
-            // For OAuth flows, even if connect returns false, the backend might be
+            try {
+                success = await connect(server, code);
+            } catch (err) {
+                // Catch but don't immediately show error - we'll check if connection succeeded anyway
+                connectionError = err instanceof Error ? err : new Error('Connection failed');
+                console.log('Connection error during OAuth callback:', connectionError);
+            }
+
+            // For OAuth flows, even if connect returns false or throws, the backend might be
             // processing the connection asynchronously. Give it a moment to complete.
             if (!success) {
                 // Wait a bit and check again
@@ -73,7 +94,9 @@ export function OAuthCallback() {
                     setMessage(`✓ Successfully authorized ${server.name}!`);
                 } else {
                     // Still not connected, this is a real failure
-                    throw new Error('Failed to complete OAuth flow - please try reconnecting');
+                    // Use the original error message if available
+                    const errorMsg = connectionError?.message || 'Failed to complete OAuth connection. The token exchange may have failed. Please try reconnecting.';
+                    throw new Error(errorMsg);
                 }
             } else {
                 setStatus('success');
@@ -94,13 +117,35 @@ export function OAuthCallback() {
         } catch (error) {
             console.error('OAuth callback error:', error);
             setStatus('error');
-            setMessage(error instanceof Error ? error.message : 'OAuth authorization failed');
+
+            // Enhanced error messaging with helpful context
+            let errorMessage = 'OAuth authorization failed';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+
+                // Add helpful context for common error scenarios
+                if (errorMessage.includes('Code verifier') || errorMessage.includes('PKCE')) {
+                    errorMessage = 'Token exchange failed: PKCE verification error. The authorization session may have expired. Please try connecting again.';
+                } else if (errorMessage.includes('Backend server is not running')) {
+                    errorMessage = 'Unable to complete authorization: Backend server is not running. Please ensure the backend is started.';
+                } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+                    errorMessage = 'Network error during token exchange. Please check your internet connection and try again.';
+                } else if (errorMessage.includes('401') || errorMessage.includes('invalid_client')) {
+                    errorMessage = 'Token exchange failed: Invalid client credentials. Please verify the OAuth configuration (client ID and secret) for this server.';
+                } else if (errorMessage.includes('invalid_grant') || errorMessage.includes('authorization code')) {
+                    errorMessage = 'Token exchange failed: The authorization code is invalid or expired. This can happen if you took too long to authorize. Please try connecting again.';
+                } else if (errorMessage.includes('CORS')) {
+                    errorMessage = 'Token exchange failed due to CORS restrictions. The server needs to allow requests from this domain.';
+                }
+            }
+
+            setMessage(errorMessage);
         }
     };
 
     return (
         <div className="oauth-callback">
-            <div className="oauth-callback-content">
+            <div className={`oauth-callback-content ${status === 'error' ? 'error' : ''}`}>
                 <div className="oauth-icon">
                     {status === 'processing' && <div className="spinner">🦉</div>}
                     {status === 'success' && <div className="success-icon">✓</div>}

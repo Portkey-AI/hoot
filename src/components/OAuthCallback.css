@@ -18,6 +18,11 @@
     animation: fadeIn 0.3s ease-out;
 }
 
+.oauth-callback-content.error {
+    border-color: var(--red-500);
+    background: rgba(239, 68, 68, 0.05);
+}
+
 .oauth-icon {
     font-size: 72px;
     margin-bottom: 32px;
@@ -54,9 +59,11 @@
     color: var(--text-secondary);
     margin-bottom: 32px;
     line-height: 1.6;
-    max-width: 400px;
+    max-width: 450px;
     margin-left: auto;
     margin-right: auto;
+    white-space: pre-line;
+    word-wrap: break-word;
 }
 
 .oauth-redirect {

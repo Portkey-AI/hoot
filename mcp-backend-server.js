@@ -326,15 +326,30 @@ app.post('/mcp/connect', async (req, res) => {
                 },
 
                 saveCodeVerifier: async (verifier) => {
+                    console.log(`🔐 Saving code verifier for ${serverId} (length: ${verifier.length})`);
                     db.prepare('INSERT OR REPLACE INTO oauth_verifiers (server_id, verifier, created_at) VALUES (?, ?, ?)')
                         .run(serverId, verifier, Math.floor(Date.now() / 1000));
+                    // Force write to disk immediately
+                    db.pragma('wal_checkpoint(PASSIVE)');
+                    console.log(`✅ Code verifier saved successfully for ${serverId}`);
                 },
 
                 codeVerifier: async () => {
                     const row = db.prepare('SELECT verifier FROM oauth_verifiers WHERE server_id = ?').get(serverId);
                     if (!row) {
-                        throw new Error('Code verifier not found');
+                        console.error(`❌ Code verifier not found for ${serverId}`);
+                        console.error(`   This may indicate:
+   1. The OAuth session was not initiated from this backend instance
+   2. The verifier was cleaned up (older than 10 minutes)
+   3. Database write failed during initial OAuth flow`);
+
+                        // Log all verifiers for debugging
+                        const allVerifiers = db.prepare('SELECT server_id, created_at FROM oauth_verifiers').all();
+                        console.error(`   Current verifiers in DB:`, allVerifiers);
+
+                        throw new Error('Code verifier not found for this OAuth session. Please try reconnecting.');
                     }
+                    console.log(`🔐 Retrieved code verifier for ${serverId}`);
                     return row.verifier;
                 },
 
@@ -585,6 +600,47 @@ app.post('/mcp/disconnect', async (req, res) => {
         res.status(500).json({
             success: false,
             error: error.message || 'Disconnect failed',
+        });
+    }
+});
+
+/**
+ * Clear OAuth tokens from backend database
+ * POST /mcp/clear-oauth-tokens
+ * Body: { serverId: string }
+ */
+app.post('/mcp/clear-oauth-tokens', authenticateRequest, async (req, res) => {
+    try {
+        const { serverId } = req.body;
+
+        if (!serverId) {
+            return res.status(400).json({
+                success: false,
+                error: 'serverId is required',
+            });
+        }
+
+        console.log(`🔐 Clearing OAuth tokens for server: ${serverId}`);
+
+        // Clear tokens, client info, and verifier from database
+        db.prepare('DELETE FROM oauth_tokens WHERE server_id = ?').run(serverId);
+        db.prepare('DELETE FROM oauth_client_info WHERE server_id = ?').run(serverId);
+        db.prepare('DELETE FROM oauth_verifiers WHERE server_id = ?').run(serverId);
+
+        // Force write to disk
+        db.pragma('wal_checkpoint(PASSIVE)');
+
+        console.log(`✅ OAuth credentials cleared for ${serverId}`);
+
+        res.json({
+            success: true,
+            serverId,
+        });
+    } catch (error) {
+        console.error('❌ Clear OAuth tokens error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to clear OAuth tokens',
         });
     }
 });

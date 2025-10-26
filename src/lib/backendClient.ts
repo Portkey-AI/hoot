@@ -183,6 +183,26 @@ export async function disconnectFromServer(serverId: string): Promise<void> {
 }
 
 /**
+ * Clear OAuth tokens from backend database for a specific server
+ */
+export async function clearOAuthTokens(serverId: string): Promise<void> {
+    try {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/clear-oauth-tokens`, {
+            method: 'POST',
+            body: JSON.stringify({ serverId }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to clear OAuth tokens');
+        }
+    } catch (error) {
+        console.error('Backend clear OAuth tokens error:', error);
+        throw error;
+    }
+}
+
+/**
  * List tools from a connected MCP server
  */
 export async function listTools(serverId: string): Promise<ToolSchema[]> {
