@@ -5,6 +5,98 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-10-25
+
+### Added
+- **Tool State Management**: Persistent state management for tools across sessions
+  - Automatic parameter persistence with debouncing for improved user experience
+  - Execution history tracking (last execution time and execution count)
+  - Visual indicators for tool execution status and saved parameters
+  - localStorage-based storage for tool execution details
+  - New `toolStateStore.ts` for managing tool state
+  - Comprehensive documentation in `TOOL_STATE.md`
+  - Tests for tool state functionality in `tests/test-tool-state.ts`
+
+### Changed
+- Enhanced UI to display tool execution status and saved parameters
+- Improved parameter preservation between sessions
+
+### Documentation
+- Added `TOOL_STATE.md` - Comprehensive documentation for tool state management
+
+## [0.4.0] - 2025-10-25
+
+### Added
+- **"Try in Hoot" Feature**: One-click server integration via shareable links
+  - URL parsing for "Try in Hoot" links (hash-based and query-based formats)
+  - New `TryInHootHandler.tsx` component for handling link-based server additions
+  - Automatic OAuth discovery and token handling
+  - Session token management in backend
+  - Link generation and parsing utilities in `lib/tryInHootLinks.ts`
+  - Comprehensive documentation:
+    - `TRY_IN_HOOT.md` - Complete feature documentation
+    - `TRY_IN_HOOT_QUICKSTART.md` - Quick start guide
+    - `DESIGN_GUIDE.md` - Design guidelines
+    - `SECURITY.md` - Security documentation
+    - `SECURITY_ASSESSMENT.md` - Security assessment
+  - Demo pages:
+    - `try-in-hoot-demo.html` - Interactive demo
+    - `try-in-hoot-generator.html` - Link generator tool
+  - Tests for link generation and parsing
+
+### Changed
+- Enhanced Add Server modal to support automatic OAuth discovery
+- Improved backend authentication flow
+- Updated backend client for better session token management
+- Updated package.json keywords to include "try-in-hoot"
+
+### Documentation
+- Updated README.md with "Try in Hoot" feature information
+
+## [0.3.0] - 2025-10-24
+
+### Added
+- **UI Enhancements**: Modern, polished user interface
+  - Footer component with branding and links
+  - Improved styling across components
+  - Better visual hierarchy and spacing
+  - Enhanced empty state visuals
+
+- **JSON Editing and Viewing**: New components for better data handling
+  - New `JsonEditor.tsx` component with syntax highlighting
+  - New `JsonViewer.tsx` component for formatted JSON display
+  - Improved parameter input and output visualization
+
+### Changed
+- Removed deprecated proxy server (`proxy-server.js`)
+  - Simplified architecture by removing proxy-based connection method
+  - All connections now use the backend relay architecture
+- Enhanced connection error handling
+  - Clearer feedback during OAuth redirects
+  - Better distinction between connection failures and OAuth flows
+- Improved modal styling and user experience
+- Updated database persistence to use home directory (`~/.hoot/hoot-mcp.db`)
+  - Better cross-session persistence
+  - Cleaner workspace directory
+
+### Fixed
+- Server removal on connection failure
+  - Servers with incorrect configuration are now automatically removed
+  - Keeps server list clean and only shows successfully connected servers
+- Improved OAuth redirect handling in Add/Edit Server modals
+
+### Documentation
+- Updated `BACKEND_ARCHITECTURE.md` - Removed proxy references
+- Updated `MIGRATION_GUIDE.md` - Simplified migration path
+- Updated `QUICKSTART.md` - Streamlined quick start without proxy
+- Updated `STORAGE.md` - Documented new storage location
+- Added `PUBLISHING.md` - Publishing guidelines
+
+### Removed
+- `proxy-server.js` and all proxy-related code
+- `src/lib/proxy.ts` - No longer needed with backend architecture
+- Proxy-related npm scripts from package.json
+
 ## [0.2.1] - 2025-10-23
 
 ### Added
@@ -65,14 +157,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `better-sqlite3` for persistent OAuth storage
 - Added `concurrently` for running frontend and backend together
 
-## [0.2.0] - Previous Release
-
-Initial release of Hoot MCP Testing Tool with browser-based MCP client.
-
 ---
 
 ## Version History
 
-- **0.2.1** - Backend relay architecture with persistent OAuth storage
-- **0.2.0** - Initial release
+- **0.4.1** - Tool state management with persistent execution history
+- **0.4.0** - "Try in Hoot" feature for one-click server integration
+- **0.3.0** - UI enhancements, JSON components, and architectural cleanup
+- **0.2.1** - Initial release with backend relay architecture and persistent OAuth storage
 
