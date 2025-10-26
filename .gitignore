@@ -22,6 +22,7 @@ npm-debug.log*
 # IDE
 .vscode/
 .idea/
+.cursor/
 
 # Temporary files
 *.tmp
