@@ -107,11 +107,17 @@ setTimeout(async () => {
     const srcExists = existsSync(join(rootDir, 'src'));
     const mode = srcExists ? 'development' : 'production';
 
-    console.log(`🌐 Starting frontend in ${mode} mode on port 8009...`);
+    // Get frontend port from environment or use default
+    const frontendPort = process.env.FRONTEND_PORT || process.env.PORT || '8009';
+    const shouldOpenBrowser = process.env.NODE_ENV !== 'production';
+
+    console.log(`🌐 Starting frontend in ${mode} mode on port ${frontendPort}...`);
 
     // Start vite - use dev mode if src exists, preview mode if using built dist/
     const viteCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    const viteArgs = srcExists ? ['vite', '--open'] : ['vite', 'preview', '--open', '--port', '8009'];
+    const viteArgs = srcExists
+        ? (shouldOpenBrowser ? ['vite', '--open'] : ['vite'])
+        : ['vite', 'preview', '--port', frontendPort, '--host', '0.0.0.0', ...(shouldOpenBrowser ? ['--open'] : [])];
 
     const frontend = spawn(viteCommand, viteArgs, {
         cwd: rootDir,
@@ -149,13 +155,12 @@ setTimeout(async () => {
 
     // Wait a bit for frontend to fully start, then show success message
     setTimeout(() => {
-        const port = srcExists ? 8009 : 8010;
         console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Hoot is running!
    
    Backend:  http://localhost:8008
-   Frontend: http://localhost:${port}
+   Frontend: http://localhost:${frontendPort}
    
    Press Ctrl+C to stop
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
