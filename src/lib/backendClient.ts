@@ -5,7 +5,9 @@
 
 import type { ServerConfig, ToolSchema } from '../types';
 
-const BACKEND_URL = 'http://localhost:8008';
+// Support both local development and production deployment
+// In production, VITE_BACKEND_URL should be set to the Railway backend URL
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8008';
 
 // Session token for authentication
 let sessionToken: string | null = null;

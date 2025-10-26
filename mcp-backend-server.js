@@ -10,15 +10,23 @@ import { mkdirSync, existsSync, appendFileSync } from 'fs';
 import { randomBytes } from 'crypto';
 
 const app = express();
-const PORT = 8008;
+const PORT = process.env.PORT || 8008;
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8009';
 
 // Generate session token for authentication
 // This provides protection against unauthorized localhost access
 const SESSION_TOKEN = process.env.HOOT_SESSION_TOKEN || randomBytes(32).toString('hex');
 
 // Enable CORS for browser app
+// In production, FRONTEND_URL should be set to your deployed frontend URL
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8009',
+    ...(FRONTEND_URL !== 'http://localhost:8009' ? [FRONTEND_URL] : [])
+];
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:8009'], // Vite dev server ports
+    origin: allowedOrigins,
     credentials: true,
 }));
 
@@ -147,9 +155,13 @@ app.use(authenticateRequest);
 app.get('/auth/token', (req, res) => {
     // Only allow requests from configured CORS origins
     const origin = req.headers.origin;
-    const allowedOrigins = ['http://localhost:3000', 'http://localhost:8009'];
+    const allowedOriginsForToken = [
+        'http://localhost:3000',
+        'http://localhost:8009',
+        ...(FRONTEND_URL !== 'http://localhost:8009' ? [FRONTEND_URL] : [])
+    ];
 
-    if (!origin || !allowedOrigins.includes(origin)) {
+    if (!origin || !allowedOriginsForToken.includes(origin)) {
         logAuditEvent('token_request_denied', {
             origin,
             ip: req.ip
@@ -229,7 +241,7 @@ app.post('/mcp/connect', async (req, res) => {
         } else if (auth && auth.type === 'oauth') {
             // Create OAuth provider that works in Node.js (no localStorage)
             // Uses in-memory Maps instead
-            const callbackUrl = 'http://localhost:8009/oauth/callback';
+            const callbackUrl = `${FRONTEND_URL}/oauth/callback`;
 
             // Load existing client info if available to reuse client_id
             const existingClientInfo = (() => {
@@ -249,7 +261,7 @@ app.post('/mcp/connect', async (req, res) => {
                 get clientMetadata() {
                     return {
                         client_name: 'Hoot MCP Testing Tool',
-                        client_uri: 'http://localhost:8009',
+                        client_uri: FRONTEND_URL,
                         redirect_uris: [callbackUrl],
                         grant_types: ['authorization_code', 'refresh_token'],
                         response_types: ['code'],
@@ -446,7 +458,7 @@ app.post('/mcp/discover-oauth', async (req, res) => {
 
         // Create a temporary transport with OAuth provider
         const tempServerId = `temp-${Date.now()}`;
-        const callbackUrl = 'http://localhost:8009/oauth/callback';
+        const callbackUrl = `${FRONTEND_URL}/oauth/callback`;
 
         const transportOptions = {
             authProvider: {
@@ -457,7 +469,7 @@ app.post('/mcp/discover-oauth', async (req, res) => {
                 get clientMetadata() {
                     return {
                         client_name: 'Hoot MCP Testing Tool',
-                        client_uri: 'http://localhost:8009',
+                        client_uri: FRONTEND_URL,
                         redirect_uris: [callbackUrl],
                         grant_types: ['authorization_code', 'refresh_token'],
                         response_types: ['code'],
