@@ -35,7 +35,7 @@ hoot
 - view responses
 - oauth 2.1 if your server needs it
 - copy stuff to clipboard
-- **🚀 "try in hoot" links** - share one-click server configs ([docs](./docs/TRY_IN_HOOT.md))
+- **🦉 "try in hoot" links** - share servers with just a URL, auto-detection magic! ([docs](./docs/TRY_IN_HOOT.md))
 
 ## how it works
 

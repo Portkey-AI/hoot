@@ -25,7 +25,18 @@ export const ConfirmDialog = memo(function ConfirmDialog({
         <div className="modal-overlay" onClick={onCancel}>
             <div className="modal modal-small" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>{title}</h2>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                    }}>
+                        <span style={{
+                            fontSize: '24px',
+                            filter: 'drop-shadow(0 2px 8px rgba(92, 207, 230, 0.3))'
+                        }}>🦉</span>
+                        <h2 style={{ margin: 0, fontSize: '20px' }}>{title}</h2>
+                    </div>
                 </div>
 
                 <div className="modal-body">

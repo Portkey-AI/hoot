@@ -1,20 +1,43 @@
-# Quick Start: "Try in Hoot" Feature
+# Quick Start: "Try in Hoot" Feature 🦉
 
 ## For Users
 
 Click any "Try in Hoot" link to instantly add an MCP server:
 
 1. Click a "Try in Hoot" button/link
-2. Review server details in the confirmation dialog
-3. Click "Add & Connect"
-4. Start using the server!
+2. See the friendly Hoot owl 🦉 and server details
+3. Watch auto-detection work its magic (if just a URL was provided)
+4. Click "Add & Connect" or "Authorize →" for OAuth servers
+5. Start using the server!
 
 **Example link to try:**
 ```
-http://localhost:8009/?try=eyJuYW1lIjoiV2VhdGhlciBNQ1AgU2VydmVyIiwidHJhbnNwb3J0IjoiaHR0cCIsInVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJ9
+http://localhost:8009/?try=eyJ1cmwiOiJodHRwczovL21jcC5kZWVwd2lraS5jb20vc3NlIn0=
 ```
 
 ## For MCP Server Authors
+
+### The Easiest Way: Just Share Your URL
+
+The simplest "Try in Hoot" link:
+
+```bash
+# Just your server URL
+config='{"url":"https://mcp.yourserver.com"}'
+
+# Base64 encode
+encoded=$(echo -n "$config" | base64)
+
+# Create URL
+echo "https://hoot.app/?try=$encoded"
+```
+
+Hoot will auto-detect:
+- ✅ Transport type (HTTP or SSE)
+- ✅ Server name and version
+- ✅ OAuth requirements
+
+That's it! No need to specify everything manually.
 
 ### 1. Generate Your Link
 
@@ -82,7 +105,16 @@ A powerful MCP server for doing X, Y, and Z.
 
 ## Configuration Examples
 
-### Simple HTTP Server
+### Simplest: Just URL (Recommended!)
+```json
+{
+  "url": "https://mcp.deepwiki.com/sse"
+}
+```
+
+Let Hoot handle the rest with auto-detection!
+
+### Full Config: HTTP Server
 ```json
 {
   "name": "Weather Server",
@@ -91,58 +123,56 @@ A powerful MCP server for doing X, Y, and Z.
 }
 ```
 
-### Server with API Key
+### OAuth Server (Can Be Simple Too!)
 ```json
 {
-  "name": "GitHub Server",
-  "transport": "http",
-  "url": "https://api.example.com",
-  "auth": {
-    "type": "headers",
-    "headers": {
-      "Authorization": "Bearer DEMO_TOKEN"
-    }
-  }
+  "url": "https://mcp.notion.com"
 }
 ```
 
-**⚠️ Important:** Use demo/placeholder tokens only! Never share real credentials.
+Hoot auto-detects OAuth and shows "Authorize →" button!
 
-### Server with OAuth
+Or with explicit config:
 ```json
 {
-  "name": "Google Drive",
+  "name": "Notion",
   "transport": "http",
-  "url": "https://drive-mcp.example.com",
+  "url": "https://mcp.notion.com",
   "auth": {
     "type": "oauth"
   }
 }
 ```
 
-### SSE Server
-```json
-{
-  "name": "Real-time Server",
-  "transport": "sse",
-  "url": "https://events.example.com"
-}
-```
-
 ## Security Best Practices
 
 ✅ **DO:**
-- Use descriptive server names
+- Keep it simple: just share the URL and let Hoot auto-detect
+- Use descriptive server names (if providing full config)
 - Test links before sharing
 - Use OAuth for production servers
 - Document what your server does
 - Provide setup instructions for API keys
 
 ❌ **DON'T:**
-- Include real API keys or secrets
+- Include real API keys or secrets in links
 - Share production credentials
 - Use unencrypted HTTP for sensitive data
 - Link to untrusted servers
+
+## What Users Will See
+
+When someone clicks your "Try in Hoot" link:
+
+1. **Friendly Welcome**: Hoot owl 🦉 greets them with "Try in Hoot - Add this server to get started"
+2. **Auto-Detection Magic** (if URL-only):
+   - Finding your server ✓
+   - Checking how to connect ✓
+   - Getting server details ✓
+   - Checking if login is needed ✓
+3. **Clean Display**: Modern card with cyan accents showing all detected info
+4. **Clear Action**: "Add & Connect" button (or "Authorize →" for OAuth)
+5. **Security Note**: Gentle reminder "Only add servers from trusted sources"
 
 ## Full Documentation
 

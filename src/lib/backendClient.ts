@@ -112,6 +112,50 @@ export async function discoverOAuth(
 }
 
 /**
+ * Auto-detect server configuration
+ * Tries different transports and extracts server info
+ */
+export async function autoDetectServer(
+    url: string
+): Promise<{
+    success: boolean;
+    serverInfo?: { name: string; version: string; authMethods?: string[] };
+    transport?: 'http' | 'sse';
+    requiresOAuth?: boolean;
+    requiresClientCredentials?: boolean;
+    error?: string
+}> {
+    try {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/auto-detect`, {
+            method: 'POST',
+            body: JSON.stringify({ url }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            return {
+                success: false,
+                error: data.error || 'Auto-detection failed'
+            };
+        }
+
+        return {
+            success: true,
+            serverInfo: data.serverInfo,
+            transport: data.transport,
+            requiresOAuth: data.requiresOAuth || false,
+        };
+    } catch (error) {
+        console.error('Auto-detect error:', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Auto-detection failed'
+        };
+    }
+}
+
+/**
  * Check if backend server is running
  */
 export async function isBackendAvailable(): Promise<boolean> {
@@ -273,6 +317,27 @@ export async function getConnectionStatus(serverId: string): Promise<boolean> {
     } catch (error) {
         console.error('Backend status check error:', error);
         return false;
+    }
+}
+
+/**
+ * Get server information (name, version) from a connected server
+ */
+export async function getServerInfo(serverId: string): Promise<{ name: string; version: string } | null> {
+    try {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/server-info/${serverId}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return data.serverInfo;
+    } catch (error) {
+        console.error('Backend get server info error:', error);
+        return null;
     }
 }
 

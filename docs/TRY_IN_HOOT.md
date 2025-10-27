@@ -1,14 +1,24 @@
-# Try in Hoot
+# Try in Hoot 🦉
 
-The "Try in Hoot" feature allows users to add MCP servers to Hoot with a single click. This is perfect for sharing MCP servers, adding quick-start examples to documentation, or building galleries of available servers.
+The "Try in Hoot" feature allows users to add MCP servers with a single click. Perfect for sharing servers, quick-start examples, or building galleries of available MCP servers.
 
 ## How It Works
 
 When a user clicks a "Try in Hoot" link:
 
 1. Hoot opens and parses the server configuration from the URL
-2. A confirmation dialog shows the server details (for security)
-3. User confirms and Hoot adds the server and connects automatically
+2. A friendly confirmation modal shows the server details (with Hoot branding! 🦉)
+3. User confirms and Hoot adds and connects to the server automatically
+4. If OAuth is required, the user is redirected to authorize
+
+## Quick Start
+
+Users can also provide just a URL and Hoot will auto-detect everything:
+- Transport type (HTTP or SSE)
+- Server name and version
+- OAuth requirements
+
+This makes sharing servers even easier!
 
 ## URL Format
 
@@ -20,7 +30,22 @@ https://hoot.app/?try=<base64-encoded-config>
 
 ### Configuration Format
 
-The JSON configuration has the following structure:
+The JSON configuration can be **simple** (just a URL) or **detailed**:
+
+#### Simple Mode (Auto-Detection)
+
+```json
+{
+  "url": "https://mcp.example.com"
+}
+```
+
+Hoot will automatically detect:
+- Transport type (tries HTTP, then SSE)
+- Server name and version
+- OAuth requirements
+
+#### Full Configuration Mode
 
 ```json
 {
@@ -38,15 +63,15 @@ The JSON configuration has the following structure:
 ```
 
 **Required fields:**
-- `name`: Display name for the server
-- `transport`: Transport type (`http`, `sse`, or `stdio`)
+- Simple mode: Just `url`
+- Full mode: `name` and `transport`
 
 **Transport-specific fields:**
 - `url`: Required for `http` and `sse` transports
 - `command`: Required for `stdio` transport
 
 **Optional fields:**
-- `auth`: Authentication configuration (see below)
+- `auth`: Authentication configuration
 
 ## Generating Links
 
@@ -127,6 +152,21 @@ const markdown = generateTryInHootMarkdown({
 
 ## Examples
 
+### Simplest: Just a URL (Recommended!)
+
+```json
+{
+  "url": "https://mcp.deepwiki.com/sse"
+}
+```
+
+**Link:** [Try DeepWiki](https://hoot.app/?try=eyJ1cmwiOiJodHRwczovL21jcC5kZWVwd2lraS5jb20vc3NlIn0=)
+
+Hoot will automatically:
+- Detect it uses SSE transport
+- Get the server name "DeepWiki"
+- Connect seamlessly
+
 ### Simple HTTP Server
 
 ```json
@@ -159,16 +199,24 @@ const markdown = generateTryInHootMarkdown({
 
 ```json
 {
-  "name": "Google Drive MCP",
+  "url": "https://mcp.notion.com"
+}
+```
+
+or with explicit config:
+
+```json
+{
+  "name": "Notion MCP",
   "transport": "http",
-  "url": "https://drive-mcp.example.com",
+  "url": "https://mcp.notion.com",
   "auth": {
     "type": "oauth"
   }
 }
 ```
 
-**Note:** For OAuth servers, users will be prompted to authenticate through the OAuth flow after adding the server.
+**Note:** Hoot auto-detects OAuth! Users will see "Authorize →" button and be redirected through the OAuth flow.
 
 ### SSE Server
 
@@ -204,11 +252,12 @@ MCP servers can:
 - Make network requests
 - Interact with APIs on your behalf
 
-Hoot shows a confirmation dialog before adding any server from a link, displaying:
-- Server name
+Hoot shows a friendly confirmation modal (with our owl mascot 🦉) before adding any server, displaying:
+- Server name (auto-detected or provided)
 - Transport type
 - URL/command
 - Authentication requirements
+- A friendly reminder: "Only add servers from trusted sources"
 
 Always review this information carefully before confirming.
 
@@ -347,11 +396,26 @@ Or add manually:
 
 ## Best Practices
 
-1. **Test your links** before sharing them
-2. **Use descriptive names** for your servers
-3. **Document prerequisites** (API keys, permissions, etc.)
-4. **Keep links updated** if your server configuration changes
-5. **Consider hosting a landing page** with server information and the "Try in Hoot" button
+1. **Keep it simple**: Just provide the URL and let Hoot auto-detect the rest
+2. **Test your links** before sharing them
+3. **Use descriptive names** if providing full configuration
+4. **Document prerequisites** (API keys, permissions, etc.)
+5. **Keep links updated** if your server configuration changes
+6. **Consider hosting a landing page** with server information and the "Try in Hoot" button
+
+## User Experience
+
+When users click a "Try in Hoot" link, they'll see:
+
+1. **Welcome Modal**: Hoot's friendly owl 🦉 greets them with "Try in Hoot"
+2. **Auto-Detection**: If only URL provided, Hoot shows detection progress:
+   - Finding your server
+   - Checking how to connect
+   - Getting server details
+   - Checking if login is needed
+3. **Server Info Display**: Clean, modern card showing detected info
+4. **Simple Actions**: Clear "Add & Connect" or "Authorize →" button
+5. **Smooth Connection**: Automatic connection with OAuth redirect if needed
 
 ## Future Enhancements
 

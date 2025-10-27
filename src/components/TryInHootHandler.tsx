@@ -73,9 +73,19 @@ function validateServerConfig(config: any): ServerConfigImport | null {
         throw new Error('Config must be an object');
     }
 
-    // Validate required fields
+    // Simple mode: just URL (let Hoot auto-detect everything)
+    if (config.url && !config.name && !config.transport) {
+        return {
+            name: '', // Will be auto-detected
+            transport: 'http' as TransportType, // Placeholder, will auto-detect
+            url: config.url,
+            ...(config.auth && { auth: config.auth }),
+        };
+    }
+
+    // Validate required fields for full mode
     if (!config.name || typeof config.name !== 'string') {
-        throw new Error('Config must include a "name" string');
+        throw new Error('Config must include a "name" string (or just provide URL for auto-detection)');
     }
 
     if (!config.transport || !['stdio', 'sse', 'http'].includes(config.transport)) {
@@ -93,8 +103,8 @@ function validateServerConfig(config: any): ServerConfigImport | null {
 
     // Validate auth if present
     if (config.auth) {
-        if (!config.auth.type || !['none', 'headers', 'oauth'].includes(config.auth.type)) {
-            throw new Error('Invalid auth type');
+        if (!config.auth.type || !['none', 'headers', 'oauth', 'client_credentials'].includes(config.auth.type)) {
+            console.warn(`Unknown auth type: ${config.auth.type}, but allowing it for future compatibility`);
         }
 
         if (config.auth.type === 'headers' && !config.auth.headers) {
@@ -120,27 +130,40 @@ interface ConfirmAddServerProps {
 function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps) {
     return createPortal(
         <div className="modal-overlay">
-            <div className="modal" style={{ maxWidth: '540px' }}>
+            <div className="modal" style={{ maxWidth: '520px' }}>
                 <div className="modal-header">
-                    <h2>🦉 Try in Hoot</h2>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        marginBottom: '8px'
+                    }}>
+                        <span style={{
+                            fontSize: '28px',
+                            filter: 'drop-shadow(0 2px 8px rgba(92, 207, 230, 0.3))'
+                        }}>🦉</span>
+                        <h2 style={{ margin: 0 }}>Try in Hoot</h2>
+                    </div>
+                    <p style={{
+                        textAlign: 'center',
+                        color: 'var(--text-secondary)',
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        marginTop: '4px',
+                        marginBottom: '24px'
+                    }}>
+                        Add this server to get started
+                    </p>
                 </div>
 
                 <div className="modal-body">
-                    <p style={{
-                        marginBottom: '20px',
-                        color: 'var(--text-primary)',
-                        fontSize: '14px',
-                        lineHeight: '1.5'
-                    }}>
-                        Add this MCP server to Hoot?
-                    </p>
-
                     <div style={{
-                        background: 'var(--bg-tertiary)',
+                        background: 'rgba(31, 36, 48, 0.6)',
                         padding: '20px',
-                        borderRadius: 'var(--radius-md)',
+                        borderRadius: '10px',
                         marginBottom: '20px',
-                        border: '1px solid var(--border-color)'
+                        border: '2px solid rgba(92, 207, 230, 0.2)'
                     }}>
                         <ServerDetail
                             label="Server Name"
@@ -184,18 +207,18 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
                     </div>
 
                     <div style={{
-                        background: 'rgba(255, 174, 87, 0.1)',
-                        border: '1px solid rgba(255, 174, 87, 0.3)',
+                        background: 'rgba(255, 174, 87, 0.08)',
+                        border: '1px solid rgba(255, 174, 87, 0.25)',
                         padding: '12px 14px',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: '13px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
                         lineHeight: '1.5',
-                        color: 'var(--orange-500)',
+                        color: 'rgba(255, 174, 87, 0.9)',
                         display: 'flex',
                         gap: '10px'
                     }}>
                         <span style={{ flexShrink: 0 }}>⚠️</span>
-                        <span>Only add servers from sources you trust. MCP servers can execute code and access resources on your behalf.</span>
+                        <span>Only add servers from trusted sources</span>
                     </div>
                 </div>
 
@@ -224,10 +247,10 @@ interface ServerDetailProps {
 
 function ServerDetail({ label, value, icon, mono, badge, isLast }: ServerDetailProps) {
     return (
-        <div style={{ marginBottom: isLast ? '0' : '16px' }}>
+        <div style={{ marginBottom: isLast ? '0' : '14px' }}>
             <div style={{
-                color: 'var(--text-secondary)',
-                fontSize: '12px',
+                color: 'var(--blue-500)',
+                fontSize: '11px',
                 fontWeight: 600,
                 marginBottom: '6px',
                 textTransform: 'uppercase',
@@ -248,12 +271,12 @@ function ServerDetail({ label, value, icon, mono, badge, isLast }: ServerDetailP
                 lineHeight: '1.4',
                 ...(badge && {
                     display: 'inline-block',
-                    background: 'var(--bg-hover)',
+                    background: 'rgba(31, 36, 48, 0.8)',
                     padding: '4px 10px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--border-color)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(92, 207, 230, 0.3)',
                     color: 'var(--blue-500)',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: 600,
                 })
             }}>

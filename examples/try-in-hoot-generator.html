@@ -241,19 +241,29 @@
 <body>
     <div class="container">
         <h1><span>🦉</span> Try in Hoot</h1>
-        <p class="subtitle">Generate shareable links for your MCP server</p>
+        <p class="subtitle">Generate shareable links - keep it simple or go detailed</p>
+
+        <div style="background: rgba(92, 207, 230, 0.1); border: 1px solid rgba(92, 207, 230, 0.3); padding: 16px; border-radius: 6px; margin-bottom: 24px; font-size: 13px; line-height: 1.6;">
+            <strong style="color: #5ccfe6;">💡 Pro tip:</strong> For the simplest sharing, just provide the URL! 
+            Hoot will auto-detect transport type, server name, and OAuth requirements. 
+            Use the full form below if you want to specify everything manually.
+        </div>
 
         <form id="generatorForm">
             <div class="form-group">
-                <label for="serverName">Server Name *</label>
-                <input type="text" id="serverName" placeholder="Weather MCP Server" required>
+                <label for="serverName">Server Name (optional - Hoot can auto-detect!)</label>
+                <input type="text" id="serverName" placeholder="Weather MCP Server">
             </div>
 
             <div class="form-group">
-                <label>Transport *</label>
+                <label>Transport (optional - auto-detected from URL)</label>
                 <div class="radio-group">
                     <label class="radio-option">
-                        <input type="radio" name="transport" value="http" checked>
+                        <input type="radio" name="transport" value="" checked>
+                        <span>Auto-detect</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="transport" value="http">
                         <span>HTTP</span>
                     </label>
                     <label class="radio-option">
@@ -333,7 +343,7 @@
             </div>
 
             <div class="warning">
-                ⚠️ Never include real credentials in shared links. Use OAuth for production servers.
+                ⚠️ Keep it simple! Just the URL is usually enough. Hoot auto-detects the rest. Never include real credentials - use OAuth for production servers.
             </div>
         </div>
     </div>
@@ -396,16 +406,19 @@
             const authType = document.querySelector('input[name="auth"]:checked').value;
             const baseUrl = document.getElementById('baseUrl').value || 'https://hoot.app';
 
-            // Build config
-            const config = {
-                name: name,
-                transport: transport,
-            };
-
-            if (transport === 'stdio') {
+            // Build config - simple mode if only URL provided
+            const config = {};
+            
+            // Add URL or command
+            if (transport === 'stdio' && command) {
                 config.command = command;
-            } else {
+                config.transport = 'stdio';
+                if (name) config.name = name;
+            } else if (url) {
                 config.url = url;
+                // Only add these if explicitly set
+                if (name) config.name = name;
+                if (transport) config.transport = transport;
             }
 
             // Add auth if needed

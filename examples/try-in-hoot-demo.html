@@ -294,24 +294,26 @@
         <div class="info-box">
             <h4>💡 How it works</h4>
             <p>
-                Click any "Try in Hoot" button. You'll see a confirmation dialog with server details. Confirm and Hoot
-                connects automatically. No config needed.
+                Click any "Try in Hoot" button. Our friendly owl 🦉 welcomes you with a modern modal. 
+                If the link just has a URL, watch auto-detection work its magic! Click "Add & Connect" 
+                (or "Authorize →" for OAuth) and you're ready to go.
             </p>
         </div>
 
         <div class="info-box warning">
             <h4>🔒 Security first</h4>
             <p>
-                All configs are verified before adding. Never include real credentials in shared links. For auth
-                servers, you'll add your own keys or complete OAuth flows.
+                Hoot shows you what you're adding before you connect - server name, transport, auth requirements. 
+                Only add servers from trusted sources. For OAuth servers, you'll complete a secure authorization flow.
             </p>
         </div>
 
         <div class="info-box">
             <h4>🛠️ Build your own</h4>
-            <p>Want to add a "Try in Hoot" button to your MCP server? Use the generator:</p>
+            <p>Want to add a "Try in Hoot" button? Keep it simple - just share the URL!</p>
+            <div class="code">{"url": "https://mcp.yourserver.com"}</div>
+            <p>Hoot auto-detects transport, name, and OAuth. Or use the full generator:</p>
             <div class="code">examples/try-in-hoot-generator.html</div>
-            <p>Open it in your browser to create your own shareable links.</p>
         </div>
 
         <div class="footer">

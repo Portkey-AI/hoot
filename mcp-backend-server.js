@@ -193,6 +193,213 @@ app.get('/health', (req, res) => {
 });
 
 /**
+ * Auto-detect server configuration
+ * POST /mcp/auto-detect
+ * Body: { url: string }
+ * Returns: { success: boolean, serverInfo?: { name: string, version: string, authMethods?: string[] }, transport?: 'http' | 'sse', requiresOAuth?: boolean, requiresClientCredentials?: boolean, error?: string }
+ */
+app.post('/mcp/auto-detect', async (req, res) => {
+    try {
+        const { url } = req.body;
+
+        if (!url) {
+            return res.status(400).json({
+                success: false,
+                error: 'URL is required'
+            });
+        }
+
+        console.log(`🔍 Auto-detecting configuration for: ${url}`);
+
+        // Try transports in order: HTTP first, then SSE
+        const transportsToTry = ['http', 'sse'];
+        let detectedTransport = null;
+        let serverInfo = null;
+        let requiresOAuth = false;
+        let requiresClientCredentials = false;
+        let lastError = null;
+
+        for (const transport of transportsToTry) {
+            console.log(`🔌 Trying ${transport.toUpperCase()} transport...`);
+
+            try {
+                // Create a temporary transport
+                let mcpTransport;
+                if (transport === 'http') {
+                    mcpTransport = new StreamableHTTPClientTransport(new URL(url));
+                } else {
+                    mcpTransport = new SSEClientTransport(new URL(url));
+                }
+
+                // Create a temporary client
+                const client = new Client(
+                    {
+                        name: 'hoot-backend',
+                        version: '0.2.0',
+                    },
+                    {
+                        capabilities: {},
+                    }
+                );
+
+                // Try to connect
+                await client.connect(mcpTransport);
+
+                // If we get here, connection succeeded!
+                // Extract server info from the connection
+                // The MCP SDK stores server info in the client after initialization
+                const serverVersion = client.getServerVersion();
+                if (serverVersion) {
+                    serverInfo = {
+                        name: serverVersion.name || 'Unknown Server',
+                        version: serverVersion.version || '1.0.0',
+                    };
+
+                    // Check if server advertises auth methods in metadata
+                    // This is a potential future extension to the MCP protocol
+                    if (serverVersion.authMethods && Array.isArray(serverVersion.authMethods)) {
+                        serverInfo.authMethods = serverVersion.authMethods;
+
+                        // Check for specific auth methods
+                        if (serverVersion.authMethods.includes('client_credentials')) {
+                            requiresClientCredentials = true;
+                            console.log(`🔑 Server advertises client_credentials auth`);
+                        }
+                        if (serverVersion.authMethods.includes('oauth') || serverVersion.authMethods.includes('oauth2')) {
+                            requiresOAuth = true;
+                            console.log(`🔐 Server advertises OAuth auth`);
+                        }
+                    }
+                }
+
+                detectedTransport = transport;
+                // Only set requiresOAuth to false if not already detected from metadata
+                if (!requiresOAuth && !requiresClientCredentials) {
+                    requiresOAuth = false;
+                }
+
+                console.log(`✅ Successfully connected with ${transport.toUpperCase()}`);
+                console.log(`📋 Server info:`, serverInfo);
+
+                // Clean up
+                await client.close();
+                break;
+            } catch (error) {
+                console.log(`❌ ${transport.toUpperCase()} failed:`, error.message);
+
+                // Check if it's an OAuth error
+                const isOAuthError = error.name === 'UnauthorizedError' ||
+                    (error.message && error.message.includes('401'));
+
+                if (isOAuthError) {
+                    console.log(`🔐 OAuth detected for ${transport.toUpperCase()}`);
+                    detectedTransport = transport;
+                    requiresOAuth = true;
+
+                    // For OAuth servers, we need to at least get the server info
+                    // The MCP SDK should provide this even if auth fails
+                    // Try to create a client and attempt connection to get metadata
+                    try {
+                        const authTransport = transport === 'http'
+                            ? new StreamableHTTPClientTransport(new URL(url))
+                            : new SSEClientTransport(new URL(url));
+
+                        const authClient = new Client(
+                            { name: 'hoot-backend', version: '0.2.0' },
+                            { capabilities: {} }
+                        );
+
+                        // This will fail with OAuth, but might give us server info
+                        try {
+                            await authClient.connect(authTransport);
+                        } catch (authError) {
+                            // Expected to fail, try to extract info
+                            const serverVersion = authClient.getServerVersion();
+                            if (serverVersion) {
+                                serverInfo = {
+                                    name: serverVersion.name || 'Unknown Server',
+                                    version: serverVersion.version || '1.0.0',
+                                };
+
+                                // Check for auth methods even in OAuth scenario
+                                if (serverVersion.authMethods && Array.isArray(serverVersion.authMethods)) {
+                                    serverInfo.authMethods = serverVersion.authMethods;
+
+                                    if (serverVersion.authMethods.includes('client_credentials')) {
+                                        requiresClientCredentials = true;
+                                        console.log(`🔑 Server advertises client_credentials auth (even with OAuth)`);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (metadataError) {
+                        console.log(`Could not extract server metadata:`, metadataError.message);
+                    }
+
+                    break;
+                }
+
+                lastError = error;
+
+                // Continue to next transport if this one failed
+                continue;
+            }
+        }
+
+        if (!detectedTransport) {
+            return res.status(400).json({
+                success: false,
+                error: lastError?.message || 'Could not connect with any transport method',
+            });
+        }
+
+        // If we couldn't get server info (e.g., OAuth blocked it), extract a name from the URL
+        if (!serverInfo) {
+            try {
+                const urlObj = new URL(url);
+                const hostname = urlObj.hostname;
+
+                // Extract a reasonable name from the hostname
+                // e.g., "mcp.notion.com" -> "Notion"
+                // e.g., "mcp.portkey.ai" -> "Portkey"
+                const parts = hostname.split('.');
+                let extractedName = 'MCP Server';
+
+                if (parts.length >= 2) {
+                    // Get the second-to-last part (usually the company name)
+                    const namePart = parts[parts.length - 2];
+                    // Capitalize first letter
+                    extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+                }
+
+                serverInfo = {
+                    name: extractedName,
+                    version: '1.0.0',
+                };
+
+                console.log(`ℹ️  Could not get server metadata, extracted name from URL: ${extractedName}`);
+            } catch (urlError) {
+                serverInfo = { name: 'MCP Server', version: '1.0.0' };
+            }
+        }
+
+        res.json({
+            success: true,
+            transport: detectedTransport,
+            serverInfo,
+            requiresOAuth,
+            requiresClientCredentials,
+        });
+    } catch (error) {
+        console.error('Auto-detect error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Auto-detection failed',
+        });
+    }
+});
+
+/**
  * Connect to an MCP server
  * POST /mcp/connect
  * Body: {
@@ -453,6 +660,53 @@ app.post('/mcp/connect', async (req, res) => {
             success: false,
             error: error.message || 'Connection failed',
             needsAuth: false,
+        });
+    }
+});
+
+/**
+ * Get server information (name, version) from a connected server
+ * GET /mcp/server-info/:serverId
+ */
+app.get('/mcp/server-info/:serverId', async (req, res) => {
+    try {
+        const { serverId } = req.params;
+
+        const client = clients.get(serverId);
+        if (!client) {
+            return res.status(404).json({
+                success: false,
+                error: 'Server not connected'
+            });
+        }
+
+        // Get server version info from the connected client
+        const serverVersion = client.getServerVersion();
+
+        if (serverVersion) {
+            console.log(`📋 Retrieved server info for ${serverId}:`, {
+                name: serverVersion.name,
+                version: serverVersion.version
+            });
+
+            res.json({
+                success: true,
+                serverInfo: {
+                    name: serverVersion.name,
+                    version: serverVersion.version
+                }
+            });
+        } else {
+            res.json({
+                success: true,
+                serverInfo: null
+            });
+        }
+    } catch (error) {
+        console.error('Get server info error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to get server info'
         });
     }
 });

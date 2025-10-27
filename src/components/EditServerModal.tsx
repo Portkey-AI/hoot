@@ -23,8 +23,22 @@ export const EditServerModal = memo(function EditServerModal({
 
     // Authentication state
     const [authType, setAuthType] = useState<AuthType>(server.auth?.type || 'none');
-    const [headerKey, setHeaderKey] = useState('');
-    const [headerValue, setHeaderValue] = useState('');
+
+    // Multiple headers support
+    const [headers, setHeaders] = useState<Array<{ key: string; value: string }>>(
+        server.auth?.type === 'headers' && server.auth.headers
+            ? Object.entries(server.auth.headers).map(([key, value]) => ({ key, value }))
+            : [{ key: '', value: '' }]
+    );
+
+    // Client credentials
+    const [clientId, setClientId] = useState(server.auth?.type === 'oauth' && 'client_id' in server.auth ? server.auth.client_id as string : '');
+    const [clientSecret, setClientSecret] = useState('');
+    const [tokenUrl, setTokenUrl] = useState(server.auth?.type === 'oauth' && 'token_url' in server.auth ? server.auth.token_url as string : '');
+    const [useClientCredentials, setUseClientCredentials] = useState(
+        !!(server.auth?.type === 'oauth' && 'client_id' in server.auth && server.auth.client_id)
+    );
+
     const [accessToken, setAccessToken] = useState('');
 
     // OAuth discovery state
@@ -87,8 +101,16 @@ export const EditServerModal = memo(function EditServerModal({
         }
 
         // Validate auth config
-        if (authType === 'headers' && (!headerKey.trim() || !headerValue.trim())) {
-            setError('Both header key and value are required for header-based auth');
+        if (authType === 'headers') {
+            const validHeaders = headers.filter(h => h.key.trim() && h.value.trim());
+            if (validHeaders.length === 0) {
+                setError('At least one header with key and value is required for header-based auth');
+                return;
+            }
+        }
+
+        if (authType === 'oauth' && useClientCredentials && (!clientId.trim() || !clientSecret.trim())) {
+            setError('Client ID and Client Secret are required for client credentials auth');
             return;
         }
 
@@ -98,12 +120,20 @@ export const EditServerModal = memo(function EditServerModal({
             auth = { type: authType };
 
             if (authType === 'headers') {
-                auth.headers = {
-                    [headerKey.trim()]: headerValue.trim(),
-                };
+                // Build headers object from array
+                auth.headers = headers
+                    .filter(h => h.key.trim() && h.value.trim())
+                    .reduce((acc, h) => ({ ...acc, [h.key.trim()]: h.value.trim() }), {});
             } else if (authType === 'oauth') {
-                // Only set access token if provided (otherwise SDK will start OAuth flow)
-                if (accessToken.trim()) {
+                if (useClientCredentials && clientId && clientSecret) {
+                    // Client credentials OAuth
+                    (auth as any).client_id = clientId.trim();
+                    (auth as any).client_secret = clientSecret.trim();
+                    if (tokenUrl.trim()) {
+                        (auth as any).token_url = tokenUrl.trim();
+                    }
+                } else if (accessToken.trim()) {
+                    // Only set access token if provided (otherwise SDK will start OAuth flow)
                     auth.accessToken = accessToken.trim();
                 }
             }
@@ -160,7 +190,18 @@ export const EditServerModal = memo(function EditServerModal({
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Edit Server</h2>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                    }}>
+                        <span style={{
+                            fontSize: '28px',
+                            filter: 'drop-shadow(0 2px 8px rgba(92, 207, 230, 0.3))'
+                        }}>🦉</span>
+                        <h2 style={{ margin: 0 }}>Edit Server</h2>
+                    </div>
                 </div>
 
                 <div className="modal-body">
@@ -298,44 +339,148 @@ export const EditServerModal = memo(function EditServerModal({
 
                     {/* Header-based Auth Fields */}
                     {authType === 'headers' && (
-                        <>
-                            <div className="form-field">
-                                <label className="form-label">Header Name</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    placeholder="Authorization"
-                                    value={headerKey}
-                                    onChange={(e) => setHeaderKey(e.target.value)}
-                                />
-                            </div>
-                            <div className="form-field">
-                                <label className="form-label">Header Value</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    placeholder="Bearer your-api-key"
-                                    value={headerValue}
-                                    onChange={(e) => setHeaderValue(e.target.value)}
-                                />
-                            </div>
-                        </>
+                        <div style={{ marginTop: '16px' }}>
+                            <label className="form-label">Headers</label>
+                            {headers.map((header, index) => (
+                                <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Header Name (e.g., X-API-Key)"
+                                            value={header.key}
+                                            onChange={(e) => {
+                                                const newHeaders = [...headers];
+                                                newHeaders[index].key = e.target.value;
+                                                setHeaders(newHeaders);
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <input
+                                            type="password"
+                                            className="form-input"
+                                            placeholder="Header Value"
+                                            value={header.value}
+                                            onChange={(e) => {
+                                                const newHeaders = [...headers];
+                                                newHeaders[index].value = e.target.value;
+                                                setHeaders(newHeaders);
+                                            }}
+                                        />
+                                    </div>
+                                    {headers.length > 1 && (
+                                        <button
+                                            onClick={() => setHeaders(headers.filter((_, i) => i !== index))}
+                                            style={{
+                                                padding: '10px 12px',
+                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                borderRadius: '6px',
+                                                color: 'var(--red-500)',
+                                                cursor: 'pointer',
+                                                fontSize: '14px'
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            <button
+                                onClick={() => setHeaders([...headers, { key: '', value: '' }])}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'rgba(92, 207, 230, 0.1)',
+                                    border: '1px solid rgba(92, 207, 230, 0.3)',
+                                    borderRadius: '6px',
+                                    color: 'var(--blue-500)',
+                                    cursor: 'pointer',
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                    width: '100%',
+                                    marginTop: '8px'
+                                }}
+                            >
+                                + Add Header
+                            </button>
+                        </div>
                     )}
 
                     {/* OAuth Auth Fields */}
                     {authType === 'oauth' && (
-                        <div className="form-field">
-                            <label className="form-label">Access Token (Optional)</label>
-                            <input
-                                type="password"
-                                className="form-input"
-                                placeholder="Leave empty to start OAuth flow automatically"
-                                value={accessToken}
-                                onChange={(e) => setAccessToken(e.target.value)}
-                            />
-                            <div className="info-message" style={{ marginTop: '8px', fontSize: '13px', opacity: 0.8 }}>
-                                Hoot supports OAuth 2.1 with PKCE and automatic token refresh. Leave empty to let Hoot handle the OAuth flow.
+                        <div style={{ marginTop: '16px' }}>
+                            {/* Client Credentials Toggle */}
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    gap: '8px'
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={useClientCredentials}
+                                        onChange={(e) => setUseClientCredentials(e.target.checked)}
+                                        style={{ accentColor: 'var(--blue-500)' }}
+                                    />
+                                    <span style={{ color: 'var(--text-secondary)' }}>
+                                        Use Client Credentials OAuth
+                                    </span>
+                                </label>
                             </div>
+
+                            {useClientCredentials ? (
+                                <>
+                                    <div className="form-field">
+                                        <label className="form-label">Client ID</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="your-client-id"
+                                            value={clientId}
+                                            onChange={(e) => setClientId(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="form-field">
+                                        <label className="form-label">Client Secret</label>
+                                        <input
+                                            type="password"
+                                            className="form-input"
+                                            placeholder="your-client-secret"
+                                            value={clientSecret}
+                                            onChange={(e) => setClientSecret(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="form-field">
+                                        <label className="form-label">Token URL (Optional)</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="https://api.example.com/oauth/token"
+                                            value={tokenUrl}
+                                            onChange={(e) => setTokenUrl(e.target.value)}
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="form-field">
+                                        <label className="form-label">Access Token (Optional)</label>
+                                        <input
+                                            type="password"
+                                            className="form-input"
+                                            placeholder="Leave empty to start OAuth flow automatically"
+                                            value={accessToken}
+                                            onChange={(e) => setAccessToken(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="info-message" style={{ fontSize: '13px', opacity: 0.8 }}>
+                                        Hoot supports OAuth 2.1 with PKCE and automatic token refresh. Leave empty to let Hoot handle the OAuth flow.
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

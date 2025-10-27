@@ -8,25 +8,27 @@
 }
 
 .oauth-callback-content {
-    max-width: 520px;
+    max-width: 480px;
     width: 100%;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #2a2f3d 0%, #242936 100%);
+    border: 1px solid rgba(92, 207, 230, 0.15);
+    border-radius: 16px;
     padding: 48px 40px;
     text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
     animation: fadeIn 0.3s ease-out;
 }
 
 .oauth-callback-content.error {
-    border-color: var(--red-500);
-    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, #3d2a2f 0%, #362429 100%);
 }
 
 .oauth-icon {
     font-size: 72px;
     margin-bottom: 32px;
     line-height: 1;
+    filter: drop-shadow(0 4px 12px rgba(92, 207, 230, 0.3));
 }
 
 .spinner {

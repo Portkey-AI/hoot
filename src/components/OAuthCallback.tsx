@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
+import * as backendClient from '../lib/backendClient';
 import './OAuthCallback.css';
 
 /**
@@ -12,8 +13,16 @@ export function OAuthCallback() {
     const [message, setMessage] = useState('Processing authorization...');
     const { connect } = useMCPConnection();
     const getServers = useAppStore(state => state.servers); // Get all servers for checking updates
+    const hasExecuted = useRef(false); // Prevent double-execution in React StrictMode
 
     useEffect(() => {
+        // Prevent double-execution in React StrictMode
+        if (hasExecuted.current) {
+            console.log('OAuth callback already executed, skipping duplicate');
+            return;
+        }
+        hasExecuted.current = true;
+
         handleOAuthCallback();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -101,6 +110,22 @@ export function OAuthCallback() {
             } else {
                 setStatus('success');
                 setMessage(`✓ Successfully authorized ${server.name}!`);
+            }
+
+            // Try to get the real server name and version now that we're connected
+            try {
+                const serverInfo = await backendClient.getServerInfo(serverId);
+                if (serverInfo && serverInfo.name) {
+                    console.log(`📋 Updating server name from "${server.name}" to "${serverInfo.name}"`);
+                    const updateServer = useAppStore.getState().updateServer;
+                    updateServer(serverId, {
+                        name: serverInfo.name,
+                        ...(serverInfo.version && { /* version is not stored in ServerConfig */ })
+                    });
+                }
+            } catch (err) {
+                // Don't fail the whole process if we can't get server info
+                console.log('Could not fetch server info after OAuth:', err);
             }
 
             // Clean up session storage

@@ -4,28 +4,39 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(31, 36, 48, 0.9);
+  background: rgba(31, 36, 48, 0.7);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   z-index: 9999;
-  backdrop-filter: blur(8px);
-  animation: fadeIn 0.2s ease-out;
-  padding-top: 80px;
-  overflow-y: auto;
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.15s ease-out;
+  padding: 20px;
 }
 
 .modal {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #2a2f3d 0%, #242936 100%);
+  border-radius: 16px;
   width: 90%;
-  max-width: 520px;
-  padding: 32px;
-  border: 1px solid var(--border-bright);
-  box-shadow: var(--shadow-lg);
-  animation: slideUp 0.25s ease-out;
+  max-width: 480px;
+  padding: 40px 32px 32px 32px;
+  border: 1px solid rgba(92, 207, 230, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: slideUpFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateZ(0);
-  margin-bottom: 80px;
+  font-family: var(--font-sans);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-small {
@@ -34,19 +45,20 @@
 }
 
 .modal-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
   color: var(--text-white);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
+  text-align: center;
 }
 
 .modal-body {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .modal-body .form-field {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .modal-body .form-field:last-child {
@@ -57,28 +69,36 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  letter-spacing: 0.2px;
+  color: var(--blue-500);
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .modal-body .form-input {
   width: 100%;
-  padding: 10px 12px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: 14px;
+  padding: 14px 16px;
+  background: rgba(31, 36, 48, 0.6);
+  border: 2px solid rgba(92, 207, 230, 0.2);
+  border-radius: 10px;
+  color: var(--text-white);
+  font-size: 15px;
   font-family: var(--font-sans);
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-body .form-input:hover {
+  border-color: rgba(92, 207, 230, 0.4);
+  background: rgba(31, 36, 48, 0.8);
 }
 
 .modal-body .form-input:focus {
   border-color: var(--blue-500);
-  background: var(--bg-hover);
-  box-shadow: 0 0 0 2px rgba(92, 207, 230, 0.15);
+  background: rgba(31, 36, 48, 0.9);
+  box-shadow: 0 0 0 4px rgba(92, 207, 230, 0.1), 0 4px 12px rgba(0, 0, 0, 0.15);
   outline: none;
+  transform: translateY(-1px);
 }
 
 .modal-body .form-input::placeholder {
@@ -119,40 +139,44 @@
 }
 
 .btn {
-  padding: 11px 24px;
+  padding: 13px 28px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all var(--transition-fast);
+  font-family: var(--font-sans);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.2px;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #404040;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
-  color: var(--bg-primary);
+  color: #1a1f2e;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(92, 207, 230, 0.2);
+  box-shadow: 0 4px 12px rgba(92, 207, 230, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(92, 207, 230, 0.3);
+  box-shadow: 0 6px 16px rgba(92, 207, 230, 0.4);
 }
 
 .btn-primary:active:not(:disabled) {
