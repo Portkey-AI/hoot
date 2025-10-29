@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../stores/appStore';
-import { Send, Sparkles, Code2, Maximize2, Minimize2, Settings } from 'lucide-react';
+import { Send, Sparkles, Code2, Settings, Copy, Check } from 'lucide-react';
 import { LLMSettingsModal } from './LLMSettingsModal';
-import { CollapsibleJson } from './CollapsibleJson';
+import { JsonViewer } from './JsonViewer';
 import { getPortkeyClient, hasPortkeyClient, type ChatMessage } from '../lib/portkeyClient';
 import { convertAllMCPToolsToOpenAI, findServerForTool } from '../lib/toolConverter';
 import { mcpClient } from '../lib/mcpClient';
@@ -39,8 +39,8 @@ export function HybridInterface() {
     const [input, setInput] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
-    const [showApiPane, setShowApiPane] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
+    const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
     const [apiKey, setApiKey] = useState<string>(
         () => localStorage.getItem(PORTKEY_API_KEY_STORAGE_KEY) || ''
     );
@@ -264,43 +264,40 @@ export function HybridInterface() {
 
     const selectedMsg = selectedMessage !== null ? messages[selectedMessage] : null;
 
+    const handleCopyJson = (data: any, blockId: string) => {
+        const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        navigator.clipboard.writeText(jsonString);
+        setCopiedBlock(blockId);
+        setTimeout(() => setCopiedBlock(null), 2000);
+    };
+
     return (
         <div className="hybrid-interface">
-            <div className="hybrid-header">
-                <div className="hybrid-header-content">
-                    <Sparkles size={20} />
-                    <Code2 size={20} />
-                    <div>
-                        <h2>Hybrid Mode: GPT-4o + MCP Tools</h2>
-                        <p>
-                            {hasApiKey ? '✅' : '⚠️'} API Key{' '}
-                            {hasApiKey && (
-                                <>
-                                    • {connectedServers.length} server{connectedServers.length !== 1 ? 's' : ''} •{' '}
-                                    {availableTools.length} tool{availableTools.length !== 1 ? 's' : ''}
-                                </>
-                            )}
-                        </p>
-                    </div>
+            {/* Slim info bar */}
+            <div className="chat-info-bar">
+                <div className="chat-info-left">
+                    <span className="info-item">
+                        <Sparkles size={14} />
+                        <span>{connectedServers.length} server{connectedServers.length !== 1 ? 's' : ''}</span>
+                    </span>
+                    <span className="info-divider">•</span>
+                    <span className="info-item">
+                        <Code2 size={14} />
+                        <span>{availableTools.length} tool{availableTools.length !== 1 ? 's' : ''}</span>
+                    </span>
                 </div>
-                <div className="hybrid-controls">
-                    <button
-                        className="settings-button"
-                        onClick={() => setShowSettings(true)}
-                        title="Configure API Key"
-                    >
-                        <Settings size={16} />
-                        Settings
-                    </button>
-                    <button className="toggle-pane-button" onClick={() => setShowApiPane(!showApiPane)}>
-                        {showApiPane ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                        {showApiPane ? 'Hide' : 'Show'} API
-                    </button>
-                </div>
+                <button
+                    className={`info-settings-button ${!hasApiKey ? 'needs-setup' : ''}`}
+                    onClick={() => setShowSettings(true)}
+                    title={hasApiKey ? 'API Settings' : 'Configure API Key'}
+                >
+                    <Settings size={14} />
+                    {!hasApiKey && <span className="setup-indicator">Setup Required</span>}
+                </button>
             </div>
 
             <div className="hybrid-content">
-                <div className={`chat-pane ${!showApiPane ? 'full-width' : ''}`}>
+                <div className="chat-pane full-width">
                     <div className="chat-messages-hybrid">
                         {messages.map((message, index) => (
                             <div
@@ -384,7 +381,8 @@ export function HybridInterface() {
                     </div>
                 </div>
 
-                {showApiPane && (
+                {/* API Inspector pane */}
+                {selectedMessage !== null && selectedMsg && (
                     <div className="api-pane">
                         <div className="api-pane-header">
                             <Code2 size={16} />
@@ -398,12 +396,17 @@ export function HybridInterface() {
                                         <div className="api-block">
                                             <div className="api-block-header request">
                                                 <span>→ Request</span>
-                                                <span className="api-method">POST /chat/completions</span>
+                                                <button
+                                                    className="api-copy-button"
+                                                    onClick={() => handleCopyJson(selectedMsg.apiRequest, 'request')}
+                                                    title="Copy JSON"
+                                                >
+                                                    {copiedBlock === 'request' ? <Check size={14} /> : <Copy size={14} />}
+                                                </button>
                                             </div>
-                                            <CollapsibleJson
-                                                data={selectedMsg.apiRequest}
-                                                title="Request Body"
-                                                defaultCollapsed={false}
+                                            <JsonViewer
+                                                content={JSON.stringify(selectedMsg.apiRequest)}
+                                                className="api-json-viewer"
                                             />
                                         </div>
                                     )}
@@ -412,12 +415,17 @@ export function HybridInterface() {
                                         <div className="api-block">
                                             <div className="api-block-header response">
                                                 <span>← Response</span>
-                                                <span className="api-status">200 OK</span>
+                                                <button
+                                                    className="api-copy-button"
+                                                    onClick={() => handleCopyJson(selectedMsg.apiResponse, 'response')}
+                                                    title="Copy JSON"
+                                                >
+                                                    {copiedBlock === 'response' ? <Check size={14} /> : <Copy size={14} />}
+                                                </button>
                                             </div>
-                                            <CollapsibleJson
-                                                data={selectedMsg.apiResponse}
-                                                title="Response Body"
-                                                defaultCollapsed={false}
+                                            <JsonViewer
+                                                content={JSON.stringify(selectedMsg.apiResponse)}
+                                                className="api-json-viewer"
                                             />
                                         </div>
                                     )}
@@ -425,17 +433,18 @@ export function HybridInterface() {
                                     {selectedMsg.toolCall && (
                                         <div className="api-block">
                                             <div className="api-block-header tool-call">
-                                                <span>🔧 Tool Call</span>
-                                                <span className="tool-name">{selectedMsg.toolCall.name}</span>
+                                                <span>🔧 Tool Call: {selectedMsg.toolCall.name}</span>
+                                                <button
+                                                    className="api-copy-button"
+                                                    onClick={() => handleCopyJson(selectedMsg.toolCall!.arguments, 'toolcall')}
+                                                    title="Copy JSON"
+                                                >
+                                                    {copiedBlock === 'toolcall' ? <Check size={14} /> : <Copy size={14} />}
+                                                </button>
                                             </div>
-                                            <CollapsibleJson
-                                                data={
-                                                    typeof selectedMsg.toolCall.arguments === 'string'
-                                                        ? JSON.parse(selectedMsg.toolCall.arguments)
-                                                        : selectedMsg.toolCall.arguments
-                                                }
-                                                title="Arguments"
-                                                defaultCollapsed={false}
+                                            <JsonViewer
+                                                content={selectedMsg.toolCall.arguments}
+                                                className="api-json-viewer"
                                             />
                                         </div>
                                     )}
@@ -443,17 +452,18 @@ export function HybridInterface() {
                                     {selectedMsg.toolResult && (
                                         <div className="api-block">
                                             <div className="api-block-header tool-result">
-                                                <span>✅ Tool Result</span>
-                                                <span className="tool-name">{selectedMsg.toolResult.name}</span>
+                                                <span>✅ Tool Result: {selectedMsg.toolResult.name}</span>
+                                                <button
+                                                    className="api-copy-button"
+                                                    onClick={() => handleCopyJson(selectedMsg.toolResult!.result, 'toolresult')}
+                                                    title="Copy JSON"
+                                                >
+                                                    {copiedBlock === 'toolresult' ? <Check size={14} /> : <Copy size={14} />}
+                                                </button>
                                             </div>
-                                            <CollapsibleJson
-                                                data={
-                                                    typeof selectedMsg.toolResult.result === 'string'
-                                                        ? JSON.parse(selectedMsg.toolResult.result)
-                                                        : selectedMsg.toolResult.result
-                                                }
-                                                title="Result"
-                                                defaultCollapsed={false}
+                                            <JsonViewer
+                                                content={selectedMsg.toolResult.result}
+                                                className="api-json-viewer"
                                             />
                                         </div>
                                     )}

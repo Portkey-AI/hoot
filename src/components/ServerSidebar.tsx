@@ -1,12 +1,11 @@
 import { memo, useState, useRef, useEffect } from 'react';
-import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings, Github, BookOpen, MessageCircle } from 'lucide-react';
+import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import { NoServersState } from './EmptyState';
 import { ConfirmDialog } from './ConfirmDialog';
 import { toast } from '../stores/toastStore';
 import type { ServerConfig } from '../types';
-import packageJson from '../../package.json';
 import * as backendClient from '../lib/backendClient';
 import './ServerSidebar.css';
 
@@ -18,29 +17,16 @@ interface ServerSidebarProps {
 export const ServerSidebar = memo(function ServerSidebar({ onAddServer, onEditServer }: ServerSidebarProps) {
     return (
         <div className="server-sidebar">
-            <SidebarHeader onAddServer={onAddServer} />
+            <div className="sidebar-actions">
+                <button className="add-server-btn" onClick={onAddServer}>
+                    <span className="btn-icon">+</span>
+                    <span>Add Server</span>
+                </button>
+            </div>
             <ServersList onAddServer={onAddServer} onEditServer={onEditServer} />
-            <SidebarFooter />
         </div>
     );
 });
-
-function SidebarHeader({ onAddServer }: { onAddServer: () => void }) {
-    return (
-        <div className="sidebar-header">
-            <div className="logo">
-                <span className="logo-icon">🦉</span>
-                <h1>Hoot</h1>
-            </div>
-            <p className="tagline">MCP Testing Tool</p>
-
-            <button className="add-server-btn" onClick={onAddServer}>
-                <span className="btn-icon">+</span>
-                <span>Add Server</span>
-            </button>
-        </div>
-    );
-}
 
 function ServersList({ onAddServer, onEditServer }: { onAddServer: () => void; onEditServer: (server: ServerConfig) => void }) {
     const servers = useAppStore((state) => state.servers);
@@ -126,19 +112,21 @@ const ServerItem = memo(function ServerItem({
         }
 
         const authType = server.auth.type;
-        const authLabels = {
+        const authLabels: Record<string, string> = {
             'headers': 'API Key',
             'oauth': 'OAuth',
+            'oauth_client_credentials': 'OAuth Client',
         };
 
-        const authIcons = {
+        const authIcons: Record<string, string> = {
             'headers': '🔑',
             'oauth': '🔐',
+            'oauth_client_credentials': '🔐',
         };
 
         return (
             <span className="auth-badge" data-auth-type={authType}>
-                {authIcons[authType]} {authLabels[authType]}
+                {authIcons[authType] || '🔑'} {authLabels[authType] || 'Auth'}
             </span>
         );
     };
@@ -397,44 +385,4 @@ const ServerItem = memo(function ServerItem({
         </div>
     );
 });
-
-function SidebarFooter() {
-    const links = [
-        {
-            href: 'https://github.com/portkey-ai/hoot',
-            icon: Github,
-            label: 'GitHub',
-        },
-        {
-            href: 'https://portkey.ai/docs/hoot',
-            icon: BookOpen,
-            label: 'Documentation',
-        },
-        {
-            href: 'https://portkey.ai/community',
-            icon: MessageCircle,
-            label: 'Discord',
-        },
-    ];
-
-    return (
-        <div className="sidebar-footer">
-            <div className="footer-links">
-                {links.map((link) => (
-                    <a
-                        key={link.label}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="footer-link"
-                        title={link.label}
-                    >
-                        <link.icon size={16} />
-                    </a>
-                ))}
-            </div>
-            <div className="footer-version">v{packageJson.version}</div>
-        </div>
-    );
-}
 

@@ -7,39 +7,11 @@
     transform: translateZ(0);
 }
 
-.sidebar-header {
-    padding: var(--spacing-2xl);
+/* Sidebar Actions - Replaces header */
+.sidebar-actions {
+    padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-primary);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
-}
-
-.logo-icon {
-    font-size: 28px;
-    line-height: 1;
-    animation: pulse 3s ease-in-out infinite;
-}
-
-.logo h1 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-white);
-    letter-spacing: -0.5px;
-}
-
-.tagline {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: var(--spacing-md);
-    font-weight: 500;
 }
 
 .add-server-btn {
@@ -67,6 +39,12 @@
 
 .add-server-btn:active {
     transform: translateY(0);
+}
+
+.add-server-btn .btn-icon {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .servers-list {

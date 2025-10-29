@@ -12,7 +12,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAutoReconnect } from './hooks/useAutoReconnect';
 import { useToastStore } from './stores/toastStore';
 import type { ServerConfig } from './types';
-import { Wrench, Sparkles } from 'lucide-react';
+import { Wrench, Sparkles, Github, BookOpen, MessageCircle } from 'lucide-react';
+import packageJson from '../package.json';
 import './lib/logger'; // Initialize logger in development
 import './App.css';
 
@@ -55,42 +56,82 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="app">
-        {/* Mode Switcher - Only show if Hybrid mode is enabled */}
-        {ENABLE_HYBRID_MODE && (
-          <div className="mode-switcher">
-            <button
-              className={`mode-button ${viewMode === 'test' ? 'active' : ''}`}
-              onClick={() => setViewMode('test')}
-              title="Test MCP tools manually"
-            >
-              <Wrench size={18} />
-              <span>Test Tools</span>
-            </button>
-            <button
-              className={`mode-button ${viewMode === 'hybrid' ? 'active' : ''}`}
-              onClick={() => setViewMode('hybrid')}
-              title="Chat + API view side-by-side (DEMO)"
-            >
-              <Sparkles size={18} />
-              <span>Hybrid Mode</span>
-              <span className="demo-badge">DEMO</span>
-            </button>
+        {/* Global Header */}
+        <header className="app-header">
+          <div className="app-branding">
+            <span className="logo-icon">🦉</span>
+            <h1 className="app-title">Hoot</h1>
+            <span className="app-tagline">MCP Testing Tool</span>
           </div>
-        )}
 
-        {/* Render based on mode */}
-        {viewMode === 'test' && (
-          <div className="test-tools-container">
-            <ServerSidebar
-              onAddServer={() => setShowAddModal(true)}
-              onEditServer={(server) => setEditingServer(server)}
-            />
-            <ToolsSidebar />
-            <MainArea />
+          {ENABLE_HYBRID_MODE && (
+            <nav className="app-nav">
+              <button
+                className={`nav-button ${viewMode === 'test' ? 'active' : ''}`}
+                onClick={() => setViewMode('test')}
+                title="Test MCP tools manually"
+              >
+                <Wrench size={18} />
+                <span>Test Tools</span>
+              </button>
+              <button
+                className={`nav-button ${viewMode === 'hybrid' ? 'active' : ''}`}
+                onClick={() => setViewMode('hybrid')}
+                title="Chat with AI to test tools"
+              >
+                <Sparkles size={18} />
+                <span>Chat</span>
+              </button>
+            </nav>
+          )}
+
+          <div className="app-actions">
+            <a
+              href="https://portkey.ai/docs/hoot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="header-link"
+              title="Documentation"
+            >
+              <BookOpen size={18} />
+            </a>
+            <a
+              href="https://portkey.ai/community"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="header-link"
+              title="Discord"
+            >
+              <MessageCircle size={18} />
+            </a>
+            <a
+              href="https://github.com/portkey-ai/hoot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="version-badge"
+              title="View on GitHub"
+            >
+              <Github size={14} />
+              <span>v{packageJson.version}</span>
+            </a>
           </div>
-        )}
+        </header>
 
-        {ENABLE_HYBRID_MODE && viewMode === 'hybrid' && <HybridInterface />}
+        {/* Content Area */}
+        <div className="app-content">
+          {viewMode === 'test' && (
+            <div className="test-layout">
+              <ServerSidebar
+                onAddServer={() => setShowAddModal(true)}
+                onEditServer={(server) => setEditingServer(server)}
+              />
+              <ToolsSidebar />
+              <MainArea />
+            </div>
+          )}
+
+          {ENABLE_HYBRID_MODE && viewMode === 'hybrid' && <HybridInterface />}
+        </div>
 
         {/* Modals and other components */}
         {showAddModal && <AddServerModal onClose={() => setShowAddModal(false)} />}

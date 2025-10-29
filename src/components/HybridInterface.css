@@ -1,95 +1,73 @@
 .hybrid-interface {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
     background: var(--bg-primary);
     overflow: hidden;
 }
 
-.hybrid-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-secondary);
+/* Slim info bar at top */
+.chat-info-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-
-.hybrid-header-content {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--text-primary);
-}
-
-.hybrid-header-content h2 {
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-}
-
-.hybrid-header-content p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.hybrid-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.settings-button {
-    padding: 0.5rem 0.875rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
-    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
     font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.chat-info-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.info-item {
     display: flex;
     align-items: center;
     gap: 0.375rem;
+}
+
+.info-divider {
+    opacity: 0.3;
+}
+
+.info-settings-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.625rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-bright);
+    border-radius: 5px;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.settings-button:hover {
+.info-settings-button:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
     border-color: var(--blue-500);
 }
 
-.hybrid-status-badge {
-    padding: 0.375rem 0.75rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
+.info-settings-button.needs-setup {
+    border-color: var(--orange-500);
+    background: rgba(255, 160, 64, 0.1);
+}
+
+.info-settings-button.needs-setup:hover {
+    border-color: var(--orange-500);
+    background: rgba(255, 160, 64, 0.15);
+}
+
+.setup-indicator {
     font-size: 0.75rem;
-    color: var(--purple-500);
     font-weight: 500;
-}
-
-.toggle-pane-button {
-    padding: 0.5rem 0.875rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    transition: all 0.2s ease;
-}
-
-.toggle-pane-button:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    border-color: var(--blue-500);
+    color: var(--orange-500);
 }
 
 .hybrid-content {
@@ -326,6 +304,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    /* Allow content to flow naturally */
 }
 
 .api-block {
@@ -334,6 +313,10 @@
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    max-height: none;
+    /* Remove any height constraints on the block */
 }
 
 .api-block-header {
@@ -344,6 +327,25 @@
     font-size: 0.8125rem;
     font-weight: 600;
     border-bottom: 1px solid var(--border-color);
+}
+
+.api-copy-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.api-copy-button:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--blue-500);
 }
 
 .api-block-header.request {
@@ -379,7 +381,25 @@
     color: var(--text-secondary);
 }
 
-/* Removed .api-code - now using CollapsibleJson component */
+/* Removed .api-code - now using JsonViewer component */
+
+.api-json-viewer {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: var(--bg-primary);
+    max-height: none;
+    /* Remove max-height constraint */
+}
+
+/* Ensure JsonViewer inside API blocks scrolls properly and shows all content */
+.api-block .json-viewer {
+    max-height: 600px !important;
+    overflow-y: auto !important;
+    padding-bottom: 2rem !important;
+    flex: 1;
+    /* Allow it to grow within the block */
+}
 
 
 .api-empty {
