@@ -19,12 +19,58 @@
   border-radius: 16px;
   width: 90%;
   max-width: 480px;
-  padding: 40px 32px 32px 32px;
+  max-height: calc(100vh - 80px);
+  /* Prevent modal from exceeding viewport */
+  display: flex;
+  flex-direction: column;
   border: 1px solid rgba(92, 207, 230, 0.15);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
   animation: slideUpFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateZ(0);
   font-family: var(--font-sans);
+  overflow: hidden;
+  /* Prevent content from breaking out */
+}
+
+.modal-header {
+  flex-shrink: 0;
+  /* Header stays fixed at top */
+  padding: 40px 32px 16px 32px;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  /* Enable scrolling when content is long */
+  padding: 0 32px 32px;
+  margin-bottom: 0;
+  /* Reserve space for scrollbar to prevent width changes */
+  scrollbar-gutter: stable;
+}
+
+/* Custom scrollbar for modal body */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(31, 36, 48, 0.3);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(92, 207, 230, 0.3);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(92, 207, 230, 0.5);
+}
+
+.modal-footer {
+  flex-shrink: 0;
+  /* Footer stays fixed at bottom */
+  padding: 20px 32px 32px 32px;
 }
 
 @keyframes slideUpFade {
@@ -53,16 +99,13 @@
   text-align: center;
 }
 
-.modal-body {
-  margin-bottom: 28px;
-}
-
 .modal-body .form-field {
   margin-bottom: 24px;
 }
 
 .modal-body .form-field:last-child {
-  margin-bottom: 0;
+  margin-bottom: 24px;
+  /* Keep spacing even for last field */
 }
 
 .modal-body .form-label {
@@ -135,7 +178,6 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  padding-top: 8px;
 }
 
 .btn {

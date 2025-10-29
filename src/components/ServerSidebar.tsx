@@ -3,6 +3,7 @@ import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings, Github, BookOpe
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import { NoServersState } from './EmptyState';
+import { ConfirmDialog } from './ConfirmDialog';
 import { toast } from '../stores/toastStore';
 import type { ServerConfig } from '../types';
 import packageJson from '../../package.json';
@@ -86,6 +87,7 @@ const ServerItem = memo(function ServerItem({
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown when clicking outside
@@ -265,18 +267,18 @@ const ServerItem = memo(function ServerItem({
         }
     };
 
-    const handleDelete = async (e: React.MouseEvent) => {
+    const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
         setShowDropdown(false);
+        setShowDeleteConfirm(true);
+    };
 
-        if (!confirm(`Delete "${server.name}"? This will remove all cached tools.`)) {
-            return;
-        }
-
+    const confirmDelete = async () => {
         if (server.connected) {
             await disconnect(server.id);
         }
         removeServer(server.id);
+        setShowDeleteConfirm(false);
     };
 
     return (
@@ -379,6 +381,19 @@ const ServerItem = memo(function ServerItem({
                     )}
                 </div>
             </div>
+
+            {/* Delete confirmation dialog */}
+            {showDeleteConfirm && (
+                <ConfirmDialog
+                    title="Delete Server"
+                    message={`Delete "${server.name}"? This will remove all cached tools and disconnect the server.`}
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={confirmDelete}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                    danger
+                />
+            )}
         </div>
     );
 });

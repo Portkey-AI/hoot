@@ -243,9 +243,10 @@
         <h1><span>🦉</span> Try in Hoot</h1>
         <p class="subtitle">Generate shareable links - keep it simple or go detailed</p>
 
-        <div style="background: rgba(92, 207, 230, 0.1); border: 1px solid rgba(92, 207, 230, 0.3); padding: 16px; border-radius: 6px; margin-bottom: 24px; font-size: 13px; line-height: 1.6;">
-            <strong style="color: #5ccfe6;">💡 Pro tip:</strong> For the simplest sharing, just provide the URL! 
-            Hoot will auto-detect transport type, server name, and OAuth requirements. 
+        <div
+            style="background: rgba(92, 207, 230, 0.1); border: 1px solid rgba(92, 207, 230, 0.3); padding: 16px; border-radius: 6px; margin-bottom: 24px; font-size: 13px; line-height: 1.6;">
+            <strong style="color: #5ccfe6;">💡 Pro tip:</strong> For the simplest sharing, just provide the URL!
+            Hoot will auto-detect transport type, server name, and OAuth requirements.
             Use the full form below if you want to specify everything manually.
         </div>
 
@@ -343,7 +344,8 @@
             </div>
 
             <div class="warning">
-                ⚠️ Keep it simple! Just the URL is usually enough. Hoot auto-detects the rest. Never include real credentials - use OAuth for production servers.
+                ⚠️ Keep it simple! Just the URL is usually enough. Hoot auto-detects the rest. Never include real
+                credentials - use OAuth for production servers.
             </div>
         </div>
     </div>
@@ -408,7 +410,7 @@
 
             // Build config - simple mode if only URL provided
             const config = {};
-            
+
             // Add URL or command
             if (transport === 'stdio' && command) {
                 config.command = command;

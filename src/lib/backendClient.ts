@@ -123,6 +123,7 @@ export async function autoDetectServer(
     transport?: 'http' | 'sse';
     requiresOAuth?: boolean;
     requiresClientCredentials?: boolean;
+    requiresHeaderAuth?: boolean; // NEW: indicates header-based auth is needed
     error?: string
 }> {
     try {
@@ -145,6 +146,8 @@ export async function autoDetectServer(
             serverInfo: data.serverInfo,
             transport: data.transport,
             requiresOAuth: data.requiresOAuth || false,
+            requiresClientCredentials: data.requiresClientCredentials || false,
+            requiresHeaderAuth: data.requiresHeaderAuth || false,
         };
     } catch (error) {
         console.error('Auto-detect error:', error);

@@ -7,11 +7,13 @@ import { toast } from '../stores/toastStore';
 import './Modal.css';
 
 interface EditServerModalProps {
+    mode?: 'add' | 'edit'; // NEW: mode to distinguish between adding and editing
     server: ServerConfig;
     onClose: () => void;
 }
 
 export const EditServerModal = memo(function EditServerModal({
+    mode = 'edit', // Default to edit mode for backwards compatibility
     server,
     onClose,
 }: EditServerModalProps) {
@@ -22,7 +24,14 @@ export const EditServerModal = memo(function EditServerModal({
     const [error, setError] = useState('');
 
     // Authentication state
-    const [authType, setAuthType] = useState<AuthType>(server.auth?.type || 'none');
+    // Map old client credentials checkbox to new separate auth type
+    const hasClientCreds = server.auth?.type === 'oauth' &&
+        server.auth && 'client_id' in server.auth &&
+        !!(server.auth as any).client_id;
+
+    const [authType, setAuthType] = useState<AuthType>(
+        hasClientCreds ? 'oauth_client_credentials' : (server.auth?.type || 'none')
+    );
 
     // Multiple headers support
     const [headers, setHeaders] = useState<Array<{ key: string; value: string }>>(
@@ -32,14 +41,34 @@ export const EditServerModal = memo(function EditServerModal({
     );
 
     // Client credentials
-    const [clientId, setClientId] = useState(server.auth?.type === 'oauth' && 'client_id' in server.auth ? server.auth.client_id as string : '');
+    const [clientId, setClientId] = useState(
+        (server.auth?.type === 'oauth' && server.auth && 'client_id' in server.auth)
+            ? (server.auth.client_id as string || '')
+            : ''
+    );
     const [clientSecret, setClientSecret] = useState('');
-    const [tokenUrl, setTokenUrl] = useState(server.auth?.type === 'oauth' && 'token_url' in server.auth ? server.auth.token_url as string : '');
-    const [useClientCredentials, setUseClientCredentials] = useState(
-        !!(server.auth?.type === 'oauth' && 'client_id' in server.auth && server.auth.client_id)
+    const [tokenUrl, setTokenUrl] = useState(
+        (server.auth?.type === 'oauth' && server.auth && 'token_url' in server.auth)
+            ? (server.auth.token_url as string || '')
+            : ''
     );
 
-    const [accessToken, setAccessToken] = useState('');
+    // Advanced OAuth settings
+    const [showAdvancedOAuth, setShowAdvancedOAuth] = useState(false);
+    const [additionalHeaders, setAdditionalHeaders] = useState<Array<{ key: string; value: string }>>(
+        server.auth?.type === 'oauth' && server.auth?.additionalHeaders
+            ? Object.entries(server.auth.additionalHeaders).map(([key, value]) => ({ key, value }))
+            : [{ key: '', value: '' }]
+    );
+    const [customAuthEndpoint, setCustomAuthEndpoint] = useState(
+        (server.auth?.type === 'oauth' && server.auth?.customOAuthMetadata?.authorization_endpoint) || ''
+    );
+    const [customTokenEndpoint, setCustomTokenEndpoint] = useState(
+        (server.auth?.type === 'oauth' && server.auth?.customOAuthMetadata?.token_endpoint) || ''
+    );
+    const [customClientId, setCustomClientId] = useState(
+        (server.auth?.type === 'oauth' && server.auth?.customOAuthMetadata?.client_id) || ''
+    );
 
     // OAuth discovery state
     const [isDiscovering, setIsDiscovering] = useState(false);
@@ -80,6 +109,7 @@ export const EditServerModal = memo(function EditServerModal({
     };
 
     const updateServer = useAppStore((state) => state.updateServer);
+    const addServer = useAppStore((state) => state.addServer);
     const { connect, disconnect, isConnecting } = useMCPConnection();
 
     const handleSubmit = async () => {
@@ -109,66 +139,90 @@ export const EditServerModal = memo(function EditServerModal({
             }
         }
 
-        if (authType === 'oauth' && useClientCredentials && (!clientId.trim() || !clientSecret.trim())) {
-            setError('Client ID and Client Secret are required for client credentials auth');
+        if (authType === 'oauth_client_credentials' && (!clientId.trim() || !clientSecret.trim())) {
+            setError('Client ID and Client Secret are required for OAuth Client Credentials');
             return;
         }
 
         // Build auth config
         let auth: AuthConfig | undefined = undefined;
         if (authType !== 'none') {
-            auth = { type: authType };
+            auth = { type: authType === 'oauth_client_credentials' ? 'oauth' : authType };
 
             if (authType === 'headers') {
                 // Build headers object from array
                 auth.headers = headers
                     .filter(h => h.key.trim() && h.value.trim())
                     .reduce((acc, h) => ({ ...acc, [h.key.trim()]: h.value.trim() }), {});
+            } else if (authType === 'oauth_client_credentials') {
+                // Client credentials OAuth
+                (auth as any).client_id = clientId.trim();
+                (auth as any).client_secret = clientSecret.trim();
+                if (tokenUrl.trim()) {
+                    (auth as any).token_url = tokenUrl.trim();
+                }
             } else if (authType === 'oauth') {
-                if (useClientCredentials && clientId && clientSecret) {
-                    // Client credentials OAuth
-                    (auth as any).client_id = clientId.trim();
-                    (auth as any).client_secret = clientSecret.trim();
-                    if (tokenUrl.trim()) {
-                        (auth as any).token_url = tokenUrl.trim();
+                // OAuth 2.1 with PKCE - no additional config needed, SDK handles it
+            }
+
+            // Advanced: Additional headers with OAuth (for both OAuth types)
+            if (authType === 'oauth' || authType === 'oauth_client_credentials') {
+                const validAdditionalHeaders = additionalHeaders.filter(h => h.key.trim() && h.value.trim());
+                if (validAdditionalHeaders.length > 0) {
+                    auth.additionalHeaders = validAdditionalHeaders.reduce(
+                        (acc, h) => ({ ...acc, [h.key.trim()]: h.value.trim() }),
+                        {}
+                    );
+                }
+
+                // Advanced: Custom OAuth metadata
+                if (customAuthEndpoint.trim() || customTokenEndpoint.trim() || customClientId.trim()) {
+                    auth.customOAuthMetadata = {};
+                    if (customAuthEndpoint.trim()) {
+                        auth.customOAuthMetadata.authorization_endpoint = customAuthEndpoint.trim();
                     }
-                } else if (accessToken.trim()) {
-                    // Only set access token if provided (otherwise SDK will start OAuth flow)
-                    auth.accessToken = accessToken.trim();
+                    if (customTokenEndpoint.trim()) {
+                        auth.customOAuthMetadata.token_endpoint = customTokenEndpoint.trim();
+                    }
+                    if (customClientId.trim()) {
+                        auth.customOAuthMetadata.client_id = customClientId.trim();
+                    }
                 }
             }
         }
 
-        // Disconnect if currently connected
-        if (server.connected) {
+        // Disconnect if currently connected (only for edit mode)
+        if (mode === 'edit' && server.connected) {
             await disconnect(server.id);
         }
 
-        // Update server configuration
-        updateServer(server.id, {
-            name: name.trim(),
-            transport,
-            ...(transport === 'stdio' ? { command: command.trim(), url: undefined } : { url: url.trim(), command: undefined }),
-            auth,
-        });
+        // Add or update server configuration based on mode
+        if (mode === 'add') {
+            // Generate a new ID for the server
+            const newServerId = `server-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const newServer: ServerConfig = {
+                id: newServerId,
+                name: name.trim(),
+                transport,
+                connected: false,
+                ...(transport === 'stdio' ? { command: command.trim() } : { url: url.trim() }),
+                auth,
+            };
+            addServer(newServer);
 
-        // Try to reconnect with new configuration
-        const updatedServer = useAppStore.getState().servers.find(s => s.id === server.id);
-        if (updatedServer) {
-            // Store serverId in session storage for OAuth callback
-            if (updatedServer.auth?.type === 'oauth') {
-                sessionStorage.setItem('oauth_server_id', updatedServer.id);
+            // Try to connect with new server
+            if (auth?.type === 'oauth') {
+                sessionStorage.setItem('oauth_server_id', newServerId);
             }
 
             try {
-                const success = await connect(updatedServer);
+                const success = await connect(newServer);
 
                 if (success) {
                     onClose();
                 } else {
                     // Connection returned false - could be OAuth redirect OR an error
-                    // Check if the server has an error stored on it
-                    const serverAfterConnect = useAppStore.getState().servers.find(s => s.id === server.id);
+                    const serverAfterConnect = useAppStore.getState().servers.find(s => s.id === newServerId);
 
                     if (serverAfterConnect?.error) {
                         // Real connection error - show descriptive message
@@ -179,9 +233,47 @@ export const EditServerModal = memo(function EditServerModal({
                     }
                 }
             } catch (error) {
-                // Unexpected error during connection attempt - show descriptive message
-                const errorMessage = error instanceof Error ? error.message : 'Failed to connect with new configuration. Check settings and try again.';
+                const errorMessage = error instanceof Error ? error.message : 'Failed to connect. Check settings and try again.';
                 setError(errorMessage);
+            }
+        } else {
+            // Edit mode - update existing server
+            updateServer(server.id, {
+                name: name.trim(),
+                transport,
+                ...(transport === 'stdio' ? { command: command.trim(), url: undefined } : { url: url.trim(), command: undefined }),
+                auth,
+            });
+
+            // Try to reconnect with new configuration
+            const updatedServer = useAppStore.getState().servers.find(s => s.id === server.id);
+            if (updatedServer) {
+                // Store serverId in session storage for OAuth callback
+                if (updatedServer.auth?.type === 'oauth') {
+                    sessionStorage.setItem('oauth_server_id', updatedServer.id);
+                }
+
+                try {
+                    const success = await connect(updatedServer);
+
+                    if (success) {
+                        onClose();
+                    } else {
+                        // Connection returned false - could be OAuth redirect OR an error
+                        const serverAfterConnect = useAppStore.getState().servers.find(s => s.id === server.id);
+
+                        if (serverAfterConnect?.error) {
+                            // Real connection error - show descriptive message
+                            setError(serverAfterConnect.error);
+                        } else {
+                            // OAuth redirect is happening - don't show as error
+                            console.log('🔐 OAuth redirect initiated');
+                        }
+                    }
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : 'Failed to connect with new configuration. Check settings and try again.';
+                    setError(errorMessage);
+                }
             }
         }
     };
@@ -200,7 +292,7 @@ export const EditServerModal = memo(function EditServerModal({
                             fontSize: '28px',
                             filter: 'drop-shadow(0 2px 8px rgba(92, 207, 230, 0.3))'
                         }}>🦉</span>
-                        <h2 style={{ margin: 0 }}>Edit Server</h2>
+                        <h2 style={{ margin: 0 }}>{mode === 'add' ? 'Configure Server' : 'Edit Server'}</h2>
                     </div>
                 </div>
 
@@ -332,7 +424,17 @@ export const EditServerModal = memo(function EditServerModal({
                                     checked={authType === 'oauth'}
                                     onChange={(e) => setAuthType(e.target.value as AuthType)}
                                 />
-                                <span>OAuth</span>
+                                <span>OAuth 2.1 (PKCE)</span>
+                            </label>
+                            <label className="radio-option">
+                                <input
+                                    type="radio"
+                                    name="authType"
+                                    value="oauth_client_credentials"
+                                    checked={authType === 'oauth_client_credentials'}
+                                    onChange={(e) => setAuthType(e.target.value as AuthType)}
+                                />
+                                <span>OAuth Client Credentials</span>
                             </label>
                         </div>
                     </div>
@@ -407,80 +509,348 @@ export const EditServerModal = memo(function EditServerModal({
                         </div>
                     )}
 
-                    {/* OAuth Auth Fields */}
+                    {/* OAuth 2.1 with PKCE - no additional fields needed */}
                     {authType === 'oauth' && (
                         <div style={{ marginTop: '16px' }}>
-                            {/* Client Credentials Toggle */}
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    gap: '8px'
-                                }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={useClientCredentials}
-                                        onChange={(e) => setUseClientCredentials(e.target.checked)}
-                                        style={{ accentColor: 'var(--blue-500)' }}
-                                    />
-                                    <span style={{ color: 'var(--text-secondary)' }}>
-                                        Use Client Credentials OAuth
-                                    </span>
-                                </label>
+                            <div className="info-message" style={{ fontSize: '13px', opacity: 0.8 }}>
+                                Hoot will automatically handle the OAuth flow with PKCE when you connect.
                             </div>
 
-                            {useClientCredentials ? (
-                                <>
-                                    <div className="form-field">
-                                        <label className="form-label">Client ID</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            placeholder="your-client-id"
-                                            value={clientId}
-                                            onChange={(e) => setClientId(e.target.value)}
-                                        />
+                            {/* Advanced OAuth Settings */}
+                            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(92, 207, 230, 0.2)' }}>
+                                <button
+                                    onClick={() => setShowAdvancedOAuth(!showAdvancedOAuth)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--blue-500)',
+                                        cursor: 'pointer',
+                                        fontSize: '13px',
+                                        fontWeight: 600,
+                                        padding: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        marginBottom: showAdvancedOAuth ? '16px' : 0
+                                    }}
+                                >
+                                    <span style={{ transform: showAdvancedOAuth ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▶</span>
+                                    Advanced OAuth Settings
+                                </button>
+
+                                {showAdvancedOAuth && (
+                                    <div style={{ marginTop: '16px' }}>
+                                        {/* Additional Headers */}
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label className="form-label" style={{ marginBottom: '8px' }}>
+                                                Additional Headers
+                                                <span style={{
+                                                    marginLeft: '8px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 400,
+                                                    color: 'var(--text-tertiary)',
+                                                    textTransform: 'none',
+                                                    letterSpacing: 0
+                                                }}>
+                                                    (sent with OAuth requests)
+                                                </span>
+                                            </label>
+                                            {additionalHeaders.map((header, index) => (
+                                                <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            placeholder="Header Name (e.g., X-API-Version)"
+                                                            value={header.key}
+                                                            onChange={(e) => {
+                                                                const newHeaders = [...additionalHeaders];
+                                                                newHeaders[index].key = e.target.value;
+                                                                setAdditionalHeaders(newHeaders);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            placeholder="Header Value"
+                                                            value={header.value}
+                                                            onChange={(e) => {
+                                                                const newHeaders = [...additionalHeaders];
+                                                                newHeaders[index].value = e.target.value;
+                                                                setAdditionalHeaders(newHeaders);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    {additionalHeaders.length > 1 && (
+                                                        <button
+                                                            onClick={() => setAdditionalHeaders(additionalHeaders.filter((_, i) => i !== index))}
+                                                            style={{
+                                                                padding: '10px 12px',
+                                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                                borderRadius: '6px',
+                                                                color: 'var(--red-500)',
+                                                                cursor: 'pointer',
+                                                                fontSize: '14px'
+                                                            }}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            <button
+                                                onClick={() => setAdditionalHeaders([...additionalHeaders, { key: '', value: '' }])}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    background: 'rgba(92, 207, 230, 0.1)',
+                                                    border: '1px solid rgba(92, 207, 230, 0.3)',
+                                                    borderRadius: '6px',
+                                                    color: 'var(--blue-500)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                + Add Header
+                                            </button>
+                                        </div>
+
+                                        {/* Custom OAuth Metadata */}
+                                        <div>
+                                            <label className="form-label" style={{ marginBottom: '12px' }}>
+                                                Custom OAuth Endpoints
+                                                <span style={{
+                                                    marginLeft: '8px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 400,
+                                                    color: 'var(--text-tertiary)',
+                                                    textTransform: 'none',
+                                                    letterSpacing: 0
+                                                }}>
+                                                    (overrides auto-discovery)
+                                                </span>
+                                            </label>
+                                            <div className="form-field">
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Authorization Endpoint (optional)"
+                                                    value={customAuthEndpoint}
+                                                    onChange={(e) => setCustomAuthEndpoint(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="form-field">
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Token Endpoint (optional)"
+                                                    value={customTokenEndpoint}
+                                                    onChange={(e) => setCustomTokenEndpoint(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="form-field" style={{ marginBottom: 0 }}>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Custom Client ID (optional)"
+                                                    value={customClientId}
+                                                    onChange={(e) => setCustomClientId(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="form-field">
-                                        <label className="form-label">Client Secret</label>
-                                        <input
-                                            type="password"
-                                            className="form-input"
-                                            placeholder="your-client-secret"
-                                            value={clientSecret}
-                                            onChange={(e) => setClientSecret(e.target.value)}
-                                        />
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* OAuth Client Credentials Fields */}
+                    {authType === 'oauth_client_credentials' && (
+                        <div style={{ marginTop: '16px' }}>
+                            <div className="form-field">
+                                <label className="form-label">Client ID</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="your-client-id"
+                                    value={clientId}
+                                    onChange={(e) => setClientId(e.target.value)}
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Client Secret</label>
+                                <input
+                                    type="password"
+                                    className="form-input"
+                                    placeholder="your-client-secret"
+                                    value={clientSecret}
+                                    onChange={(e) => setClientSecret(e.target.value)}
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Token URL (Optional)</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="https://api.example.com/oauth/token"
+                                    value={tokenUrl}
+                                    onChange={(e) => setTokenUrl(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Advanced OAuth Settings for Client Credentials */}
+                            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(92, 207, 230, 0.2)' }}>
+                                <button
+                                    onClick={() => setShowAdvancedOAuth(!showAdvancedOAuth)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--blue-500)',
+                                        cursor: 'pointer',
+                                        fontSize: '13px',
+                                        fontWeight: 600,
+                                        padding: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        marginBottom: showAdvancedOAuth ? '16px' : 0
+                                    }}
+                                >
+                                    <span style={{ transform: showAdvancedOAuth ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▶</span>
+                                    Advanced Settings
+                                </button>
+
+                                {showAdvancedOAuth && (
+                                    <div style={{ marginTop: '16px' }}>
+                                        {/* Additional Headers */}
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label className="form-label" style={{ marginBottom: '8px' }}>
+                                                Additional Headers
+                                                <span style={{
+                                                    marginLeft: '8px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 400,
+                                                    color: 'var(--text-tertiary)',
+                                                    textTransform: 'none',
+                                                    letterSpacing: 0
+                                                }}>
+                                                    (sent with OAuth requests)
+                                                </span>
+                                            </label>
+                                            {additionalHeaders.map((header, index) => (
+                                                <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            placeholder="Header Name (e.g., X-API-Version)"
+                                                            value={header.key}
+                                                            onChange={(e) => {
+                                                                const newHeaders = [...additionalHeaders];
+                                                                newHeaders[index].key = e.target.value;
+                                                                setAdditionalHeaders(newHeaders);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            placeholder="Header Value"
+                                                            value={header.value}
+                                                            onChange={(e) => {
+                                                                const newHeaders = [...additionalHeaders];
+                                                                newHeaders[index].value = e.target.value;
+                                                                setAdditionalHeaders(newHeaders);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    {additionalHeaders.length > 1 && (
+                                                        <button
+                                                            onClick={() => setAdditionalHeaders(additionalHeaders.filter((_, i) => i !== index))}
+                                                            style={{
+                                                                padding: '10px 12px',
+                                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                                borderRadius: '6px',
+                                                                color: 'var(--red-500)',
+                                                                cursor: 'pointer',
+                                                                fontSize: '14px'
+                                                            }}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            <button
+                                                onClick={() => setAdditionalHeaders([...additionalHeaders, { key: '', value: '' }])}
+                                                style={{
+                                                    padding: '10px 16px',
+                                                    background: 'rgba(92, 207, 230, 0.1)',
+                                                    border: '1px solid rgba(92, 207, 230, 0.3)',
+                                                    borderRadius: '6px',
+                                                    color: 'var(--blue-500)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '13px',
+                                                    fontWeight: 600,
+                                                    marginTop: '8px'
+                                                }}
+                                            >
+                                                + Add Header
+                                            </button>
+                                        </div>
+
+                                        {/* Custom OAuth Metadata */}
+                                        <div>
+                                            <label className="form-label" style={{ marginBottom: '12px' }}>
+                                                Custom OAuth Endpoints
+                                                <span style={{
+                                                    marginLeft: '8px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 400,
+                                                    color: 'var(--text-tertiary)',
+                                                    textTransform: 'none',
+                                                    letterSpacing: 0
+                                                }}>
+                                                    (overrides auto-discovery)
+                                                </span>
+                                            </label>
+                                            <div className="form-field">
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Authorization Endpoint (optional)"
+                                                    value={customAuthEndpoint}
+                                                    onChange={(e) => setCustomAuthEndpoint(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="form-field">
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Token Endpoint (optional)"
+                                                    value={customTokenEndpoint}
+                                                    onChange={(e) => setCustomTokenEndpoint(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="form-field" style={{ marginBottom: 0 }}>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Custom Client ID (optional)"
+                                                    value={customClientId}
+                                                    onChange={(e) => setCustomClientId(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="form-field">
-                                        <label className="form-label">Token URL (Optional)</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            placeholder="https://api.example.com/oauth/token"
-                                            value={tokenUrl}
-                                            onChange={(e) => setTokenUrl(e.target.value)}
-                                        />
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="form-field">
-                                        <label className="form-label">Access Token (Optional)</label>
-                                        <input
-                                            type="password"
-                                            className="form-input"
-                                            placeholder="Leave empty to start OAuth flow automatically"
-                                            value={accessToken}
-                                            onChange={(e) => setAccessToken(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="info-message" style={{ fontSize: '13px', opacity: 0.8 }}>
-                                        Hoot supports OAuth 2.1 with PKCE and automatic token refresh. Leave empty to let Hoot handle the OAuth flow.
-                                    </div>
-                                </>
-                            )}
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -494,7 +864,7 @@ export const EditServerModal = memo(function EditServerModal({
                         onClick={handleSubmit}
                         disabled={isConnecting}
                     >
-                        {isConnecting ? 'Connecting...' : 'Save & Reconnect'}
+                        {isConnecting ? 'Connecting...' : (mode === 'add' ? 'Add Server' : 'Save & Reconnect')}
                     </button>
                 </div>
             </div>

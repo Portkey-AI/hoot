@@ -2,5 +2,81 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
+  flex-direction: column;
 }
 
+/* Mode Switcher */
+.mode-switcher {
+  display: flex;
+  gap: 0;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  position: relative;
+}
+
+.mode-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  position: relative;
+}
+
+.mode-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mode-button.active {
+  background: var(--bg-active);
+  color: var(--text-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mode-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.75rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--blue-500);
+}
+
+.mode-button span {
+  font-weight: 500;
+}
+
+.demo-badge {
+  margin-left: 0.375rem;
+  padding: 0.125rem 0.375rem;
+  background: var(--orange-500);
+  color: var(--bg-primary);
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Adjust app layout when mode switcher is present */
+.app> :not(.mode-switcher) {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Test tools container */
+.test-tools-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}

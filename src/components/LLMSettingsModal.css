@@ -1,0 +1,185 @@
+.llm-settings-modal {
+    max-width: 600px;
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.settings-section h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.settings-description {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.api-key-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.api-key-input {
+    flex: 1;
+    padding: 0.75rem;
+    padding-right: 3rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(92, 207, 230, 0.1);
+}
+
+.api-key-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.toggle-visibility {
+    position: absolute;
+    right: 0.625rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    padding: 0.25rem;
+}
+
+.toggle-visibility:hover {
+    opacity: 1;
+}
+
+.info-box {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.info-box.security-note {
+    background: rgba(186, 230, 126, 0.05);
+    border-color: var(--green-500);
+}
+
+.info-box-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--blue-500);
+    margin-bottom: 0.5rem;
+}
+
+.info-box p {
+    margin: 0.5rem 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.info-box p:first-of-type {
+    margin-top: 0;
+}
+
+.info-box p:last-of-type {
+    margin-bottom: 0;
+}
+
+.info-link {
+    color: var(--blue-500);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.info-link:hover {
+    text-decoration: underline;
+}
+
+.settings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.info-item {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.info-item strong {
+    color: var(--text-primary);
+    min-width: 80px;
+}
+
+.button-primary,
+.button-secondary {
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.button-primary {
+    background: var(--blue-500);
+    border: none;
+    color: var(--bg-primary);
+}
+
+.button-primary:hover:not(:disabled) {
+    background: var(--blue-600);
+    transform: translateY(-1px);
+}
+
+.button-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.button-secondary {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-bright);
+    color: var(--text-primary);
+}
+
+.button-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--blue-500);
+}
