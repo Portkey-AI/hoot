@@ -4,13 +4,13 @@
     min-height: 200px;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     transition: border-color var(--transition-fast);
 }
 
 .json-editor-wrapper:focus-within {
-    border-color: var(--blue-500);
+    border-color: var(--theme-accent-primary);
 }
 
 .json-editor-highlight {
@@ -59,39 +59,39 @@
 }
 
 .json-editor-input::placeholder {
-    color: var(--text-tertiary);
+    color: var(--text-placeholder);
 }
 
-/* Syntax highlighting colors matching JsonViewer */
+/* Syntax highlighting colors matching Nord theme */
 .json-editor-highlight .json-key {
-    color: var(--ayu-accent-blue);
+    color: var(--theme-accent-primary);
     font-weight: 500;
 }
 
 .json-editor-highlight .json-string {
-    color: var(--ayu-accent-green);
+    color: var(--theme-success);
 }
 
 .json-editor-highlight .json-number {
-    color: var(--ayu-accent-orange);
+    color: var(--theme-special);
 }
 
 .json-editor-highlight .json-boolean {
-    color: var(--ayu-accent-purple);
+    color: var(--theme-accent-tertiary);
     font-weight: 600;
 }
 
 .json-editor-highlight .json-null {
-    color: var(--ayu-accent-purple);
+    color: var(--theme-accent-tertiary);
     font-weight: 600;
     font-style: italic;
 }
 
 .json-editor-highlight .json-bracket {
-    color: var(--ayu-text-secondary);
+    color: var(--theme-text-tertiary);
     font-weight: 600;
 }
 
 .json-editor-highlight .json-punctuation {
-    color: var(--ayu-text-tertiary);
+    color: var(--theme-bg-active);
 }

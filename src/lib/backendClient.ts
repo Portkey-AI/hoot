@@ -11,6 +11,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8008';
 
 // Session token for authentication
 let sessionToken: string | null = null;
+let tokenInitPromise: Promise<string> | null = null;
 
 /**
  * Retrieve and cache the session token from backend
@@ -21,28 +22,59 @@ async function getSessionToken(): Promise<string> {
         return sessionToken;
     }
 
+    // If a token fetch is already in progress, wait for it
+    if (tokenInitPromise) {
+        return tokenInitPromise;
+    }
+
+    tokenInitPromise = (async () => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/auth/token`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to retrieve session token');
+            }
+
+            const data = await response.json();
+            sessionToken = data.token;
+
+            if (!sessionToken) {
+                throw new Error('No token received from backend');
+            }
+
+            return sessionToken;
+        } catch (error) {
+            console.error('Failed to get session token:', error);
+            tokenInitPromise = null; // Reset so we can retry
+            // Provide a user-friendly error message
+            throw new Error('Cannot connect to Hoot backend. Make sure it\'s running on port 8008.');
+        } finally {
+            // Clear the promise once completed (success or failure)
+            // Keep sessionToken cached if successful
+            if (sessionToken) {
+                tokenInitPromise = null;
+            }
+        }
+    })();
+
+    return tokenInitPromise;
+}
+
+/**
+ * Initialize the backend client by fetching the session token
+ * This should be called when the app starts to ensure the token is ready
+ * before any components try to make authenticated requests
+ */
+export async function initializeBackendClient(): Promise<void> {
     try {
-        const response = await fetch(`${BACKEND_URL}/auth/token`, {
-            method: 'GET',
-            credentials: 'include',
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to retrieve session token');
-        }
-
-        const data = await response.json();
-        sessionToken = data.token;
-
-        if (!sessionToken) {
-            throw new Error('No token received from backend');
-        }
-
-        return sessionToken;
+        await getSessionToken();
+        console.log('Backend client initialized successfully');
     } catch (error) {
-        console.error('Failed to get session token:', error);
-        // Provide a user-friendly error message
-        throw new Error('Cannot connect to Hoot backend. Make sure it\'s running on port 8008.');
+        console.error('Failed to initialize backend client:', error);
+        // Don't throw - let individual requests handle the error
     }
 }
 
@@ -123,6 +155,7 @@ export async function autoDetectServer(
     transport?: 'http' | 'sse';
     requiresOAuth?: boolean;
     requiresClientCredentials?: boolean;
+    requiresHeaderAuth?: boolean; // NEW: indicates header-based auth is needed
     error?: string
 }> {
     try {
@@ -145,6 +178,8 @@ export async function autoDetectServer(
             serverInfo: data.serverInfo,
             transport: data.transport,
             requiresOAuth: data.requiresOAuth || false,
+            requiresClientCredentials: data.requiresClientCredentials || false,
+            requiresHeaderAuth: data.requiresHeaderAuth || false,
         };
     } catch (error) {
         console.error('Auto-detect error:', error);
@@ -359,6 +394,38 @@ export async function getConnections(): Promise<string[]> {
     } catch (error) {
         console.error('Backend connections error:', error);
         return [];
+    }
+}
+
+/**
+ * Get OAuth metadata for a connected server
+ * This includes information like logo_uri from the OAuth authorization server
+ */
+export async function getOAuthMetadata(serverId: string): Promise<{
+    issuer?: string;
+    authorization_endpoint?: string;
+    token_endpoint?: string;
+    logo_uri?: string;
+    [key: string]: unknown;
+} | null> {
+    try {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/oauth-metadata/${serverId}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            // 404 is expected if server hasn't connected yet - don't log error
+            if (response.status !== 404) {
+                console.error(`Failed to fetch OAuth metadata (${response.status}):`, await response.text());
+            }
+            return null;
+        }
+
+        const data = await response.json();
+        return data.metadata || null;
+    } catch (error) {
+        console.error('Backend get OAuth metadata error:', error);
+        return null;
     }
 }
 

@@ -1,0 +1,96 @@
+/* Switch Wrapper */
+.switch-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+/* Switch Input (hidden) */
+.switch {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Switch Slider */
+.switch-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.switch-slider::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+/* Hover State */
+.switch:not(:disabled) + .switch-slider:hover {
+  border-color: var(--border-bright);
+}
+
+/* Checked State */
+.switch:checked + .switch-slider {
+  background: var(--theme-accent-primary);
+  border-color: var(--theme-accent-primary);
+}
+
+.switch:checked + .switch-slider::before {
+  left: 22px;
+  background: var(--theme-bg-primary);
+}
+
+/* Disabled State */
+.switch:disabled + .switch-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Focus State */
+.switch:focus-visible + .switch-slider {
+  outline: 2px solid var(--theme-accent-primary);
+  outline-offset: 2px;
+}
+
+/* Label */
+.switch-label {
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch:disabled ~ .switch-label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Helper Text */
+.switch-helper-text {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  margin-left: 56px;
+}
+

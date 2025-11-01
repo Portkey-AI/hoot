@@ -1,0 +1,80 @@
+/* Select Wrapper */
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Label */
+.select-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.select-required {
+  color: var(--theme-error);
+  font-weight: 600;
+}
+
+/* Select Field */
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  padding-right: 32px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d8dee9' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.select:hover:not(:disabled) {
+  border-color: var(--border-bright);
+}
+
+.select:focus {
+  border-color: var(--theme-accent-primary);
+  background-color: var(--bg-secondary);
+}
+
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--bg-secondary);
+}
+
+/* Error State */
+.select-error {
+  border-color: var(--theme-error);
+}
+
+.select-error:focus {
+  border-color: var(--theme-error);
+}
+
+/* Helper Text */
+.select-helper-text {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+.select-error-text {
+  font-size: 12px;
+  color: var(--theme-error);
+  line-height: 1.4;
+}
+

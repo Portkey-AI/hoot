@@ -1,0 +1,113 @@
+/**
+ * Hoot Theme: Ayu Mirage
+ * The original Hoot theme - calm, muted, and eye-friendly
+ * Base: Deep blue-gray, Accent: Soft desaturated colors
+ */
+
+:root {
+    /* Ayu Mirage Color Palette */
+    /* Base colors - Deep blue-grays */
+    --ayu-bg-0: #1f2430;
+    /* Deepest - primary backgrounds */
+    --ayu-bg-1: #232834;
+    /* Dark - elevated surfaces */
+    --ayu-bg-2: #2d3340;
+    /* Mid - hover states */
+    --ayu-bg-3: #3e4555;
+    /* Light - borders, active */
+    --ayu-bg-4: #505766;
+    /* Subtle elements */
+
+    /* Text colors - Muted whites/grays */
+    --ayu-text-0: #d9d7ce;
+    /* Primary text */
+    --ayu-text-1: #cbccc6;
+    /* Secondary text */
+    --ayu-text-2: #b8b9b5;
+    /* Tertiary text */
+    --ayu-text-3: #95989a;
+    /* Muted text */
+    --ayu-text-4: #73767a;
+    /* Very muted */
+
+    /* Semantic accent colors - Soft, desaturated */
+    --ayu-accent-cyan: #5ccfe6;
+    /* Primary - soft cyan */
+    --ayu-accent-blue: #73d0ff;
+    /* Info - light blue */
+    --ayu-accent-orange: #ffad66;
+    /* Highlights - warm orange */
+    --ayu-accent-yellow: #ffd580;
+    /* Warnings - soft yellow */
+    --ayu-accent-green: #bae67e;
+    /* Success - lime green */
+    --ayu-accent-purple: #d4bfff;
+    /* Special - lavender */
+    --ayu-accent-red: #f28779;
+    /* Error - coral red */
+
+    /* Theme mapping */
+    --theme-bg-primary: var(--ayu-bg-0);
+    --theme-bg-secondary: var(--ayu-bg-1);
+    --theme-bg-tertiary: var(--ayu-bg-2);
+    --theme-bg-hover: var(--ayu-bg-2);
+    --theme-bg-active: var(--ayu-bg-3);
+
+    --theme-text-primary: var(--ayu-text-0);
+    --theme-text-secondary: var(--ayu-text-1);
+    --theme-text-tertiary: var(--ayu-text-2);
+    --theme-text-white: var(--ayu-text-0);
+    --theme-text-placeholder: var(--ayu-bg-4);
+
+    --theme-border-color: var(--ayu-bg-3);
+    --theme-border-bright: var(--ayu-accent-cyan);
+
+    --theme-accent-primary: var(--ayu-accent-cyan);
+    --theme-accent-primary-hover: #6fd9f0;
+    --theme-accent-secondary: var(--ayu-accent-blue);
+    --theme-accent-tertiary: #80d4ff;
+    --theme-accent-deep: #4db8d4;
+
+    --theme-success: var(--ayu-accent-green);
+    --theme-success-bright: #c4ea8e;
+    --theme-error: var(--ayu-accent-red);
+    --theme-warning: var(--ayu-accent-yellow);
+    --theme-info: var(--ayu-accent-orange);
+    --theme-special: var(--ayu-accent-purple);
+
+    /* Hills - Blue-gray gradient layers */
+    --hills-layer-1: #232834;
+    /* Darkest back */
+    --hills-layer-2: #2d3340;
+    /* Middle */
+    --hills-layer-3: #3e4555;
+    /* Front */
+
+    /* ============================================ */
+    /* Legacy Support - Components use these */
+    /* ============================================ */
+
+    --bg-primary: var(--theme-bg-primary);
+    --bg-secondary: var(--theme-bg-secondary);
+    --bg-tertiary: var(--theme-bg-tertiary);
+    --bg-hover: var(--theme-bg-hover);
+    --bg-active: var(--theme-bg-active);
+
+    --text-primary: var(--theme-text-primary);
+    --text-secondary: var(--theme-text-secondary);
+    --text-tertiary: var(--theme-text-tertiary);
+    --text-white: var(--theme-text-white);
+    --text-placeholder: var(--theme-text-placeholder);
+
+    --border-color: var(--theme-border-color);
+    --border-bright: var(--theme-border-bright);
+
+    --blue-500: var(--theme-accent-primary);
+    --blue-600: var(--theme-accent-tertiary);
+    --green-500: var(--theme-success);
+    --green-600: var(--theme-success-bright);
+    --red-500: var(--theme-error);
+    --yellow-500: var(--theme-warning);
+    --purple-500: var(--theme-special);
+    --orange-500: var(--theme-info);
+}

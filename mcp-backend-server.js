@@ -211,12 +211,63 @@ app.post('/mcp/auto-detect', async (req, res) => {
 
         console.log(`🔍 Auto-detecting configuration for: ${url}`);
 
+        // Step 1: Make a direct HTTP POST to check WWW-Authenticate header
+        // This is the MCP-spec-compliant way to detect OAuth (RFC 9728)
+        let requiresOAuthFromHeader = false;
+        let resourceMetadata = null;
+        let scope = null;
+
+        try {
+            console.log(`🔍 Probing for WWW-Authenticate header...`);
+            const probeResponse = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    method: 'initialize',
+                    id: 1,
+                    params: {
+                        protocolVersion: '2024-11-05',
+                        capabilities: {},
+                        clientInfo: { name: 'hoot-backend', version: '0.2.0' }
+                    }
+                })
+            });
+
+            if (probeResponse.status === 401) {
+                const wwwAuth = probeResponse.headers.get('www-authenticate');
+                console.log(`🔍 WWW-Authenticate:`, wwwAuth);
+
+                if (wwwAuth && wwwAuth.toLowerCase().includes('bearer')) {
+                    requiresOAuthFromHeader = true;
+                    console.log(`🔐 OAuth detected via WWW-Authenticate header (MCP spec compliant)`);
+
+                    // Extract resource_metadata URL (RFC 9728)
+                    const resourceMatch = wwwAuth.match(/resource_metadata="([^"]+)"/);
+                    if (resourceMatch) {
+                        resourceMetadata = resourceMatch[1];
+                        console.log(`📋 Resource metadata URL:`, resourceMetadata);
+                    }
+
+                    // Extract scope (RFC 6750)
+                    const scopeMatch = wwwAuth.match(/scope="([^"]+)"/);
+                    if (scopeMatch) {
+                        scope = scopeMatch[1];
+                        console.log(`🔑 Required scope:`, scope);
+                    }
+                }
+            }
+        } catch (probeError) {
+            console.log(`⚠️  WWW-Authenticate probe failed:`, probeError.message);
+        }
+
         // Try transports in order: HTTP first, then SSE
         const transportsToTry = ['http', 'sse'];
         let detectedTransport = null;
         let serverInfo = null;
-        let requiresOAuth = false;
+        let requiresOAuth = requiresOAuthFromHeader; // Start with header detection
         let requiresClientCredentials = false;
+        let requiresHeaderAuth = false;
         let lastError = null;
 
         for (const transport of transportsToTry) {
@@ -287,12 +338,23 @@ app.post('/mcp/auto-detect', async (req, res) => {
             } catch (error) {
                 console.log(`❌ ${transport.toUpperCase()} failed:`, error.message);
 
-                // Check if it's an OAuth error
-                const isOAuthError = error.name === 'UnauthorizedError' ||
-                    (error.message && error.message.includes('401'));
+                // Log full error for debugging OAuth detection
+                console.log(`🔍 Error details:`, {
+                    name: error.name,
+                    hasAuthorizationUrl: !!error.authorizationUrl,
+                    authorizationUrl: error.authorizationUrl,
+                    errorMessage: error.message
+                });
+
+                // Check if it's an OAuth error (SDK throws UnauthorizedError with authorizationUrl)
+                const isOAuthError = error.name === 'UnauthorizedError' && error.authorizationUrl;
+
+                // Check if it's a generic auth error (401/403 but no OAuth detected)
+                const is401or403 = error.message && (error.message.includes('401') || error.message.includes('403'));
+                const isHeaderAuthError = is401or403 && !isOAuthError && !requiresOAuthFromHeader;
 
                 if (isOAuthError) {
-                    console.log(`🔐 OAuth detected for ${transport.toUpperCase()}`);
+                    console.log(`🔐 OAuth detected for ${transport.toUpperCase()} (SDK UnauthorizedError)`);
                     detectedTransport = transport;
                     requiresOAuth = true;
 
@@ -334,6 +396,69 @@ app.post('/mcp/auto-detect', async (req, res) => {
                         }
                     } catch (metadataError) {
                         console.log(`Could not extract server metadata:`, metadataError.message);
+                    }
+
+                    break;
+                }
+
+                // Handle header-based auth (401/403 but not OAuth)
+                if (isHeaderAuthError) {
+                    console.log(`🔑 Custom auth detected for ${transport.toUpperCase()} (401/403 without OAuth)`);
+                    detectedTransport = transport;
+                    requiresOAuth = false; // Explicitly not OAuth
+                    requiresHeaderAuth = true; // Mark that custom auth is needed
+
+                    // Try to extract server name from URL since we can't connect
+                    try {
+                        const urlObj = new URL(url);
+                        const hostname = urlObj.hostname;
+                        const parts = hostname.split('.');
+                        let extractedName = 'MCP Server';
+
+                        if (parts.length >= 2) {
+                            const namePart = parts[parts.length - 2];
+                            extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+                        }
+
+                        serverInfo = {
+                            name: extractedName,
+                            version: '1.0.0',
+                        };
+
+                        console.log(`ℹ️  Custom auth detected, extracted name from URL: ${extractedName}`);
+                    } catch (urlError) {
+                        serverInfo = { name: 'MCP Server', version: '1.0.0' };
+                    }
+
+                    break;
+                }
+
+                // If OAuth was detected from WWW-Authenticate header but SDK didn't recognize it
+                if (requiresOAuthFromHeader && is401or403) {
+                    console.log(`🔐 Using OAuth from WWW-Authenticate header for ${transport.toUpperCase()}`);
+                    detectedTransport = transport;
+                    requiresOAuth = true;
+
+                    // Try to extract server name from URL
+                    try {
+                        const urlObj = new URL(url);
+                        const hostname = urlObj.hostname;
+                        const parts = hostname.split('.');
+                        let extractedName = 'MCP Server';
+
+                        if (parts.length >= 2) {
+                            const namePart = parts[parts.length - 2];
+                            extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+                        }
+
+                        serverInfo = {
+                            name: extractedName,
+                            version: '1.0.0',
+                        };
+
+                        console.log(`ℹ️  OAuth server, extracted name from URL: ${extractedName}`);
+                    } catch (urlError) {
+                        serverInfo = { name: 'MCP Server', version: '1.0.0' };
                     }
 
                     break;
@@ -389,6 +514,16 @@ app.post('/mcp/auto-detect', async (req, res) => {
             serverInfo,
             requiresOAuth,
             requiresClientCredentials,
+            requiresHeaderAuth, // NEW: indicates custom auth needed (generic 401/403)
+        });
+
+        console.log('📤 Auto-detect response:', {
+            success: true,
+            transport: detectedTransport,
+            serverName: serverInfo?.name,
+            requiresOAuth,
+            requiresClientCredentials,
+            requiresHeaderAuth,
         });
     } catch (error) {
         console.error('Auto-detect error:', error);
@@ -707,6 +842,46 @@ app.get('/mcp/server-info/:serverId', async (req, res) => {
         res.status(500).json({
             success: false,
             error: error.message || 'Failed to get server info'
+        });
+    }
+});
+
+/**
+ * Get OAuth metadata for a connected server
+ * GET /mcp/oauth-metadata/:serverId
+ * Returns: { success: boolean, metadata?: object }
+ */
+app.get('/mcp/oauth-metadata/:serverId', async (req, res) => {
+    try {
+        const { serverId } = req.params;
+
+        const transport = transports.get(serverId);
+        if (!transport) {
+            return res.status(404).json({
+                success: false,
+                error: 'Server not connected'
+            });
+        }
+
+        // Check if transport has authServerMetadata (available in SDK)
+        const metadata = transport.authServerMetadata || null;
+
+        if (metadata) {
+            console.log(`📋 Retrieved OAuth metadata for ${serverId}:`, {
+                issuer: metadata.issuer,
+                hasLogoUri: !!metadata.logo_uri
+            });
+        }
+
+        res.json({
+            success: true,
+            metadata: metadata
+        });
+    } catch (error) {
+        console.error('Get OAuth metadata error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to get OAuth metadata'
         });
     }
 });

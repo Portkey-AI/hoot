@@ -1,7 +1,7 @@
 // Core MCP types
 export type TransportType = 'stdio' | 'sse' | 'http';
 
-export type AuthType = 'none' | 'headers' | 'oauth';
+export type AuthType = 'none' | 'headers' | 'oauth' | 'oauth_client_credentials';
 
 export interface AuthConfig {
   type: AuthType;
@@ -17,6 +17,25 @@ export interface AuthConfig {
   accessToken?: string;
   refreshToken?: string;
   tokenExpiresAt?: Date;
+  // Advanced: Additional headers to send with OAuth requests
+  additionalHeaders?: Record<string, string>;
+  // Advanced: Custom OAuth metadata (overrides auto-discovery)
+  customOAuthMetadata?: {
+    authorization_endpoint?: string;
+    token_endpoint?: string;
+    client_id?: string;
+    response_types_supported?: string[];
+    grant_types_supported?: string[];
+    token_endpoint_auth_method?: string;
+  };
+  // OAuth server metadata (from authorization server discovery)
+  oauthServerMetadata?: {
+    issuer?: string;
+    authorization_endpoint?: string;
+    token_endpoint?: string;
+    logo_uri?: string;
+    [key: string]: unknown;
+  };
 }
 
 export interface ServerConfig {
@@ -29,6 +48,7 @@ export interface ServerConfig {
   connected: boolean;
   lastConnected?: Date;
   error?: string;
+  faviconUrl?: string | null; // Cached favicon URL for the server (null = no favicon found)
 }
 
 export interface ToolSchema {

@@ -44,11 +44,11 @@
 
 .add-server-btn {
   width: 100%;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
-  color: var(--bg-primary);
+  padding: 10px 16px;
+  background: var(--theme-accent-primary);
+  color: var(--theme-bg-primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -57,16 +57,14 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  box-shadow: 0 2px 8px rgba(92, 207, 230, 0.2);
 }
 
 .add-server-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(92, 207, 230, 0.3);
+  background: var(--theme-accent-primary-hover);
 }
 
 .add-server-btn:active {
-  transform: translateY(0);
+  background: var(--theme-accent-tertiary);
 }
 
 .btn-icon {
@@ -87,10 +85,9 @@
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-sm);
   background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
-  will-change: background;
   border: 1px solid transparent;
 }
 
@@ -101,8 +98,7 @@
 
 .server-item.active {
   background: var(--bg-active);
-  border-color: var(--blue-500);
-  box-shadow: 0 0 0 1px var(--blue-500) inset;
+  border-color: var(--theme-accent-primary);
 }
 
 .server-header {
@@ -121,8 +117,8 @@
 }
 
 .status-dot.connected {
-  background: var(--green-500);
-  box-shadow: 0 0 8px var(--green-500);
+  background: var(--theme-success);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-success) 20%, transparent);
 }
 
 .status-dot.connected::after {
@@ -133,9 +129,8 @@
   right: -2px;
   bottom: -2px;
   border-radius: 50%;
-  border: 1px solid var(--green-500);
+  border: 1px solid var(--theme-success);
   opacity: 0.3;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .status-dot.disconnected {
@@ -154,18 +149,20 @@
 }
 
 .tool-count {
-  background: var(--bg-hover);
+  background: color-mix(in srgb, var(--theme-accent-tertiary) 15%, transparent);
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 11px;
-  color: var(--orange-500);
+  color: var(--theme-accent-tertiary);
   font-weight: 600;
   font-family: var(--font-mono);
+  border: 1px solid color-mix(in srgb, var(--theme-accent-tertiary) 20%, transparent);
 }
 
 .server-transport {
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--theme-accent-secondary);
+  /* Calm polar water for transport type */
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -181,7 +178,7 @@
   padding: 10px 12px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 13px;
   margin-bottom: var(--spacing-md);
@@ -190,20 +187,20 @@
 }
 
 .search-box:focus {
-  border-color: var(--blue-500);
+  border-color: var(--theme-accent-primary);
   background: var(--bg-hover);
-  box-shadow: 0 0 0 3px rgba(92, 207, 230, 0.1);
+  outline: none;
 }
 
 .search-box::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
 }
 
 .tool-item {
   padding: 10px var(--spacing-md);
   margin-bottom: 6px;
   background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
   border: 1px solid transparent;
@@ -212,12 +209,11 @@
 .tool-item:hover {
   background: var(--bg-hover);
   border-color: var(--border-bright);
-  transform: translateX(2px);
 }
 
 .tool-item.active {
   background: var(--bg-active);
-  border-color: var(--blue-500);
+  border-color: var(--theme-accent-primary);
 }
 
 .tool-name {

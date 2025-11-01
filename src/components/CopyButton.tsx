@@ -33,6 +33,7 @@ export const CopyButton = memo(function CopyButton({
 
     return (
         <button
+            type="button"
             className={`copy-btn copy-btn-${size}`}
             onClick={handleCopy}
             title={label}

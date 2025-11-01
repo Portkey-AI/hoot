@@ -4,6 +4,7 @@ import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import { toast } from '../stores/toastStore';
 import type { TransportType, AuthConfig } from '../types';
+import { Button } from './ui';
 import './Modal.css';
 
 interface ServerConfigImport {
@@ -223,12 +224,12 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={onCancel}>
+                    <Button variant="secondary" onClick={onCancel}>
                         Cancel
-                    </button>
-                    <button className="btn btn-primary" onClick={onConfirm}>
+                    </Button>
+                    <Button variant="primary" onClick={onConfirm}>
                         Add & Connect
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>,
