@@ -11,151 +11,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hoot - MCP Inspector & Playground</title>
 
-  <!-- Theme CSS - Default: Ayu Mirage (Original) -->
-  <link id="theme-link" rel="stylesheet" href="/src/themes/ayu-mirage.css" />
-
-  <style>
-    /* Theme switcher UI - Subtle, bottom-right */
-    .theme-switcher {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9999;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      opacity: 0.6;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-
-    .theme-switcher:hover {
-      opacity: 1;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-
-    .theme-switcher-label {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-tertiary);
-      margin-bottom: 6px;
-      display: block;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      text-align: center;
-    }
-
-    .theme-buttons {
-      display: flex;
-      gap: 4px;
-    }
-
-    .theme-btn {
-      padding: 6px 8px;
-      font-size: 16px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-tertiary);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 150ms;
-      line-height: 1;
-      position: relative;
-    }
-
-    .theme-btn:hover {
-      background: var(--bg-hover);
-      border-color: var(--border-bright);
-      transform: scale(1.1);
-    }
-
-    .theme-btn.active {
-      background: var(--theme-accent-primary);
-      border-color: var(--theme-accent-primary);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 40%, transparent);
-    }
-
-    /* Tooltip styles */
-    .theme-btn::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-8px);
-      background: var(--bg-primary);
-      border: 1px solid var(--border-bright);
-      color: var(--text-primary);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 500;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 150ms, transform 150ms;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      z-index: 10000;
-    }
-
-    .theme-btn:hover::after {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-12px);
-    }
-  </style>
+  <!-- Theme CSS - Load from localStorage or default to Ayu Mirage -->
+  <script>
+    // Load saved theme immediately to prevent flash
+    const savedTheme = localStorage.getItem('hoot-theme') || 'ayu-mirage';
+    document.write('<link id="theme-link" rel="stylesheet" href="/src/themes/' + savedTheme + '.css" />');
+  </script>
 </head>
 
 <body>
   <div id="root"></div>
-
-  <!-- Theme Switcher UI - Subtle, bottom-right corner -->
-  <div class="theme-switcher">
-    <label class="theme-switcher-label">Themes</label>
-    <div class="theme-buttons">
-      <button class="theme-btn" data-theme="arctic-ice" data-tooltip="Arctic Ice">🏔️</button>
-      <button class="theme-btn active" data-theme="ayu-mirage" data-tooltip="Ayu Mirage">🌫️</button>
-      <button class="theme-btn" data-theme="duotone-dark" data-tooltip="DuoTone Dark">🌙</button>
-      <button class="theme-btn" data-theme="duotone-sea" data-tooltip="DuoTone Sea">🌊</button>
-      <button class="theme-btn" data-theme="duotone-forest" data-tooltip="DuoTone Forest">🌲</button>
-    </div>
-  </div>
-
-  <script>
-    // Theme switcher logic
-    function switchTheme(themeName) {
-      const link = document.getElementById('theme-link');
-      link.href = `/src/themes/${themeName}.css`;
-
-      // Store preference
-      localStorage.setItem('hoot-theme', themeName);
-
-      // Update active button
-      document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.theme === themeName);
-      });
-
-      // Regenerate hills with new theme colors (after a brief delay for CSS to load)
-      setTimeout(() => {
-        if (window.initializeHills) {
-          window.initializeHills();
-        }
-      }, 100);
-    }
-
-    // Load saved theme preference (default to ayu-mirage)
-    const savedTheme = localStorage.getItem('hoot-theme') || 'ayu-mirage';
-    if (savedTheme) {
-      switchTheme(savedTheme);
-    }
-
-    // Attach click handlers
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        switchTheme(btn.dataset.theme);
-      });
-    });
-  </script>
-
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

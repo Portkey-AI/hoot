@@ -1,9 +1,10 @@
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import * as backendClient from '../lib/backendClient';
 import { ServerConfigForm } from './ServerConfigForm';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import type { ServerConfig } from '../types';
+import { Button, Input } from './ui';
 import './Modal.css';
 
 interface AddServerModalProps {
@@ -21,6 +22,16 @@ interface DetectionStage {
 
 export const AddServerModal = memo(function AddServerModal({ onClose }: AddServerModalProps) {
   console.log('🦉 AddServerModal rendered');
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
@@ -228,23 +239,19 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
           ) : (
             <>
               {/* URL Input */}
-              <div className="form-field">
-                <label className="form-label">Server URL</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="http://localhost:3000/mcp"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && detectionStep === 'idle') {
-                      handleDetect();
-                    }
-                  }}
-                  disabled={detectionStep === 'detecting'}
-                  autoFocus
-                />
-              </div>
+              <Input
+                label="Server URL"
+                placeholder="http://localhost:3000/mcp"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && detectionStep === 'idle') {
+                    handleDetect();
+                  }
+                }}
+                disabled={detectionStep === 'detecting'}
+                autoFocus
+              />
 
               {/* Detection Progress */}
               {detectionStep === 'detecting' && (
@@ -327,21 +334,21 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
 
         {detectionStep !== 'configuring' && (
           <div className="modal-footer">
-            <button
-              className="btn btn-secondary"
+            <Button
+              variant="secondary"
               onClick={onClose}
               disabled={detectionStep === 'detecting'}
             >
               Cancel
-            </button>
+            </Button>
             {detectionStep === 'idle' || detectionStep === 'error' ? (
-              <button
-                className="btn btn-primary"
+              <Button
+                variant="primary"
                 onClick={handleDetect}
                 disabled={!url.trim()}
               >
                 Detect Server
-              </button>
+              </Button>
             ) : null}
           </div>
         )}

@@ -72,7 +72,7 @@
     padding: 10px 12px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-size: 13px;
     transition: all var(--transition-fast);
@@ -82,7 +82,6 @@
 .search-box:focus {
     border-color: var(--blue-500);
     background: var(--bg-hover);
-    box-shadow: 0 0 0 2px rgba(92, 207, 230, 0.15);
     outline: none;
 }
 
@@ -103,7 +102,7 @@
     padding: 12px var(--spacing-md);
     margin-bottom: 6px;
     background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
     border: 1px solid transparent;
@@ -113,31 +112,16 @@
 .tool-item.executing {
     border-color: var(--blue-500);
     background: var(--bg-hover);
-    animation: tool-item-pulse 2s ease-in-out infinite;
-}
-
-@keyframes tool-item-pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(92, 207, 230, 0.4);
-    }
-
-    50% {
-        box-shadow: 0 0 0 4px rgba(92, 207, 230, 0.1);
-    }
 }
 
 .tool-item:hover {
     background: var(--bg-hover);
     border-color: var(--border-bright);
-    transform: translateX(2px);
 }
 
 .tool-item.active {
     background: var(--bg-active);
     border-color: var(--blue-500);
-    box-shadow: 0 0 0 1px var(--blue-500) inset;
 }
 
 .tool-name {

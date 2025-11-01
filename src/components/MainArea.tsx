@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useEffect, useCallback } from 'react';
+import { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useToolStateStore } from '../stores/toolStateStore';
 import { useMCPExecution } from '../hooks/useMCP';
@@ -6,6 +6,7 @@ import { EmptyState as EmptyStateComponent } from './EmptyState';
 import { CopyButton } from './CopyButton';
 import { JsonViewer } from './JsonViewer';
 import { JsonEditor } from './JsonEditor';
+import { Input, Textarea, Checkbox, ToggleGroup } from './ui';
 import { Wrench } from 'lucide-react';
 import type { ExecutionResult, ToolSchema } from '../types';
 import './MainArea.css';
@@ -88,6 +89,8 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     }, [toolKey]);
 
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+    const [isDescriptionLong, setIsDescriptionLong] = useState(false);
+    const descriptionRef = useRef<HTMLParagraphElement>(null);
     const { execute } = useMCPExecution();
 
     // Tool state store for persisting parameters and execution state
@@ -95,8 +98,16 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     const saveToolParameters = useToolStateStore((state) => state.saveToolParameters);
     const recordToolExecution = useToolStateStore((state) => state.recordToolExecution);
 
-    // Check if description is long (more than 150 characters)
-    const isDescriptionLong = tool.description && tool.description.length > 150;
+    // Check if description actually overflows (not just character count)
+    useEffect(() => {
+        if (descriptionRef.current && tool.description) {
+            // Check if the content is actually overflowing the 3-line clamp
+            const isOverflowing = descriptionRef.current.scrollHeight > descriptionRef.current.clientHeight;
+            setIsDescriptionLong(isOverflowing);
+        } else {
+            setIsDescriptionLong(false);
+        }
+    }, [tool.description]);
 
     // Generate default values from schema
     const defaultValues = useMemo(() => {
@@ -338,11 +349,15 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
             <div className="main-header">
                 <h2>{tool.name}</h2>
                 <div className="description-container">
-                    <p className={`main-tool-description ${!isDescriptionExpanded && isDescriptionLong ? 'collapsed' : ''}`}>
+                    <p
+                        ref={descriptionRef}
+                        className={`main-tool-description ${!isDescriptionExpanded && isDescriptionLong ? 'collapsed' : ''}`}
+                    >
                         {tool.description}
                     </p>
                     {isDescriptionLong && (
                         <button
+                            type="button"
                             className="description-toggle"
                             onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                         >
@@ -356,56 +371,53 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                 <section className="input-section">
                     <div className="section-title">Input Parameters</div>
 
-                    <div className="mode-toggle">
+                    <div className="input-form-container">
+                        <ToggleGroup
+                            value={inputMode}
+                            onChange={(value) => setInputMode(value as 'form' | 'json')}
+                            options={[
+                                { value: 'form', label: 'Form' },
+                                { value: 'json', label: 'JSON' },
+                            ]}
+                        />
+
+                        {inputMode === 'form' ? (
+                            <FormInput
+                                schema={tool.inputSchema}
+                                values={inputValues}
+                                onChange={setInputValues}
+                            />
+                        ) : (
+                            <>
+                                <JsonEditor
+                                    value={jsonInput}
+                                    onChange={handleJsonChange}
+                                    placeholder="Enter JSON input..."
+                                />
+                                {jsonError && (
+                                    <div className="json-error">
+                                        ⚠️ JSON Error: {jsonError}
+                                    </div>
+                                )}
+                            </>
+                        )}
+
                         <button
-                            className={`mode-btn ${inputMode === 'form' ? 'active' : ''}`}
-                            onClick={() => setInputMode('form')}
+                            type="button"
+                            className={`execute-btn ${executionState.isExecuting ? 'executing' : ''}`}
+                            onClick={executionState.isExecuting ? handleCancel : handleExecute}
                         >
-                            Form
-                        </button>
-                        <button
-                            className={`mode-btn ${inputMode === 'json' ? 'active' : ''}`}
-                            onClick={() => setInputMode('json')}
-                        >
-                            JSON
+                            {executionState.isExecuting ? (
+                                <>
+                                    <span>Executing</span>
+                                    <span className="execute-timer">{executionState.elapsedTime}ms</span>
+                                    <span className="execute-cancel-hint">(click to cancel)</span>
+                                </>
+                            ) : (
+                                'Execute Tool'
+                            )}
                         </button>
                     </div>
-
-                    {inputMode === 'form' ? (
-                        <FormInput
-                            schema={tool.inputSchema}
-                            values={inputValues}
-                            onChange={setInputValues}
-                        />
-                    ) : (
-                        <>
-                            <JsonEditor
-                                value={jsonInput}
-                                onChange={handleJsonChange}
-                                placeholder="Enter JSON input..."
-                            />
-                            {jsonError && (
-                                <div className="json-error">
-                                    ⚠️ JSON Error: {jsonError}
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    <button
-                        className={`execute-btn ${executionState.isExecuting ? 'executing' : ''}`}
-                        onClick={executionState.isExecuting ? handleCancel : handleExecute}
-                    >
-                        {executionState.isExecuting ? (
-                            <>
-                                <span>Executing</span>
-                                <span className="execute-timer">{executionState.elapsedTime}ms</span>
-                                <span className="execute-cancel-hint">(click to cancel)</span>
-                            </>
-                        ) : (
-                            'Execute Tool'
-                        )}
-                    </button>
                 </section>
 
                 {executionState.result && (
@@ -479,20 +491,18 @@ const FormInput = memo(function FormInput({ schema, values, onChange }: FormInpu
                 if (prop.type === 'boolean') {
                     return (
                         <div key={key} className="form-field">
-                            <label className="form-label checkbox-label">
-                                <input
-                                    type="checkbox"
-                                    className="form-checkbox"
-                                    checked={Boolean(values[key])}
-                                    onChange={(e) => handleChange(key, prop, e.target.checked)}
-                                />
-                                <span>
-                                    <span className="param-name" title={prop.description}>
-                                        {key}
-                                    </span>
-                                    {required.includes(key) && <span className="required">*</span>}
-                                </span>
-                            </label>
+                            <Checkbox
+                                label={
+                                    <>
+                                        <span className="param-name" title={prop.description}>
+                                            {key}
+                                        </span>
+                                        {required.includes(key) && <span className="required">*</span>}
+                                    </>
+                                }
+                                checked={Boolean(values[key])}
+                                onChange={(e) => handleChange(key, prop, e.target.checked)}
+                            />
                         </div>
                     );
                 }
@@ -500,46 +510,46 @@ const FormInput = memo(function FormInput({ schema, values, onChange }: FormInpu
                 // Handle array/object as textarea
                 if (prop.type === 'array' || prop.type === 'object') {
                     return (
-                        <div key={key} className="form-field">
-                            <label className="form-label">
-                                <span className="param-name" title={prop.description}>
-                                    {key}
-                                </span>
-                                {required.includes(key) && <span className="required">*</span>}
-                                <span className="field-type">({prop.type})</span>
-                            </label>
-                            <textarea
-                                className="form-textarea"
-                                placeholder={prop.description || `Enter JSON ${prop.type}...`}
-                                value={getInputValue(key, prop)}
-                                onChange={(e) => handleChange(key, prop, e.target.value)}
-                                rows={3}
-                            />
-                        </div>
+                        <Textarea
+                            key={key}
+                            label={
+                                <>
+                                    <span className="param-name" title={prop.description}>
+                                        {key}
+                                    </span>
+                                    {required.includes(key) && <span className="required">*</span>}
+                                    <span className="field-type">({prop.type})</span>
+                                </>
+                            }
+                            placeholder={prop.description || `Enter JSON ${prop.type}...`}
+                            value={getInputValue(key, prop)}
+                            onChange={(e) => handleChange(key, prop, e.target.value)}
+                            rows={3}
+                        />
                     );
                 }
 
                 // Handle string, number, integer as input
                 return (
-                    <div key={key} className="form-field">
-                        <label className="form-label">
-                            <span className="param-name" title={prop.description}>
-                                {key}
-                            </span>
-                            {required.includes(key) && <span className="required">*</span>}
-                            {(prop.type === 'number' || prop.type === 'integer') && (
-                                <span className="field-type">({prop.type})</span>
-                            )}
-                        </label>
-                        <input
-                            type={prop.type === 'number' || prop.type === 'integer' ? 'number' : 'text'}
-                            className="form-input"
-                            placeholder={prop.description || `Enter ${key}...`}
-                            value={getInputValue(key, prop)}
-                            onChange={(e) => handleChange(key, prop, e.target.value)}
-                            step={prop.type === 'number' ? 'any' : undefined}
-                        />
-                    </div>
+                    <Input
+                        key={key}
+                        label={
+                            <>
+                                <span className="param-name" title={prop.description}>
+                                    {key}
+                                </span>
+                                {required.includes(key) && <span className="required">*</span>}
+                                {(prop.type === 'number' || prop.type === 'integer') && (
+                                    <span className="field-type">({prop.type})</span>
+                                )}
+                            </>
+                        }
+                        type={prop.type === 'number' || prop.type === 'integer' ? 'number' : 'text'}
+                        placeholder={prop.description || `Enter ${key}...`}
+                        value={getInputValue(key, prop)}
+                        onChange={(e) => handleChange(key, prop, e.target.value)}
+                        step={prop.type === 'number' ? 'any' : undefined}
+                    />
                 );
             })}
         </div>

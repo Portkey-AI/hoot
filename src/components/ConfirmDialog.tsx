@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from './ui';
 import './Modal.css';
 
 interface ConfirmDialogProps {
@@ -44,15 +45,15 @@ export const ConfirmDialog = memo(function ConfirmDialog({
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={onCancel}>
+                    <Button variant="secondary" onClick={onCancel}>
                         {cancelText}
-                    </button>
-                    <button
-                        className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`}
+                    </Button>
+                    <Button
+                        variant={danger ? 'danger' : 'primary'}
                         onClick={onConfirm}
                     >
                         {confirmText}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>,

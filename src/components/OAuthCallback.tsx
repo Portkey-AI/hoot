@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import * as backendClient from '../lib/backendClient';
+import { Button } from './ui/Button';
 import './OAuthCallback.css';
 
 /**
@@ -12,7 +13,7 @@ export function OAuthCallback() {
     const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
     const [message, setMessage] = useState('Processing authorization...');
     const { connect } = useMCPConnection();
-    const getServers = useAppStore(state => state.servers); // Get all servers for checking updates
+    const servers = useAppStore(state => state.servers); // Get all servers for checking updates
     const hasExecuted = useRef(false); // Prevent double-execution in React StrictMode
 
     useEffect(() => {
@@ -66,10 +67,13 @@ export function OAuthCallback() {
                 throw new Error('OAuth session expired. Please return to Hoot and try connecting again.');
             }
 
+            console.log(`🔐 OAuth callback: Looking for server ID: ${serverId}`);
+            console.log(`🔐 OAuth callback: Available servers:`, servers.map(s => ({ id: s.id, name: s.name })));
+
             // Find the server
-            const server = getServers.find(s => s.id === serverId);
+            const server = servers.find(s => s.id === serverId);
             if (!server) {
-                throw new Error('Server not found. It may have been deleted while you were authorizing.');
+                throw new Error(`Server not found. It may have been deleted while you were authorizing. (Looking for ID: ${serverId})`);
             }
 
             setMessage(`Exchanging authorization code for ${server.name}...`);
@@ -186,12 +190,12 @@ export function OAuthCallback() {
                 <p className="oauth-message">{message}</p>
 
                 {status === 'error' && (
-                    <button
-                        className="btn btn-primary"
+                    <Button
+                        variant="primary"
                         onClick={() => window.location.href = '/'}
                     >
                         Return to Hoot
-                    </button>
+                    </Button>
                 )}
 
                 {status === 'success' && (

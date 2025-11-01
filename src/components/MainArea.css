@@ -138,7 +138,7 @@
 .schema-viewer {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: var(--spacing-lg);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -156,6 +156,13 @@
   margin-top: var(--spacing-2xl);
 }
 
+/* Simple spacing for form elements */
+.input-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .mode-toggle {
   display: flex;
   gap: var(--spacing-sm);
@@ -163,7 +170,7 @@
 }
 
 .mode-btn {
-  padding: 6px 12px;
+  padding: 8px 14px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -186,9 +193,9 @@
 .json-error {
   margin-top: var(--spacing-md);
   padding: 10px 12px;
-  background: color-mix(in srgb, var(--theme-error) 15%, transparent);
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--theme-error) 30%, transparent);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--theme-error);
   font-size: 12px;
   font-family: var(--font-sans);
@@ -257,7 +264,7 @@
   padding: 10px 12px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 13px;
   font-family: var(--font-sans);
@@ -266,7 +273,6 @@
 
 .form-input:focus {
   border-color: var(--theme-accent-primary);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent-primary) 25%, transparent);
   outline: none;
 }
 
@@ -274,7 +280,7 @@
   padding: 10px 12px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 13px;
   font-family: var(--font-mono);
@@ -286,125 +292,51 @@
 
 .form-textarea:focus {
   border-color: var(--theme-accent-primary);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent-primary) 25%, transparent);
   outline: none;
 }
 
 .execute-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--theme-success) 0%, var(--theme-accent-secondary) 100%);
+  padding: 10px 20px;
+  background: var(--theme-success);
   color: var(--theme-bg-primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  font-family: var(--font-mono);
-  letter-spacing: 0.3px;
+  font-family: var(--font-sans);
   margin-top: var(--spacing-lg);
   transition: all var(--transition-fast);
-  box-shadow: var(--shadow-md), 0 0 0 0 color-mix(in srgb, var(--theme-success) 0%, transparent);
-  /* Dual shadow for depth */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-md);
-  position: relative;
-  overflow: hidden;
-}
-
-.execute-btn::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, color-mix(in srgb, var(--theme-text-white) 10%, transparent), transparent);
-  transform: rotate(45deg);
-  transition: all 0.5s;
-  opacity: 0;
-}
-
-.execute-btn:hover:not(:disabled)::before {
-  opacity: 1;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
-.execute-cancel-hint {
-  font-size: 11px;
-  font-weight: 400;
-  opacity: 0.8;
-  font-family: var(--font-sans);
-  margin-left: auto;
-}
-
-.execute-timer {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 3px 10px;
-  background: color-mix(in srgb, var(--theme-bg-primary) 15%, transparent);
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
 }
 
 .execute-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md), 0 0 30px color-mix(in srgb, var(--theme-success) 20%, transparent);
-  /* Enhanced glow */
-  background: linear-gradient(135deg, var(--theme-success-bright) 0%, color-mix(in srgb, var(--theme-accent-secondary) 90%, var(--theme-success) 10%) 100%);
+  background: var(--theme-success-bright);
 }
 
 .execute-btn:active:not(:disabled) {
-  transform: translateY(0);
+  background: color-mix(in srgb, var(--theme-success) 90%, black 10%);
 }
 
 .execute-btn:disabled {
   cursor: not-allowed;
-  /* Keep the styling visible during execution */
 }
 
 .execute-btn:disabled:not(.executing) {
-  /* Only gray out if it's truly disabled, not executing */
   background: var(--bg-hover);
   opacity: 0.5;
-  box-shadow: none;
 }
 
 .execute-btn.executing {
   background: var(--theme-accent-primary);
   cursor: pointer;
-  animation: aurora-glow 3s ease-in-out infinite;
 }
 
 .execute-btn.executing:hover {
   background: var(--theme-error);
-  box-shadow: var(--shadow-md), 0 0 20px color-mix(in srgb, var(--theme-error) 40%, transparent);
 }
 
 .result-section {
@@ -417,20 +349,14 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  background: color-mix(in srgb, var(--theme-success) 15%, transparent);
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--theme-success);
+  background: color-mix(in srgb, var(--theme-success) 10%, transparent);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--theme-success);
   margin-bottom: var(--spacing-md);
 }
 
-.result-header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
 .result-header.error {
-  background: color-mix(in srgb, var(--theme-error) 15%, transparent);
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
   border-left-color: var(--theme-error);
 }
 

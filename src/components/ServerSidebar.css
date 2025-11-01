@@ -37,11 +37,11 @@
 
 .add-server-btn {
     width: 100%;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
+    padding: 10px 16px;
+    background: var(--blue-500);
     color: var(--bg-primary);
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
@@ -50,16 +50,14 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    box-shadow: var(--shadow-sm), 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
 }
 
 .add-server-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md), 0 0 12px color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
+    background: var(--blue-600);
 }
 
 .add-server-btn:active {
-    transform: translateY(0);
+    background: var(--blue-600);
 }
 
 .add-server-btn .btn-icon {
@@ -81,10 +79,9 @@
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-sm);
     background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
-    will-change: background;
     border: 1px solid transparent;
 }
 
@@ -96,7 +93,6 @@
 .server-item.active {
     background: var(--bg-active);
     border-color: var(--blue-500);
-    box-shadow: 0 0 0 1px var(--blue-500) inset;
 }
 
 .server-header {
@@ -139,7 +135,7 @@
 }
 
 .action-btn:hover {
-    transform: scale(1.05);
+    background: var(--bg-active);
 }
 
 .edit-btn:hover {
@@ -164,7 +160,7 @@
 
 .status-dot.connected {
     background: var(--green-500);
-    box-shadow: 0 0 8px var(--green-500);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--green-500) 20%, transparent);
 }
 
 .status-dot.connected::after {
@@ -177,12 +173,50 @@
     border-radius: 50%;
     border: 1px solid var(--green-500);
     opacity: 0.3;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .status-dot.disconnected {
     background: var(--red-500);
     opacity: 0.6;
+}
+
+.server-favicon-container {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.server-favicon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    object-fit: contain;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 2px;
+    display: block;
+}
+
+.favicon-status-dot {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-tertiary);
+    flex-shrink: 0;
+}
+
+.favicon-status-dot.connected {
+    background: var(--green-500);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--green-500) 30%, transparent);
+}
+
+.favicon-status-dot.disconnected {
+    background: var(--red-500);
+    opacity: 0.9;
 }
 
 .server-name {
@@ -390,7 +424,7 @@
     height: 32px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
     transition: all var(--transition-fast);
     cursor: pointer;
@@ -401,12 +435,10 @@
     background: var(--bg-hover);
     border-color: var(--blue-500);
     color: var(--blue-500);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm), 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
 }
 
 .footer-link:active {
-    transform: translateY(0);
+    background: var(--bg-active);
 }
 
 .footer-version {

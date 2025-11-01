@@ -1,9 +1,10 @@
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import type { ServerConfig, TransportType, AuthType, AuthConfig } from '../types';
 import * as backendClient from '../lib/backendClient';
 import { toast } from '../stores/toastStore';
+import { Button, Input, ToggleGroup, Spinner } from './ui';
 import './Modal.css';
 
 interface EditServerModalProps {
@@ -72,6 +73,13 @@ export const EditServerModal = memo(function EditServerModal({
 
     // OAuth discovery state
     const [isDiscovering, setIsDiscovering] = useState(false);
+
+    // Ensure headers always has at least one empty entry when auth type is 'headers'
+    useEffect(() => {
+        if (authType === 'headers' && headers.length === 0) {
+            setHeaders([{ key: '', value: '' }]);
+        }
+    }, [authType, headers.length]);
 
     // Auto-detect OAuth based on URL using MCP SDK discovery
     const handleUrlBlur = async () => {
@@ -238,12 +246,19 @@ export const EditServerModal = memo(function EditServerModal({
             }
         } else {
             // Edit mode - update existing server
-            updateServer(server.id, {
+            const updates: Partial<ServerConfig> = {
                 name: name.trim(),
                 transport,
                 ...(transport === 'stdio' ? { command: command.trim(), url: undefined } : { url: url.trim(), command: undefined }),
                 auth,
-            });
+            };
+
+            // Invalidate favicon cache if URL or transport changed
+            if (url.trim() !== server.url || transport !== server.transport) {
+                updates.faviconUrl = undefined; // Clear cache to trigger re-fetch
+            }
+
+            updateServer(server.id, updates);
 
             // Try to reconnect with new configuration
             const updatedServer = useAppStore.getState().servers.find(s => s.id === server.id);
@@ -299,234 +314,148 @@ export const EditServerModal = memo(function EditServerModal({
                 <div className="modal-body">
                     {error && <div className="error-message">{error}</div>}
 
-                    <div className="form-field">
-                        <label className="form-label">
-                            {transport === 'stdio' ? 'Command' : 'URL'}
-                        </label>
+                    {/* URL/Command Input */}
+                    {transport === 'stdio' ? (
+                        <Input
+                            label="Command"
+                            placeholder="node server.js"
+                            value={command}
+                            onChange={(e) => setCommand(e.target.value)}
+                            autoFocus
+                        />
+                    ) : (
                         <div style={{ position: 'relative' }}>
-                            <input
-                                type="text"
-                                className="form-input"
-                                style={isDiscovering ? { paddingRight: '40px' } : {}}
-                                placeholder={
-                                    transport === 'stdio'
-                                        ? 'node server.js'
-                                        : 'http://localhost:3000'
-                                }
-                                value={transport === 'stdio' ? command : url}
-                                onChange={(e) =>
-                                    transport === 'stdio'
-                                        ? setCommand(e.target.value)
-                                        : setUrl(e.target.value)
-                                }
-                                onBlur={transport !== 'stdio' ? handleUrlBlur : undefined}
+                            <Input
+                                label="URL"
+                                placeholder="http://localhost:3000"
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                onBlur={handleUrlBlur}
                                 autoFocus
                             />
                             {isDiscovering && (
                                 <div style={{
                                     position: 'absolute',
                                     right: '12px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
+                                    top: '38px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
                                 }}>
-                                    <div className="spinner-small" />
+                                    <Spinner size="sm" />
                                 </div>
                             )}
                         </div>
-                    </div>
+                    )}
 
-                    <div className="form-field">
-                        <label className="form-label">Server Name</label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            placeholder="My MCP Server"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                    </div>
+                    <Input
+                        label="Server Name"
+                        placeholder="My MCP Server"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
 
-                    <div className="form-field">
-                        <label className="form-label">Transport</label>
-                        <div className="radio-group">
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="transport"
-                                    value="http"
-                                    checked={transport === 'http'}
-                                    onChange={(e) => setTransport(e.target.value as TransportType)}
-                                />
-                                <span>HTTP</span>
-                            </label>
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="transport"
-                                    value="sse"
-                                    checked={transport === 'sse'}
-                                    onChange={(e) => setTransport(e.target.value as TransportType)}
-                                />
-                                <span>SSE</span>
-                            </label>
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="transport"
-                                    value="stdio"
-                                    checked={transport === 'stdio'}
-                                    onChange={(e) => setTransport(e.target.value as TransportType)}
-                                    disabled
-                                    title="stdio requires desktop app (coming soon)"
-                                />
-                                <span style={{ opacity: 0.5 }}>stdio (desktop only)</span>
-                            </label>
-                        </div>
-                        {transport === 'stdio' && (
-                            <div className="info-message" style={{ marginTop: '8px' }}>
-                                stdio transport requires a desktop app. Use SSE or HTTP for browser testing.
-                            </div>
-                        )}
-                    </div>
+                    <ToggleGroup
+                        label="Transport"
+                        value={transport}
+                        onChange={(value) => setTransport(value as TransportType)}
+                        options={[
+                            { value: 'http', label: 'HTTP' },
+                            { value: 'sse', label: 'SSE' },
+                            { value: 'stdio', label: 'stdio (desktop only)', disabled: true },
+                        ]}
+                        helperText={transport === 'stdio' ? 'stdio transport requires a desktop app. Use SSE or HTTP for browser testing.' : undefined}
+                    />
 
                     {/* Authentication Section */}
-                    <div className="form-field" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
-                        <label className="form-label">Authentication</label>
-                        <div className="radio-group">
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="authType"
-                                    value="none"
-                                    checked={authType === 'none'}
-                                    onChange={(e) => setAuthType(e.target.value as AuthType)}
-                                />
-                                <span>None</span>
-                            </label>
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="authType"
-                                    value="headers"
-                                    checked={authType === 'headers'}
-                                    onChange={(e) => setAuthType(e.target.value as AuthType)}
-                                />
-                                <span>Headers</span>
-                            </label>
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="authType"
-                                    value="oauth"
-                                    checked={authType === 'oauth'}
-                                    onChange={(e) => setAuthType(e.target.value as AuthType)}
-                                />
-                                <span>OAuth 2.1 (PKCE)</span>
-                            </label>
-                            <label className="radio-option">
-                                <input
-                                    type="radio"
-                                    name="authType"
-                                    value="oauth_client_credentials"
-                                    checked={authType === 'oauth_client_credentials'}
-                                    onChange={(e) => setAuthType(e.target.value as AuthType)}
-                                />
-                                <span>OAuth Client Credentials</span>
-                            </label>
-                        </div>
+                    <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
+                        <ToggleGroup
+                            label="Authentication"
+                            value={authType}
+                            onChange={(value) => setAuthType(value as AuthType)}
+                            options={[
+                                { value: 'none', label: 'None' },
+                                { value: 'headers', label: 'Headers' },
+                                { value: 'oauth', label: 'OAuth Auto' },
+                                { value: 'oauth_client_credentials', label: 'OAuth Client' },
+                            ]}
+                        />
                     </div>
 
                     {/* Header-based Auth Fields */}
                     {authType === 'headers' && (
-                        <div style={{ marginTop: '16px' }}>
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '16px',
+                            paddingLeft: '16px',
+                            borderLeft: '2px solid var(--theme-accent-tertiary)',
+                            background: 'color-mix(in srgb, var(--theme-accent-tertiary) 3%, transparent)',
+                            borderRadius: 'var(--radius-sm)'
+                        }}>
                             <label className="form-label">Headers</label>
                             {headers.map((header, index) => (
                                 <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            placeholder="Header Name (e.g., X-API-Key)"
-                                            value={header.key}
-                                            onChange={(e) => {
-                                                const newHeaders = [...headers];
-                                                newHeaders[index].key = e.target.value;
-                                                setHeaders(newHeaders);
-                                            }}
-                                        />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <input
-                                            type="password"
-                                            className="form-input"
-                                            placeholder="Header Value"
-                                            value={header.value}
-                                            onChange={(e) => {
-                                                const newHeaders = [...headers];
-                                                newHeaders[index].value = e.target.value;
-                                                setHeaders(newHeaders);
-                                            }}
-                                        />
-                                    </div>
+                                    <Input
+                                        placeholder="Header Name (e.g., X-API-Key)"
+                                        value={header.key}
+                                        onChange={(e) => {
+                                            const newHeaders = [...headers];
+                                            newHeaders[index].key = e.target.value;
+                                            setHeaders(newHeaders);
+                                        }}
+                                    />
+                                    <Input
+                                        type="password"
+                                        placeholder="Header Value"
+                                        value={header.value}
+                                        onChange={(e) => {
+                                            const newHeaders = [...headers];
+                                            newHeaders[index].value = e.target.value;
+                                            setHeaders(newHeaders);
+                                        }}
+                                    />
                                     {headers.length > 1 && (
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
                                             onClick={() => setHeaders(headers.filter((_, i) => i !== index))}
-                                            style={{
-                                                padding: '10px 12px',
-                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                borderRadius: '6px',
-                                                color: 'var(--red-500)',
-                                                cursor: 'pointer',
-                                                fontSize: '14px'
-                                            }}
                                         >
                                             ✕
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             ))}
-                            <button
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => setHeaders([...headers, { key: '', value: '' }])}
-                                style={{
-                                    padding: '8px 16px',
-                                    background: 'rgba(92, 207, 230, 0.1)',
-                                    border: '1px solid rgba(92, 207, 230, 0.3)',
-                                    borderRadius: '6px',
-                                    color: 'var(--blue-500)',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                    fontWeight: 600,
-                                    width: '100%',
-                                    marginTop: '8px'
-                                }}
+                                style={{ width: '100%', marginTop: '8px' }}
                             >
                                 + Add Header
-                            </button>
+                            </Button>
                         </div>
                     )}
 
                     {/* OAuth 2.1 with PKCE - no additional fields needed */}
                     {authType === 'oauth' && (
-                        <div style={{ marginTop: '16px' }}>
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '16px',
+                            paddingLeft: '16px',
+                            borderLeft: '2px solid var(--theme-accent-tertiary)',
+                            background: 'color-mix(in srgb, var(--theme-accent-tertiary) 3%, transparent)',
+                            borderRadius: 'var(--radius-sm)'
+                        }}>
                             <div className="info-message" style={{ fontSize: '13px', opacity: 0.8 }}>
                                 Hoot will automatically handle the OAuth flow with PKCE when you connect.
                             </div>
 
                             {/* Advanced OAuth Settings */}
                             <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(92, 207, 230, 0.2)' }}>
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => setShowAdvancedOAuth(!showAdvancedOAuth)}
                                     style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--blue-500)',
-                                        cursor: 'pointer',
-                                        fontSize: '13px',
-                                        fontWeight: 600,
                                         padding: 0,
                                         display: 'flex',
                                         alignItems: 'center',
@@ -536,7 +465,7 @@ export const EditServerModal = memo(function EditServerModal({
                                 >
                                     <span style={{ transform: showAdvancedOAuth ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▶</span>
                                     Advanced OAuth Settings
-                                </button>
+                                </Button>
 
                                 {showAdvancedOAuth && (
                                     <div style={{ marginTop: '16px' }}>
@@ -557,66 +486,43 @@ export const EditServerModal = memo(function EditServerModal({
                                             </label>
                                             {additionalHeaders.map((header, index) => (
                                                 <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                                    <div style={{ flex: 1 }}>
-                                                        <input
-                                                            type="text"
-                                                            className="form-input"
-                                                            placeholder="Header Name (e.g., X-API-Version)"
-                                                            value={header.key}
-                                                            onChange={(e) => {
-                                                                const newHeaders = [...additionalHeaders];
-                                                                newHeaders[index].key = e.target.value;
-                                                                setAdditionalHeaders(newHeaders);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div style={{ flex: 1 }}>
-                                                        <input
-                                                            type="text"
-                                                            className="form-input"
-                                                            placeholder="Header Value"
-                                                            value={header.value}
-                                                            onChange={(e) => {
-                                                                const newHeaders = [...additionalHeaders];
-                                                                newHeaders[index].value = e.target.value;
-                                                                setAdditionalHeaders(newHeaders);
-                                                            }}
-                                                        />
-                                                    </div>
+                                                    <Input
+                                                        placeholder="Header Name (e.g., X-API-Version)"
+                                                        value={header.key}
+                                                        onChange={(e) => {
+                                                            const newHeaders = [...additionalHeaders];
+                                                            newHeaders[index].key = e.target.value;
+                                                            setAdditionalHeaders(newHeaders);
+                                                        }}
+                                                    />
+                                                    <Input
+                                                        placeholder="Header Value"
+                                                        value={header.value}
+                                                        onChange={(e) => {
+                                                            const newHeaders = [...additionalHeaders];
+                                                            newHeaders[index].value = e.target.value;
+                                                            setAdditionalHeaders(newHeaders);
+                                                        }}
+                                                    />
                                                     {additionalHeaders.length > 1 && (
-                                                        <button
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
                                                             onClick={() => setAdditionalHeaders(additionalHeaders.filter((_, i) => i !== index))}
-                                                            style={{
-                                                                padding: '10px 12px',
-                                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                                borderRadius: '6px',
-                                                                color: 'var(--red-500)',
-                                                                cursor: 'pointer',
-                                                                fontSize: '14px'
-                                                            }}
                                                         >
                                                             ✕
-                                                        </button>
+                                                        </Button>
                                                     )}
                                                 </div>
                                             ))}
-                                            <button
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 onClick={() => setAdditionalHeaders([...additionalHeaders, { key: '', value: '' }])}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    background: 'rgba(92, 207, 230, 0.1)',
-                                                    border: '1px solid rgba(92, 207, 230, 0.3)',
-                                                    borderRadius: '6px',
-                                                    color: 'var(--blue-500)',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px',
-                                                    fontWeight: 600,
-                                                    width: '100%'
-                                                }}
+                                                style={{ width: '100%' }}
                                             >
                                                 + Add Header
-                                            </button>
+                                            </Button>
                                         </div>
 
                                         {/* Custom OAuth Metadata */}
@@ -634,33 +540,21 @@ export const EditServerModal = memo(function EditServerModal({
                                                     (overrides auto-discovery)
                                                 </span>
                                             </label>
-                                            <div className="form-field">
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    placeholder="Authorization Endpoint (optional)"
-                                                    value={customAuthEndpoint}
-                                                    onChange={(e) => setCustomAuthEndpoint(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-field">
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    placeholder="Token Endpoint (optional)"
-                                                    value={customTokenEndpoint}
-                                                    onChange={(e) => setCustomTokenEndpoint(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-field" style={{ marginBottom: 0 }}>
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    placeholder="Custom Client ID (optional)"
-                                                    value={customClientId}
-                                                    onChange={(e) => setCustomClientId(e.target.value)}
-                                                />
-                                            </div>
+                                            <Input
+                                                placeholder="Authorization Endpoint (optional)"
+                                                value={customAuthEndpoint}
+                                                onChange={(e) => setCustomAuthEndpoint(e.target.value)}
+                                            />
+                                            <Input
+                                                placeholder="Token Endpoint (optional)"
+                                                value={customTokenEndpoint}
+                                                onChange={(e) => setCustomTokenEndpoint(e.target.value)}
+                                            />
+                                            <Input
+                                                placeholder="Custom Client ID (optional)"
+                                                value={customClientId}
+                                                onChange={(e) => setCustomClientId(e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -670,49 +564,44 @@ export const EditServerModal = memo(function EditServerModal({
 
                     {/* OAuth Client Credentials Fields */}
                     {authType === 'oauth_client_credentials' && (
-                        <div style={{ marginTop: '16px' }}>
-                            <div className="form-field">
-                                <label className="form-label">Client ID</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    placeholder="your-client-id"
-                                    value={clientId}
-                                    onChange={(e) => setClientId(e.target.value)}
-                                />
-                            </div>
-                            <div className="form-field">
-                                <label className="form-label">Client Secret</label>
-                                <input
-                                    type="password"
-                                    className="form-input"
-                                    placeholder="your-client-secret"
-                                    value={clientSecret}
-                                    onChange={(e) => setClientSecret(e.target.value)}
-                                />
-                            </div>
-                            <div className="form-field">
-                                <label className="form-label">Token URL (Optional)</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    placeholder="https://api.example.com/oauth/token"
-                                    value={tokenUrl}
-                                    onChange={(e) => setTokenUrl(e.target.value)}
-                                />
-                            </div>
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '16px',
+                            paddingLeft: '16px',
+                            borderLeft: '2px solid var(--theme-accent-tertiary)',
+                            background: 'color-mix(in srgb, var(--theme-accent-tertiary) 3%, transparent)',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '16px'
+                        }}>
+                            <Input
+                                label="Client ID"
+                                placeholder="your-client-id"
+                                value={clientId}
+                                onChange={(e) => setClientId(e.target.value)}
+                            />
+                            <Input
+                                label="Client Secret"
+                                type="password"
+                                placeholder="your-client-secret"
+                                value={clientSecret}
+                                onChange={(e) => setClientSecret(e.target.value)}
+                            />
+                            <Input
+                                label="Token URL (Optional)"
+                                placeholder="https://api.example.com/oauth/token"
+                                value={tokenUrl}
+                                onChange={(e) => setTokenUrl(e.target.value)}
+                            />
 
                             {/* Advanced OAuth Settings for Client Credentials */}
                             <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(92, 207, 230, 0.2)' }}>
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => setShowAdvancedOAuth(!showAdvancedOAuth)}
                                     style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--blue-500)',
-                                        cursor: 'pointer',
-                                        fontSize: '13px',
-                                        fontWeight: 600,
                                         padding: 0,
                                         display: 'flex',
                                         alignItems: 'center',
@@ -722,7 +611,7 @@ export const EditServerModal = memo(function EditServerModal({
                                 >
                                     <span style={{ transform: showAdvancedOAuth ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▶</span>
                                     Advanced Settings
-                                </button>
+                                </Button>
 
                                 {showAdvancedOAuth && (
                                     <div style={{ marginTop: '16px' }}>
@@ -743,66 +632,43 @@ export const EditServerModal = memo(function EditServerModal({
                                             </label>
                                             {additionalHeaders.map((header, index) => (
                                                 <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                                    <div style={{ flex: 1 }}>
-                                                        <input
-                                                            type="text"
-                                                            className="form-input"
-                                                            placeholder="Header Name (e.g., X-API-Version)"
-                                                            value={header.key}
-                                                            onChange={(e) => {
-                                                                const newHeaders = [...additionalHeaders];
-                                                                newHeaders[index].key = e.target.value;
-                                                                setAdditionalHeaders(newHeaders);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div style={{ flex: 1 }}>
-                                                        <input
-                                                            type="text"
-                                                            className="form-input"
-                                                            placeholder="Header Value"
-                                                            value={header.value}
-                                                            onChange={(e) => {
-                                                                const newHeaders = [...additionalHeaders];
-                                                                newHeaders[index].value = e.target.value;
-                                                                setAdditionalHeaders(newHeaders);
-                                                            }}
-                                                        />
-                                                    </div>
+                                                    <Input
+                                                        placeholder="Header Name (e.g., X-API-Version)"
+                                                        value={header.key}
+                                                        onChange={(e) => {
+                                                            const newHeaders = [...additionalHeaders];
+                                                            newHeaders[index].key = e.target.value;
+                                                            setAdditionalHeaders(newHeaders);
+                                                        }}
+                                                    />
+                                                    <Input
+                                                        placeholder="Header Value"
+                                                        value={header.value}
+                                                        onChange={(e) => {
+                                                            const newHeaders = [...additionalHeaders];
+                                                            newHeaders[index].value = e.target.value;
+                                                            setAdditionalHeaders(newHeaders);
+                                                        }}
+                                                    />
                                                     {additionalHeaders.length > 1 && (
-                                                        <button
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
                                                             onClick={() => setAdditionalHeaders(additionalHeaders.filter((_, i) => i !== index))}
-                                                            style={{
-                                                                padding: '10px 12px',
-                                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                                borderRadius: '6px',
-                                                                color: 'var(--red-500)',
-                                                                cursor: 'pointer',
-                                                                fontSize: '14px'
-                                                            }}
                                                         >
                                                             ✕
-                                                        </button>
+                                                        </Button>
                                                     )}
                                                 </div>
                                             ))}
-                                            <button
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 onClick={() => setAdditionalHeaders([...additionalHeaders, { key: '', value: '' }])}
-                                                style={{
-                                                    padding: '10px 16px',
-                                                    background: 'rgba(92, 207, 230, 0.1)',
-                                                    border: '1px solid rgba(92, 207, 230, 0.3)',
-                                                    borderRadius: '6px',
-                                                    color: 'var(--blue-500)',
-                                                    cursor: 'pointer',
-                                                    fontSize: '13px',
-                                                    fontWeight: 600,
-                                                    marginTop: '8px'
-                                                }}
+                                                style={{ width: '100%', marginTop: '8px' }}
                                             >
                                                 + Add Header
-                                            </button>
+                                            </Button>
                                         </div>
 
                                         {/* Custom OAuth Metadata */}
@@ -820,33 +686,21 @@ export const EditServerModal = memo(function EditServerModal({
                                                     (overrides auto-discovery)
                                                 </span>
                                             </label>
-                                            <div className="form-field">
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    placeholder="Authorization Endpoint (optional)"
-                                                    value={customAuthEndpoint}
-                                                    onChange={(e) => setCustomAuthEndpoint(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-field">
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    placeholder="Token Endpoint (optional)"
-                                                    value={customTokenEndpoint}
-                                                    onChange={(e) => setCustomTokenEndpoint(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-field" style={{ marginBottom: 0 }}>
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    placeholder="Custom Client ID (optional)"
-                                                    value={customClientId}
-                                                    onChange={(e) => setCustomClientId(e.target.value)}
-                                                />
-                                            </div>
+                                            <Input
+                                                placeholder="Authorization Endpoint (optional)"
+                                                value={customAuthEndpoint}
+                                                onChange={(e) => setCustomAuthEndpoint(e.target.value)}
+                                            />
+                                            <Input
+                                                placeholder="Token Endpoint (optional)"
+                                                value={customTokenEndpoint}
+                                                onChange={(e) => setCustomTokenEndpoint(e.target.value)}
+                                            />
+                                            <Input
+                                                placeholder="Custom Client ID (optional)"
+                                                value={customClientId}
+                                                onChange={(e) => setCustomClientId(e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -856,16 +710,16 @@ export const EditServerModal = memo(function EditServerModal({
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={onClose} disabled={isConnecting}>
+                    <Button variant="secondary" onClick={onClose} disabled={isConnecting}>
                         Cancel
-                    </button>
-                    <button
-                        className="btn btn-primary"
+                    </Button>
+                    <Button
+                        variant="primary"
                         onClick={handleSubmit}
                         disabled={isConnecting}
                     >
                         {isConnecting ? 'Connecting...' : (mode === 'add' ? 'Add Server' : 'Save & Reconnect')}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

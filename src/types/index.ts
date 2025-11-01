@@ -28,6 +28,14 @@ export interface AuthConfig {
     grant_types_supported?: string[];
     token_endpoint_auth_method?: string;
   };
+  // OAuth server metadata (from authorization server discovery)
+  oauthServerMetadata?: {
+    issuer?: string;
+    authorization_endpoint?: string;
+    token_endpoint?: string;
+    logo_uri?: string;
+    [key: string]: unknown;
+  };
 }
 
 export interface ServerConfig {
@@ -40,6 +48,7 @@ export interface ServerConfig {
   connected: boolean;
   lastConnected?: Date;
   error?: string;
+  faviconUrl?: string | null; // Cached favicon URL for the server (null = no favicon found)
 }
 
 export interface ToolSchema {

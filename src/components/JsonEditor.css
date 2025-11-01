@@ -4,7 +4,7 @@
     min-height: 200px;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     transition: border-color var(--transition-fast);
 }

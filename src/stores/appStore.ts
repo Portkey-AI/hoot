@@ -11,7 +11,7 @@ import { useToolStateStore } from './toolStateStore';
 
 interface AppStore extends AppState {
     // Server actions
-    addServer: (server: Omit<ServerConfig, 'id' | 'connected'>) => void;
+    addServer: (server: Omit<ServerConfig, 'connected'> | Omit<ServerConfig, 'id' | 'connected'>) => void;
     removeServer: (serverId: string) => void;
     updateServer: (serverId: string, updates: Partial<ServerConfig>) => void;
     setSelectedServer: (serverId: string | null) => void;
@@ -88,7 +88,8 @@ export const useAppStore = create<AppStore>()(
                         ...state.servers,
                         {
                             ...server,
-                            id: crypto.randomUUID(),
+                            // Use provided ID if available, otherwise generate one
+                            id: 'id' in server ? server.id : crypto.randomUUID(),
                             connected: false,
                         },
                     ],

@@ -17,7 +17,9 @@
     "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "keywords": [
     "mcp",
@@ -43,13 +45,24 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.2",
+    "@storybook/addon-a11y": "^10.0.2",
+    "@storybook/addon-docs": "^10.0.2",
+    "@storybook/addon-onboarding": "^10.0.2",
+    "@storybook/addon-vitest": "^10.0.2",
+    "@storybook/react-vite": "^10.0.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "^9.2.1",
+    "storybook": "^10.0.2",
     "typescript": "^5.9.3",
-    "vite": "^7.1.12"
+    "vite": "^7.1.12",
+    "vitest": "^4.0.6",
+    "playwright": "^1.56.1",
+    "@vitest/browser-playwright": "^4.0.6",
+    "@vitest/coverage-v8": "^4.0.6"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",

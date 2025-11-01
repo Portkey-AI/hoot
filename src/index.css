@@ -17,15 +17,15 @@
   --spacing-xl: 20px;
   --spacing-2xl: 24px;
 
-  /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* Border radius - Modern, subtle curves */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  /* Shadows - Lighter, more refined */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0, 0, 0.2, 1);
@@ -50,6 +50,12 @@
   box-sizing: border-box;
 }
 
+html {
+  /* Disable rubber band / overscroll bounce effect on macOS */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg-primary);
@@ -58,6 +64,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'liga' 1, 'calt' 1;
   /* Enable ligatures */
+
+  /* Disable rubber band / overscroll bounce effect on macOS */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 /* Performance optimizations */
@@ -102,11 +112,17 @@ pre {
   background: linear-gradient(180deg, var(--theme-accent-secondary) 0%, var(--theme-accent-primary) 100%);
 }
 
-/* Focus styles */
-*:focus-visible {
+/* Focus styles - Clean and minimal */
+*:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--theme-accent-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-accent-primary) 15%, transparent);
+}
+
+/* Input elements use border color change instead of outline */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
 }
 
 /* Selection color */

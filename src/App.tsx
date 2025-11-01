@@ -9,8 +9,10 @@ import { OAuthCallback } from './components/OAuthCallback';
 import { TryInHootHandler } from './components/TryInHootHandler';
 import { ToastContainer } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { useAutoReconnect } from './hooks/useAutoReconnect';
 import { useToastStore } from './stores/toastStore';
+import { initializeBackendClient } from './lib/backendClient';
 import type { ServerConfig } from './types';
 import { Wrench, Sparkles, Github, BookOpen, MessageCircle } from 'lucide-react';
 import packageJson from '../package.json';
@@ -32,6 +34,11 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('test');
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
+
+  // Initialize backend client (fetch session token) on app start
+  useEffect(() => {
+    initializeBackendClient();
+  }, []);
 
   // Auto-reconnect to saved servers with cached tools
   useAutoReconnect();
@@ -58,34 +65,36 @@ function App() {
       <div className="app">
         {/* Global Header */}
         <header className="app-header">
-          <div className="app-branding">
-            <span className="logo-icon">🦉</span>
-            <h1 className="app-title">Hoot</h1>
-            <span className="app-tagline">MCP Testing Tool</span>
+          <div className="app-header-left">
+            <div className="app-branding">
+              <span className="logo-icon">🦉</span>
+              <h1 className="app-title">Hoot</h1>
+            </div>
+
+            {ENABLE_HYBRID_MODE && (
+              <nav className="app-nav">
+                <button
+                  className={`nav-button ${viewMode === 'test' ? 'active' : ''}`}
+                  onClick={() => setViewMode('test')}
+                  title="Test MCP tools manually"
+                >
+                  <Wrench size={18} />
+                  <span>Test Tools</span>
+                </button>
+                <button
+                  className={`nav-button ${viewMode === 'hybrid' ? 'active' : ''}`}
+                  onClick={() => setViewMode('hybrid')}
+                  title="Chat with AI to test tools"
+                >
+                  <Sparkles size={18} />
+                  <span>Chat</span>
+                </button>
+              </nav>
+            )}
           </div>
 
-          {ENABLE_HYBRID_MODE && (
-            <nav className="app-nav">
-              <button
-                className={`nav-button ${viewMode === 'test' ? 'active' : ''}`}
-                onClick={() => setViewMode('test')}
-                title="Test MCP tools manually"
-              >
-                <Wrench size={18} />
-                <span>Test Tools</span>
-              </button>
-              <button
-                className={`nav-button ${viewMode === 'hybrid' ? 'active' : ''}`}
-                onClick={() => setViewMode('hybrid')}
-                title="Chat with AI to test tools"
-              >
-                <Sparkles size={18} />
-                <span>Chat</span>
-              </button>
-            </nav>
-          )}
-
           <div className="app-actions">
+            <ThemeSwitcher />
             <a
               href="https://portkey.ai/docs/hoot"
               target="_blank"

@@ -847,6 +847,46 @@ app.get('/mcp/server-info/:serverId', async (req, res) => {
 });
 
 /**
+ * Get OAuth metadata for a connected server
+ * GET /mcp/oauth-metadata/:serverId
+ * Returns: { success: boolean, metadata?: object }
+ */
+app.get('/mcp/oauth-metadata/:serverId', async (req, res) => {
+    try {
+        const { serverId } = req.params;
+
+        const transport = transports.get(serverId);
+        if (!transport) {
+            return res.status(404).json({
+                success: false,
+                error: 'Server not connected'
+            });
+        }
+
+        // Check if transport has authServerMetadata (available in SDK)
+        const metadata = transport.authServerMetadata || null;
+
+        if (metadata) {
+            console.log(`📋 Retrieved OAuth metadata for ${serverId}:`, {
+                issuer: metadata.issuer,
+                hasLogoUri: !!metadata.logo_uri
+            });
+        }
+
+        res.json({
+            success: true,
+            metadata: metadata
+        });
+    } catch (error) {
+        console.error('Get OAuth metadata error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to get OAuth metadata'
+        });
+    }
+});
+
+/**
  * Discover if a server requires OAuth
  * POST /mcp/discover-oauth
  * Body: {

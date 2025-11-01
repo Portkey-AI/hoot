@@ -29,3 +29,5 @@ npm-debug.log*
 # Temporary files
 *.tmp
 *.swp
+*storybook.log
+storybook-static

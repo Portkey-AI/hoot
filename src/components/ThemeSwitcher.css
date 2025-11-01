@@ -1,0 +1,149 @@
+.theme-switcher-header {
+    position: relative;
+}
+
+.theme-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--theme-accent-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-trigger:hover {
+    background: var(--bg-hover);
+    color: var(--theme-accent-primary);
+    transform: scale(1.05);
+}
+
+/* Dropdown appears on hover with delay to prevent accidental close */
+.theme-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    gap: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
+    z-index: 10000;
+}
+
+/* Keep dropdown visible with a small delay */
+.theme-switcher-header:hover .theme-dropdown,
+.theme-dropdown:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 0.2s, transform 0.2s, visibility 0s 0s;
+}
+
+/* Add a bridge area to prevent dropdown from closing */
+.theme-switcher-header::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 12px;
+    opacity: 0;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    font-size: 18px;
+}
+
+.theme-option:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-bright);
+    transform: scale(1.1);
+}
+
+.theme-option.active {
+    background: var(--theme-accent-primary);
+    border-color: var(--theme-accent-primary);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--theme-accent-primary) 50%, transparent);
+}
+
+.theme-emoji {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.theme-name {
+    display: none;
+}
+
+/* Beautiful tooltips */
+.theme-option::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-bright);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 10001;
+}
+
+.theme-option:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+/* Small arrow on tooltip */
+.theme-option::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--border-bright);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 10001;
+}
+
+.theme-option:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+}

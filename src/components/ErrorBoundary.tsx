@@ -1,5 +1,6 @@
 import { Component, ReactNode, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from './ui';
 import './ErrorBoundary.css';
 
 interface Props {
@@ -74,10 +75,10 @@ export class ErrorBoundary extends Component<Props, State> {
                                 </pre>
                             </details>
                         )}
-                        <button className="btn btn-primary" onClick={this.handleReset}>
+                        <Button variant="primary" onClick={this.handleReset}>
                             <RefreshCw size={16} />
                             <span>Try Again</span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
             );

@@ -1,0 +1,138 @@
+/* Base Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Sizes */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+    height: 32px;
+}
+
+.btn-md {
+    padding: 10px 20px;
+    font-size: 14px;
+    height: 38px;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 15px;
+    height: 44px;
+}
+
+/* Variants */
+.btn-primary {
+    background: var(--theme-accent-primary);
+    color: var(--theme-bg-primary);
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--theme-accent-primary-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+    background: var(--theme-accent-tertiary);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-bright);
+}
+
+.btn-secondary:active:not(:disabled) {
+    background: var(--bg-active);
+}
+
+.btn-danger {
+    background: var(--theme-error);
+    color: var(--text-white);
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--theme-error) 90%, black 10%);
+}
+
+.btn-danger:active:not(:disabled) {
+    background: color-mix(in srgb, var(--theme-error) 80%, black 20%);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: var(--bg-hover);
+}
+
+.btn-ghost:active:not(:disabled) {
+    background: var(--bg-active);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--theme-accent-primary);
+    border: 1px solid var(--theme-accent-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--theme-accent-primary) 10%, transparent);
+    border-color: var(--theme-accent-primary-hover);
+}
+
+.btn-outline:active:not(:disabled) {
+    background: color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
+}
+
+/* Special States */
+.btn.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

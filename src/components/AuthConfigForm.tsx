@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button, Input } from './ui';
 
 type AuthType = 'none' | 'headers' | 'oauth';
 type AuthSubType = 'api_key' | 'bearer' | 'client_credentials' | 'custom';
@@ -6,11 +7,11 @@ type AuthSubType = 'api_key' | 'bearer' | 'client_credentials' | 'custom';
 interface AuthConfigFormProps {
     authType: AuthType;
     onAuthTypeChange: (type: AuthType) => void;
-    
+
     // Header auth
     headers?: Array<{ key: string; value: string }>;
     onHeadersChange?: (headers: Array<{ key: string; value: string }>) => void;
-    
+
     // OAuth
     useClientCredentials?: boolean;
     onClientCredentialsToggle?: (enabled: boolean) => void;
@@ -20,7 +21,7 @@ interface AuthConfigFormProps {
     onClientSecretChange?: (value: string) => void;
     tokenUrl?: string;
     onTokenUrlChange?: (value: string) => void;
-    
+
     // Advanced OAuth
     showAdvancedOAuth?: boolean;
     onAdvancedOAuthToggle?: (show: boolean) => void;
@@ -32,7 +33,7 @@ interface AuthConfigFormProps {
     onCustomTokenEndpointChange?: (value: string) => void;
     customClientId?: string;
     onCustomClientIdChange?: (value: string) => void;
-    
+
     // For simplified mode (AuthSelectionModal)
     simplified?: boolean;
     subType?: AuthSubType;
@@ -66,11 +67,11 @@ export function AuthConfigForm({
     subType = 'api_key',
     onSubTypeChange,
 }: AuthConfigFormProps) {
-    
+
     // For simplified mode, we manage subtype internally
     const [internalSubType, setInternalSubType] = useState<AuthSubType>(subType || 'api_key');
     const currentSubType = simplified ? (subType || internalSubType) : 'custom';
-    
+
     const handleSubTypeChange = (type: AuthSubType) => {
         setInternalSubType(type);
         if (onSubTypeChange) {
@@ -121,10 +122,10 @@ export function AuthConfigForm({
     return (
         <div>
             {/* Auth Type Selection */}
-            <div className="form-field" style={{ 
-                marginTop: simplified ? 0 : '20px', 
-                paddingTop: simplified ? 0 : '20px', 
-                borderTop: simplified ? 'none' : '1px solid var(--border-color)' 
+            <div className="form-field" style={{
+                marginTop: simplified ? 0 : '20px',
+                paddingTop: simplified ? 0 : '20px',
+                borderTop: simplified ? 'none' : '1px solid var(--border-color)'
             }}>
                 <label className="form-label">Authentication{simplified ? ' Method' : ''}</label>
                 <div className="radio-group">
@@ -228,92 +229,63 @@ export function AuthConfigForm({
                     {simplified && (currentSubType === 'api_key' || currentSubType === 'bearer') ? (
                         <>
                             {currentSubType === 'api_key' && (
-                                <div className="form-field">
-                                    <label className="form-label">Header Name</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={headers[0]?.key || ''}
-                                        onChange={(e) => updateHeader(0, 'key', e.target.value)}
-                                        placeholder="X-API-Key"
-                                    />
-                                </div>
-                            )}
-                            <div className="form-field">
-                                <label className="form-label">{currentSubType === 'api_key' ? 'API Key' : 'Bearer Token'}</label>
-                                <input
-                                    type="password"
-                                    className="form-input"
-                                    value={headers[0]?.value || ''}
-                                    onChange={(e) => {
-                                        if (currentSubType === 'bearer') {
-                                            updateHeader(0, 'key', 'Authorization');
-                                            updateHeader(0, 'value', `Bearer ${e.target.value}`);
-                                        } else {
-                                            updateHeader(0, 'value', e.target.value);
-                                        }
-                                    }}
-                                    placeholder={currentSubType === 'api_key' ? 'your-api-key-here' : 'your-token-here'}
+                                <Input
+                                    label="Header Name"
+                                    value={headers[0]?.key || ''}
+                                    onChange={(e) => updateHeader(0, 'key', e.target.value)}
+                                    placeholder="X-API-Key"
                                 />
-                            </div>
+                            )}
+                            <Input
+                                label={currentSubType === 'api_key' ? 'API Key' : 'Bearer Token'}
+                                type="password"
+                                value={headers[0]?.value || ''}
+                                onChange={(e) => {
+                                    if (currentSubType === 'bearer') {
+                                        updateHeader(0, 'key', 'Authorization');
+                                        updateHeader(0, 'value', `Bearer ${e.target.value}`);
+                                    } else {
+                                        updateHeader(0, 'value', e.target.value);
+                                    }
+                                }}
+                                placeholder={currentSubType === 'api_key' ? 'your-api-key-here' : 'your-token-here'}
+                            />
                         </>
                     ) : (
                         <>
                             <label className="form-label">Headers</label>
                             {headers.map((header, index) => (
                                 <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            placeholder="Header Name (e.g., X-API-Key)"
-                                            value={header.key}
-                                            onChange={(e) => updateHeader(index, 'key', e.target.value)}
-                                        />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <input
-                                            type="password"
-                                            className="form-input"
-                                            placeholder="Header Value"
-                                            value={header.value}
-                                            onChange={(e) => updateHeader(index, 'value', e.target.value)}
-                                        />
-                                    </div>
+                                    <Input
+                                        placeholder="Header Name (e.g., X-API-Key)"
+                                        value={header.key}
+                                        onChange={(e) => updateHeader(index, 'key', e.target.value)}
+                                    />
+                                    <Input
+                                        type="password"
+                                        placeholder="Header Value"
+                                        value={header.value}
+                                        onChange={(e) => updateHeader(index, 'value', e.target.value)}
+                                    />
                                     {headers.length > 1 && (
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
                                             onClick={() => removeHeader(index)}
-                                            style={{
-                                                padding: '10px 12px',
-                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                borderRadius: '6px',
-                                                color: 'var(--red-500)',
-                                                cursor: 'pointer',
-                                                fontSize: '14px'
-                                            }}
                                         >
                                             ✕
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             ))}
-                            <button
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={addHeader}
-                                style={{
-                                    padding: '8px 16px',
-                                    background: 'rgba(92, 207, 230, 0.1)',
-                                    border: '1px solid rgba(92, 207, 230, 0.3)',
-                                    borderRadius: '6px',
-                                    color: 'var(--blue-500)',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                    fontWeight: 600,
-                                    width: '100%'
-                                }}
+                                style={{ width: '100%' }}
                             >
                                 + Add Header
-                            </button>
+                            </Button>
                         </>
                     )}
                 </div>
@@ -349,36 +321,25 @@ export function AuthConfigForm({
 
                     {(simplified && currentSubType === 'client_credentials') || (!simplified && useClientCredentials) ? (
                         <>
-                            <div className="form-field">
-                                <label className="form-label">Client ID</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    value={clientId}
-                                    onChange={(e) => onClientIdChange?.(e.target.value)}
-                                    placeholder="your-client-id"
-                                />
-                            </div>
-                            <div className="form-field">
-                                <label className="form-label">Client Secret</label>
-                                <input
-                                    type="password"
-                                    className="form-input"
-                                    value={clientSecret}
-                                    onChange={(e) => onClientSecretChange?.(e.target.value)}
-                                    placeholder="your-client-secret"
-                                />
-                            </div>
-                            <div className="form-field">
-                                <label className="form-label">Token URL (optional)</label>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    value={tokenUrl}
-                                    onChange={(e) => onTokenUrlChange?.(e.target.value)}
-                                    placeholder="https://api.example.com/oauth/token"
-                                />
-                            </div>
+                            <Input
+                                label="Client ID"
+                                value={clientId}
+                                onChange={(e) => onClientIdChange?.(e.target.value)}
+                                placeholder="your-client-id"
+                            />
+                            <Input
+                                label="Client Secret"
+                                type="password"
+                                value={clientSecret}
+                                onChange={(e) => onClientSecretChange?.(e.target.value)}
+                                placeholder="your-client-secret"
+                            />
+                            <Input
+                                label="Token URL (optional)"
+                                value={tokenUrl}
+                                onChange={(e) => onTokenUrlChange?.(e.target.value)}
+                                placeholder="https://api.example.com/oauth/token"
+                            />
                         </>
                     ) : !simplified && (
                         <div className="info-message">
@@ -389,15 +350,11 @@ export function AuthConfigForm({
                     {/* Advanced OAuth Settings (EditServerModal only) */}
                     {!simplified && useClientCredentials && (
                         <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(92, 207, 230, 0.2)' }}>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => onAdvancedOAuthToggle?.(!showAdvancedOAuth)}
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--blue-500)',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px',
@@ -408,7 +365,7 @@ export function AuthConfigForm({
                                     ▶
                                 </span>
                                 Advanced OAuth Settings
-                            </button>
+                            </Button>
 
                             {showAdvancedOAuth && (
                                 <div style={{ marginTop: '16px' }}>
@@ -417,85 +374,56 @@ export function AuthConfigForm({
                                         <label className="form-label">Additional Headers (sent with OAuth requests)</label>
                                         {additionalHeaders.map((header, index) => (
                                             <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                                <div style={{ flex: 1 }}>
-                                                    <input
-                                                        type="text"
-                                                        className="form-input"
-                                                        placeholder="Header Name"
-                                                        value={header.key}
-                                                        onChange={(e) => updateAdditionalHeader(index, 'key', e.target.value)}
-                                                    />
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <input
-                                                        type="text"
-                                                        className="form-input"
-                                                        placeholder="Header Value"
-                                                        value={header.value}
-                                                        onChange={(e) => updateAdditionalHeader(index, 'value', e.target.value)}
-                                                    />
-                                                </div>
+                                                <Input
+                                                    placeholder="Header Name"
+                                                    value={header.key}
+                                                    onChange={(e) => updateAdditionalHeader(index, 'key', e.target.value)}
+                                                />
+                                                <Input
+                                                    placeholder="Header Value"
+                                                    value={header.value}
+                                                    onChange={(e) => updateAdditionalHeader(index, 'value', e.target.value)}
+                                                />
                                                 {additionalHeaders.length > 1 && (
-                                                    <button
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
                                                         onClick={() => removeAdditionalHeader(index)}
-                                                        style={{
-                                                            padding: '10px 12px',
-                                                            background: 'rgba(239, 68, 68, 0.1)',
-                                                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                            borderRadius: '6px',
-                                                            color: 'var(--red-500)',
-                                                            cursor: 'pointer',
-                                                            fontSize: '14px'
-                                                        }}
                                                     >
                                                         ✕
-                                                    </button>
+                                                    </Button>
                                                 )}
                                             </div>
                                         ))}
-                                        <button
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
                                             onClick={addAdditionalHeader}
-                                            style={{
-                                                padding: '8px 16px',
-                                                background: 'rgba(92, 207, 230, 0.1)',
-                                                border: '1px solid rgba(92, 207, 230, 0.3)',
-                                                borderRadius: '6px',
-                                                color: 'var(--blue-500)',
-                                                cursor: 'pointer',
-                                                fontSize: '13px',
-                                                fontWeight: 600,
-                                                width: '100%'
-                                            }}
+                                            style={{ width: '100%' }}
                                         >
                                             + Add Header
-                                        </button>
+                                        </Button>
                                     </div>
 
                                     {/* Custom OAuth Metadata */}
                                     <div>
                                         <label className="form-label">Custom OAuth Endpoints (overrides auto-discovery)</label>
                                         <div className="form-field">
-                                            <input
-                                                type="text"
-                                                className="form-input"
+                                            <Input
                                                 placeholder="Authorization Endpoint (optional)"
                                                 value={customAuthEndpoint}
                                                 onChange={(e) => onCustomAuthEndpointChange?.(e.target.value)}
                                             />
                                         </div>
                                         <div className="form-field">
-                                            <input
-                                                type="text"
-                                                className="form-input"
+                                            <Input
                                                 placeholder="Token Endpoint (optional)"
                                                 value={customTokenEndpoint}
                                                 onChange={(e) => onCustomTokenEndpointChange?.(e.target.value)}
                                             />
                                         </div>
                                         <div className="form-field">
-                                            <input
-                                                type="text"
-                                                className="form-input"
+                                            <Input
                                                 placeholder="Custom Client ID (optional)"
                                                 value={customClientId}
                                                 onChange={(e) => onCustomClientIdChange?.(e.target.value)}
