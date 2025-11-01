@@ -5,6 +5,82 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-11-01
+
+### Added
+- **Theme System**: Modern theme architecture with multiple theme support
+  - New theme system with localStorage persistence
+  - Ayu Mirage theme integration
+  - Smooth theme transitions without flash on load
+  - Theme selector in UI
+  
+- **Advanced Authentication UI**: Enhanced authentication configuration interface
+  - New `AuthConfigForm.tsx` component for streamlined auth setup
+  - `ServerConfigForm.tsx` for comprehensive server configuration
+  - Support for custom OAuth metadata and advanced settings
+  - Improved auth selection and configuration flow
+  
+- **Automatic OAuth Discovery**: Smart OAuth endpoint detection
+  - Direct HTTP POST probing for OAuth detection via WWW-Authenticate header
+  - Automatic discovery of OAuth endpoints when adding servers
+  - Better error handling and user feedback during OAuth flows
+  - New OAuth metadata endpoint for connected servers
+  
+- **Enhanced Modal System**: Improved modal experiences across the application
+  - Completely refactored `AddServerModal.tsx` with better UX
+  - Significantly enhanced `EditServerModal.tsx` with OAuth support
+  - Better error messages and user guidance
+  - Support for re-authentication and clearing credentials
+  
+- **LLM Settings Integration**: New LLM configuration interface
+  - New `LLMSettingsModal.tsx` component for LLM configuration
+  - `portkeyClient.ts` for Portkey AI integration
+  - `toolConverter.ts` for seamless tool conversion between formats
+  
+- **Hybrid Interface Component**: New flexible interface component
+  - New `HybridInterface.tsx` for versatile UI interactions
+  - Enhanced styling and layout improvements
+  - Better visual hierarchy and component organization
+
+### Changed
+- **Application Architecture**: Major componentization and theming improvements
+  - Refactored entire application for better maintainability
+  - Enhanced `App.tsx` with improved layout and state management
+  - Updated `App.css` with comprehensive theme system
+  - Improved `ServerSidebar.tsx` with better organization
+  
+- **Backend Enhancements**: Improved backend server capabilities
+  - Enhanced `mcp-backend-server.js` with additional OAuth handling
+  - Better error handling and session management
+  - Improved authentication flow and token management
+  
+- **Styling Overhaul**: Modernized UI with new design system
+  - New comprehensive styling for `HybridInterface.css`
+  - Enhanced `Modal.css` for better modal presentation
+  - Updated `ServerSidebar.css` with cleaner design
+  - New `LLMSettingsModal.css` for LLM settings interface
+  
+- **Example Updates**: Updated demo files
+  - Improved `try-in-hoot-demo.html` with better examples
+  - Enhanced `try-in-hoot-generator.html` with updated UI
+
+### Removed
+- **CollapsibleJson Component**: Removed unused component
+  - Deleted `CollapsibleJson.tsx` and `CollapsibleJson.css`
+  - Streamlined codebase by removing legacy components
+  - Cleaned up related imports and references
+
+### Fixed
+- Better error messages throughout the application
+- Improved OAuth credential management (clear auth now clears backend credentials)
+- Enhanced modal update flow when editing servers
+- Better handling of authentication failures and retries
+- Theme flash prevention on initial load
+
+### Documentation
+- Updated examples with new configuration options
+- Improved inline documentation for new components
+
 ## [0.4.1] - 2025-10-25
 
 ### Added
@@ -161,6 +237,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.6.0** - Theme system, advanced authentication UI, automatic OAuth discovery, and major componentization improvements
+- **0.5.0** - Version bump for OAuth enhancements
 - **0.4.1** - Tool state management with persistent execution history
 - **0.4.0** - "Try in Hoot" feature for one-click server integration
 - **0.3.0** - UI enhancements, JSON components, and architectural cleanup

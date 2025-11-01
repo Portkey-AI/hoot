@@ -10,6 +10,7 @@ yarn-error.log*
 # Development folders
 .vscode
 .idea
+.cursor
 docs/
 tests/
 examples/

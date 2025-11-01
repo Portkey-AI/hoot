@@ -85,42 +85,6 @@ async function extractFaviconFromHTML(url: string): Promise<string | null> {
 }
 
 /**
- * Check if a URL is accessible (returns a valid image)
- */
-async function isFaviconAccessible(url: string): Promise<boolean> {
-    try {
-        // Try with no-cors mode first (for cross-origin requests)
-        await fetch(url, {
-            method: 'HEAD',
-            mode: 'no-cors',
-            cache: 'force-cache',
-        });
-
-        // With no-cors, we can't check the status, so we just return true
-        // The actual loading will happen in the img tag
-        return true;
-    } catch {
-        // If HEAD fails, try GET with a timeout
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-            await fetch(url, {
-                method: 'GET',
-                mode: 'no-cors',
-                cache: 'force-cache',
-                signal: controller.signal,
-            });
-
-            clearTimeout(timeoutId);
-            return true;
-        } catch {
-            return false;
-        }
-    }
-}
-
-/**
  * Get all possible favicon URLs for a server with comprehensive fallback logic:
  * 1. OAuth logo_uri (if available)
  * 2. Specific domain standard paths (.ico, .png, .svg, no extension)
