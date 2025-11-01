@@ -11,8 +11,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hoot - MCP Inspector & Playground</title>
 
-  <!-- Theme CSS - Change this line to switch themes! -->
-  <link id="theme-link" rel="stylesheet" href="/src/themes/arctic-ice.css" />
+  <!-- Theme CSS - Default: Ayu Mirage (Original) -->
+  <link id="theme-link" rel="stylesheet" href="/src/themes/ayu-mirage.css" />
 
   <style>
     /* Theme switcher UI - Subtle, bottom-right */
@@ -61,6 +61,7 @@
       cursor: pointer;
       transition: all 150ms;
       line-height: 1;
+      position: relative;
     }
 
     .theme-btn:hover {
@@ -74,6 +75,33 @@
       border-color: var(--theme-accent-primary);
       box-shadow: 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 40%, transparent);
     }
+
+    /* Tooltip styles */
+    .theme-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-bright);
+      color: var(--text-primary);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 150ms, transform 150ms;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      z-index: 10000;
+    }
+
+    .theme-btn:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-12px);
+    }
   </style>
 </head>
 
@@ -84,10 +112,11 @@
   <div class="theme-switcher">
     <label class="theme-switcher-label">Themes</label>
     <div class="theme-buttons">
-      <button class="theme-btn active" data-theme="arctic-ice" title="Arctic Ice">🏔️</button>
-      <button class="theme-btn" data-theme="duotone-dark" title="DuoTone Dark">🌙</button>
-      <button class="theme-btn" data-theme="duotone-sea" title="DuoTone Sea">🌊</button>
-      <button class="theme-btn" data-theme="duotone-forest" title="DuoTone Forest">🌲</button>
+      <button class="theme-btn" data-theme="arctic-ice" data-tooltip="Arctic Ice">🏔️</button>
+      <button class="theme-btn active" data-theme="ayu-mirage" data-tooltip="Ayu Mirage">🌫️</button>
+      <button class="theme-btn" data-theme="duotone-dark" data-tooltip="DuoTone Dark">🌙</button>
+      <button class="theme-btn" data-theme="duotone-sea" data-tooltip="DuoTone Sea">🌊</button>
+      <button class="theme-btn" data-theme="duotone-forest" data-tooltip="DuoTone Forest">🌲</button>
     </div>
   </div>
 
@@ -113,8 +142,8 @@
       }, 100);
     }
 
-    // Load saved theme preference
-    const savedTheme = localStorage.getItem('hoot-theme');
+    // Load saved theme preference (default to ayu-mirage)
+    const savedTheme = localStorage.getItem('hoot-theme') || 'ayu-mirage';
     if (savedTheme) {
       switchTheme(savedTheme);
     }

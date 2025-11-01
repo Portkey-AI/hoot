@@ -9,6 +9,11 @@ Hoot now supports multiple beautiful themes! Each theme includes carefully craft
 **Colors:** Deep arctic nights with ice blue frost accents  
 **Vibe:** Clean, professional, calm
 
+### 🌫️ Ayu Mirage (Original)
+**Inspired by:** [Ayu Theme](https://github.com/ayu-theme)  
+**Colors:** Deep blue-gray base with soft, desaturated accents  
+**Vibe:** Calm, muted, eye-friendly, minimal contrast
+
 ### 🌙 DuoTone Dark
 **Inspired by:** Atom's DuoTone Dark  
 **Colors:** Deep purple base with warm gold accents  
@@ -35,6 +40,7 @@ Add a theme stylesheet link in your `index.html`:
 <link id="theme-css" rel="stylesheet" href="/src/themes/arctic-ice.css">
 
 <!-- Or choose another theme: -->
+<!-- <link id="theme-css" rel="stylesheet" href="/src/themes/ayu-mirage.css"> -->
 <!-- <link id="theme-css" rel="stylesheet" href="/src/themes/duotone-dark.css"> -->
 <!-- <link id="theme-css" rel="stylesheet" href="/src/themes/duotone-sea.css"> -->
 <!-- <link id="theme-css" rel="stylesheet" href="/src/themes/duotone-forest.css"> -->
@@ -131,7 +137,7 @@ Want to see all themes? Open your browser console and run:
 
 ```javascript
 // Switch between themes
-['arctic-ice', 'duotone-dark', 'duotone-sea', 'duotone-forest']
+['arctic-ice', 'ayu-mirage', 'duotone-dark', 'duotone-sea', 'duotone-forest']
   .forEach(theme => console.log(theme));
 ```
 
