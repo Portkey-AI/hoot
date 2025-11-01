@@ -1,0 +1,123 @@
+/**
+ * Hoot Theme: Arctic Ice (Default)
+ * Inspired by the Nord color palette
+ * Base: Deep arctic night, Accent: Ice blue/frost
+ */
+
+:root {
+    /* ❄️ Nord Arctic Ice Color Palette - Inspired by the arctic beauty */
+    /* https://www.nordtheme.com/docs/colors-and-palettes */
+
+    /* Polar Night - Dark backgrounds (nord0-3) - ENHANCED for more depth */
+    --nord0: #242933;
+    /* Deeper base - more contrast */
+    --nord1: #2e3440;
+    /* Original nord0 - elevated surfaces */
+    --nord2: #3b4252;
+    /* Original nord1 - selection */
+    --nord3: #434c5e;
+    /* Original nord2 - subtle UI */
+    --nord4-dark: #4c566a;
+    /* Comments, very subtle */
+
+    /* Snow Storm - Light text (nord4-6) - BRIGHTENED for readability */
+    --nord4: #d8dee9;
+    /* UI text, variables */
+    --nord5: #e5e9f0;
+    /* Subtle text */
+    --nord6: #eceff4;
+    /* Primary text - brightest snow */
+    --nord6-bright: #f9fafb;
+    /* Extra bright for emphasis */
+
+    /* Frost - Blue accents (nord7-10) - MORE VIBRANT */
+    --nord7: #8fbcbb;
+    /* Calm polar water */
+    --nord8: #88c0d0;
+    /* Pure ice - PRIMARY ACCENT */
+    --nord8-bright: #9cd9e6;
+    /* Brighter frost for hover/focus */
+    --nord9: #81a1c1;
+    /* Arctic waters */
+    --nord10: #5e81ac;
+    /* Deep ocean */
+
+    /* Aurora - Colorful accents (nord11-15) - ENHANCED vibrancy */
+    --nord11: #bf616a;
+    /* Red - Errors */
+    --nord12: #d08770;
+    /* Orange - Highlights */
+    --nord13: #ebcb8b;
+    /* Yellow - Warnings */
+    --nord14: #a3be8c;
+    /* Green - Success */
+    --nord14-bright: #b5d49a;
+    /* Brighter aurora green */
+    --nord15: #b48ead;
+    /* Purple - Special */
+
+    /* Theme mapping */
+    --theme-bg-primary: var(--nord0);
+    --theme-bg-secondary: var(--nord1);
+    --theme-bg-tertiary: var(--nord2);
+    --theme-bg-hover: var(--nord2);
+    --theme-bg-active: var(--nord3);
+
+    --theme-text-primary: var(--nord6-bright);
+    --theme-text-secondary: var(--nord5);
+    --theme-text-tertiary: var(--nord4);
+    --theme-text-white: var(--nord6-bright);
+    --theme-text-placeholder: var(--nord4-dark);
+
+    --theme-border-color: var(--nord3);
+    --theme-border-bright: var(--nord8);
+
+    --theme-accent-primary: var(--nord8);
+    --theme-accent-primary-hover: var(--nord8-bright);
+    --theme-accent-secondary: var(--nord7);
+    --theme-accent-tertiary: var(--nord9);
+    --theme-accent-deep: var(--nord10);
+
+    --theme-success: var(--nord14);
+    --theme-success-bright: var(--nord14-bright);
+    --theme-error: var(--nord11);
+    --theme-warning: var(--nord13);
+  --theme-info: var(--nord12);
+  --theme-special: var(--nord15);
+
+  /* Hills - Nord ice gradient layers */
+  --hills-layer-1: #2e3440;
+  /* Darkest back */
+  --hills-layer-2: #3b4252;
+  /* Middle */
+  --hills-layer-3: #434c5e;
+  /* Front */
+
+  /* ============================================ */
+  /* Legacy Support - Components use these */
+  /* ============================================ */
+  
+  --bg-primary: var(--theme-bg-primary);
+  --bg-secondary: var(--theme-bg-secondary);
+  --bg-tertiary: var(--theme-bg-tertiary);
+  --bg-hover: var(--theme-bg-hover);
+  --bg-active: var(--theme-bg-active);
+
+  --text-primary: var(--theme-text-primary);
+  --text-secondary: var(--theme-text-secondary);
+  --text-tertiary: var(--theme-text-tertiary);
+  --text-white: var(--theme-text-white);
+  --text-placeholder: var(--theme-text-placeholder);
+
+  --border-color: var(--theme-border-color);
+  --border-bright: var(--theme-border-bright);
+
+  --blue-500: var(--theme-accent-primary);
+  --blue-600: var(--theme-accent-tertiary);
+  --green-500: var(--theme-success);
+  --green-600: var(--theme-success-bright);
+  --red-500: var(--theme-error);
+  --yellow-500: var(--theme-warning);
+  --purple-500: var(--theme-special);
+  --orange-500: var(--theme-info);
+}

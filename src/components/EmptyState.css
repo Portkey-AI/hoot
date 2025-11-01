@@ -6,6 +6,37 @@
     padding: var(--spacing-3xl) var(--spacing-2xl);
     text-align: center;
     min-height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle rolling ice hills at the bottom - Nord style - Randomized */
+.empty-state::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background-image: var(--hills-empty-state);
+    background-size: cover;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    opacity: 0.7;
+    z-index: 0;
+}
+
+/* Don't show hills in empty state if parent already has them */
+.tools-sidebar .empty-state::after,
+.server-sidebar .empty-state::after {
+    display: none;
+}
+
+/* Ensure content is above the mountains */
+.empty-state>* {
+    position: relative;
+    z-index: 1;
 }
 
 .empty-state-icon {

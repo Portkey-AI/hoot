@@ -10,25 +10,27 @@
 .oauth-callback-content {
     max-width: 480px;
     width: 100%;
-    background: linear-gradient(135deg, #2a2f3d 0%, #242936 100%);
-    border: 1px solid rgba(92, 207, 230, 0.15);
+    background: linear-gradient(135deg, var(--theme-bg-secondary) 0%, var(--theme-bg-primary) 100%);
+    border: 1px solid color-mix(in srgb, var(--theme-accent-primary) 15%, transparent);
     border-radius: 16px;
     padding: 48px 40px;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-lg), 0 0 0 1px color-mix(in srgb, var(--theme-text-white) 5%, transparent);
     animation: fadeIn 0.3s ease-out;
 }
 
 .oauth-callback-content.error {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: linear-gradient(135deg, #3d2a2f 0%, #362429 100%);
+    border-color: color-mix(in srgb, var(--theme-error) 30%, transparent);
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--theme-error) 15%, var(--theme-bg-secondary)),
+            color-mix(in srgb, var(--theme-error) 10%, var(--theme-bg-primary)));
 }
 
 .oauth-icon {
     font-size: 72px;
     margin-bottom: 32px;
     line-height: 1;
-    filter: drop-shadow(0 4px 12px rgba(92, 207, 230, 0.3));
+    filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--theme-accent-primary) 30%, transparent));
 }
 
 .spinner {

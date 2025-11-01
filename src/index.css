@@ -1,52 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Ayu Mirage Color Palette (Official Theme) */
-  --ayu-bg-primary: #1f2430;
-  --ayu-bg-secondary: #242936;
-  --ayu-bg-tertiary: #2a2f3d;
-  --ayu-bg-hover: #2d3241;
-  --ayu-bg-active: #34405e;
-
-  --ayu-border: #1c212b;
-  --ayu-border-bright: #3e4b59;
-
-  --ayu-text-primary: #cccac2;
-  --ayu-text-secondary: #707a8c;
-  --ayu-text-tertiary: #5c6773;
-  --ayu-text-white: #d9d7ce;
-
-  --ayu-accent-cyan: #5ccfe6;
-  --ayu-accent-blue: #73d0ff;
-  --ayu-accent-green: #bae67e;
-  --ayu-accent-orange: #ffae57;
-  --ayu-accent-red: #f28779;
-  --ayu-accent-purple: #d4bfff;
-  --ayu-accent-yellow: #ffd173;
-
-  /* Semantic colors using Ayu palette */
-  --bg-primary: var(--ayu-bg-primary);
-  --bg-secondary: var(--ayu-bg-secondary);
-  --bg-tertiary: var(--ayu-bg-tertiary);
-  --bg-hover: var(--ayu-bg-hover);
-  --bg-active: var(--ayu-bg-active);
-
-  --text-primary: var(--ayu-text-primary);
-  --text-secondary: var(--ayu-text-secondary);
-  --text-tertiary: var(--ayu-text-tertiary);
-  --text-white: var(--ayu-text-white);
-
-  --border-color: var(--ayu-border);
-  --border-bright: var(--ayu-border-bright);
-
-  --blue-500: var(--ayu-accent-cyan);
-  --blue-600: var(--ayu-accent-blue);
-  --green-500: var(--ayu-accent-green);
-  --green-600: #95c74e;
-  --red-500: var(--ayu-accent-red);
-  --yellow-500: var(--ayu-accent-yellow);
-  --purple-500: var(--ayu-accent-purple);
-  --orange-500: var(--ayu-accent-orange);
+  /* ============================================ */
+  /* Design System Constants (Theme-Independent) */
+  /* ============================================ */
 
   /* Fonts */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -71,8 +28,20 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
   /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms cubic-bezier(0, 0, 0.2, 1);
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ============================================ */
+  /* 🏔️ ARCTIC HILLS - Dynamically Generated */
+  /* ============================================ */
+
+  /* These will be set by hillsGenerator.ts on page load */
+  /* Each panel gets unique hills with consistent Y-axis start/end points per layer */
+  --hills-main-area: url("data:image/svg+xml,%3Csvg viewBox='0 0 1920 150' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3C/svg%3E");
+  --hills-tools-sidebar: url("data:image/svg+xml,%3Csvg viewBox='0 0 1920 150' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3C/svg%3E");
+  --hills-server-sidebar: url("data:image/svg+xml,%3Csvg viewBox='0 0 1920 150' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3C/svg%3E");
+  --hills-empty-state: url("data:image/svg+xml,%3Csvg viewBox='0 0 1920 150' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3C/svg%3E");
+  --hills-api-pane: url("data:image/svg+xml,%3Csvg viewBox='0 0 1920 150' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3C/svg%3E");
 }
 
 * {
@@ -113,36 +82,37 @@ pre {
   font-variant-ligatures: common-ligatures;
 }
 
-/* Scrollbar styling - Ayu themed */
+/* Scrollbar styling - Theme aware */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: var(--theme-bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--ayu-border-bright);
+  background: linear-gradient(180deg, var(--theme-accent-primary) 0%, var(--theme-accent-tertiary) 100%);
   border-radius: 4px;
-  border: 2px solid var(--bg-secondary);
+  border: 2px solid var(--theme-bg-primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: linear-gradient(180deg, var(--theme-accent-secondary) 0%, var(--theme-accent-primary) 100%);
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--theme-accent-primary);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-accent-primary) 15%, transparent);
 }
 
 /* Selection color */
 ::selection {
-  background: var(--ayu-accent-blue);
-  color: var(--ayu-bg-primary);
+  background: var(--theme-accent-primary);
+  color: var(--theme-bg-primary);
 }
 
 /* Animations - using transform for GPU acceleration */
@@ -185,6 +155,37 @@ pre {
 
   50% {
     opacity: 0.5;
+  }
+}
+
+/* Theme-specific animations */
+@keyframes frost-pulse {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes aurora-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
+  }
+
+  33% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-success) 30%, transparent);
+  }
+
+  66% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-special) 30%, transparent);
   }
 }
 

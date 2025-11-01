@@ -14,45 +14,45 @@
     user-select: text;
 }
 
-/* Ayu Mirage syntax highlighting colors */
+/* Nord Arctic Ice syntax highlighting colors */
 .json-key {
-    color: var(--ayu-accent-blue);
-    /* cyan-blue for keys */
+    color: var(--theme-accent-primary);
+    /* Pure ice for keys */
     font-weight: 500;
 }
 
 .json-string {
-    color: var(--ayu-accent-green);
-    /* green for string values */
+    color: var(--theme-success);
+    /* Aurora green for string values */
 }
 
 .json-number {
-    color: var(--ayu-accent-orange);
-    /* orange for numbers */
+    color: var(--theme-special);
+    /* Aurora purple for numbers */
 }
 
 .json-boolean {
-    color: var(--ayu-accent-purple);
-    /* purple for booleans */
+    color: var(--theme-accent-tertiary);
+    /* Arctic waters for booleans */
     font-weight: 600;
 }
 
 .json-null {
-    color: var(--ayu-accent-purple);
-    /* purple for null */
+    color: var(--theme-accent-tertiary);
+    /* Arctic waters for null */
     font-weight: 600;
     font-style: italic;
 }
 
 .json-bracket {
-    color: var(--ayu-text-secondary);
-    /* muted for brackets */
+    color: var(--theme-text-tertiary);
+    /* Snow storm for brackets */
     font-weight: 600;
 }
 
 .json-punctuation {
-    color: var(--ayu-text-tertiary);
-    /* subtle for punctuation */
+    color: var(--theme-bg-active);
+    /* Subtle polar night for punctuation */
 }
 
 /* Collapse/expand toggle */
@@ -71,7 +71,7 @@
 }
 
 .json-collapse-toggle:hover {
-    color: var(--blue-500);
+    color: var(--theme-accent-primary);
 }
 
 .json-collapse-toggle svg {
@@ -87,6 +87,6 @@
 /* Selection styling for JSON viewer */
 .json-viewer::selection,
 .json-viewer *::selection {
-    background: var(--ayu-accent-blue);
-    color: var(--bg-primary);
+    background: var(--theme-accent-primary);
+    color: var(--theme-bg-primary);
 }

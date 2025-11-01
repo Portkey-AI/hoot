@@ -35,23 +35,23 @@
 }
 
 .toast-success .toast-icon {
-    color: var(--green-500);
-    background: rgba(186, 230, 126, 0.15);
+    color: var(--theme-success);
+    background: rgba(163, 190, 140, 0.15);
 }
 
 .toast-error .toast-icon {
-    color: var(--red-500);
-    background: rgba(242, 135, 121, 0.15);
+    color: var(--theme-error);
+    background: rgba(191, 97, 106, 0.15);
 }
 
 .toast-warning .toast-icon {
-    color: var(--orange-500);
-    background: rgba(255, 178, 115, 0.15);
+    color: var(--theme-info);
+    background: rgba(208, 135, 112, 0.15);
 }
 
 .toast-info .toast-icon {
-    color: var(--blue-500);
-    background: rgba(115, 208, 255, 0.15);
+    color: var(--theme-accent-primary);
+    background: rgba(136, 192, 208, 0.15);
 }
 
 .toast-content {

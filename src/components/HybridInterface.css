@@ -51,17 +51,17 @@
 .info-settings-button:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
-    border-color: var(--blue-500);
+    border-color: var(--theme-accent-primary);
 }
 
 .info-settings-button.needs-setup {
-    border-color: var(--orange-500);
-    background: rgba(255, 160, 64, 0.1);
+    border-color: var(--theme-info);
+    background: color-mix(in srgb, var(--theme-info) 10%, transparent);
 }
 
 .info-settings-button.needs-setup:hover {
-    border-color: var(--orange-500);
-    background: rgba(255, 160, 64, 0.15);
+    border-color: var(--theme-info);
+    background: color-mix(in srgb, var(--theme-info) 15%, transparent);
 }
 
 .setup-indicator {
@@ -129,7 +129,7 @@
 
 .chat-message-hybrid.selected {
     background: var(--bg-active);
-    border: 1px solid var(--blue-500);
+    border: 1px solid var(--theme-accent-primary);
     padding: calc(0.625rem - 1px);
 }
 
@@ -146,18 +146,18 @@
 }
 
 .message-avatar-hybrid.user {
-    background: var(--blue-500);
-    color: var(--bg-primary);
+    background: var(--theme-accent-primary);
+    color: var(--theme-bg-primary);
 }
 
 .message-avatar-hybrid.assistant {
-    background: var(--purple-500);
-    color: var(--bg-primary);
+    background: var(--theme-special);
+    color: var(--text-white);
 }
 
 .message-avatar-hybrid.tool {
-    background: var(--orange-500);
-    color: var(--bg-primary);
+    background: var(--theme-info);
+    color: var(--theme-bg-primary);
 }
 
 .message-content-hybrid {
@@ -178,7 +178,7 @@
     align-items: center;
     gap: 0.375rem;
     font-size: 0.75rem;
-    color: var(--blue-500);
+    color: var(--theme-accent-primary);
     margin-top: 0.25rem;
 }
 
@@ -247,20 +247,20 @@
 
 .chat-input-hybrid:focus {
     outline: none;
-    border-color: var(--blue-500);
-    box-shadow: 0 0 0 3px rgba(92, 207, 230, 0.1);
+    border-color: var(--theme-accent-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent-primary) 15%, transparent);
 }
 
 .chat-input-hybrid::placeholder {
-    color: var(--text-tertiary);
+    color: var(--text-placeholder);
 }
 
 .chat-send-button-hybrid {
-    background: var(--blue-500);
+    background: var(--theme-accent-primary);
     border: none;
     border-radius: 6px;
     padding: 0.625rem;
-    color: var(--bg-primary);
+    color: var(--theme-bg-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -269,7 +269,7 @@
 }
 
 .chat-send-button-hybrid:hover:not(:disabled) {
-    background: var(--blue-600);
+    background: var(--theme-accent-tertiary);
     transform: translateY(-1px);
 }
 
@@ -305,6 +305,24 @@
     flex-direction: column;
     gap: 1rem;
     /* Allow content to flow naturally */
+    position: relative;
+}
+
+/* Subtle rolling ice hills at the bottom - always visible - Randomized (scaled) */
+.api-pane-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background-image: var(--hills-api-pane);
+    background-size: cover;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    opacity: 0.4;
+    z-index: 0;
 }
 
 .api-block {
@@ -317,6 +335,8 @@
     flex-direction: column;
     max-height: none;
     /* Remove any height constraints on the block */
+    position: relative;
+    z-index: 1;
 }
 
 .api-block-header {
@@ -345,27 +365,27 @@
 .api-copy-button:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
-    border-color: var(--blue-500);
+    border-color: var(--theme-accent-primary);
 }
 
 .api-block-header.request {
     background: var(--bg-tertiary);
-    color: var(--blue-500);
+    color: var(--theme-accent-primary);
 }
 
 .api-block-header.response {
     background: var(--bg-tertiary);
-    color: var(--green-500);
+    color: var(--theme-success);
 }
 
 .api-block-header.tool-call {
     background: var(--bg-tertiary);
-    color: var(--orange-500);
+    color: var(--theme-info);
 }
 
 .api-block-header.tool-result {
     background: var(--bg-tertiary);
-    color: var(--green-500);
+    color: var(--theme-success);
 }
 
 .api-method,
@@ -412,6 +432,14 @@
     color: var(--text-tertiary);
     text-align: center;
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Empty content above hills */
+.api-empty>* {
+    position: relative;
+    z-index: 1;
 }
 
 .api-empty p {

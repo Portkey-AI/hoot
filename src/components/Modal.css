@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(31, 36, 48, 0.7);
+  background: rgba(46, 52, 64, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +15,7 @@
 }
 
 .modal {
-  background: linear-gradient(135deg, #2a2f3d 0%, #242936 100%);
+  background: linear-gradient(135deg, var(--theme-bg-secondary) 0%, var(--theme-bg-primary) 100%);
   border-radius: 16px;
   width: 90%;
   max-width: 480px;
@@ -23,8 +23,11 @@
   /* Prevent modal from exceeding viewport */
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(92, 207, 230, 0.15);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(136, 192, 208, 0.2);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(136, 192, 208, 0.1),
+    0 0 80px rgba(136, 192, 208, 0.05);
   animation: slideUpFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateZ(0);
   font-family: var(--font-sans);
@@ -54,17 +57,17 @@
 }
 
 .modal-body::-webkit-scrollbar-track {
-  background: rgba(31, 36, 48, 0.3);
+  background: rgba(46, 52, 64, 0.3);
   border-radius: 4px;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
-  background: rgba(92, 207, 230, 0.3);
+  background: rgba(136, 192, 208, 0.3);
   border-radius: 4px;
 }
 
 .modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(92, 207, 230, 0.5);
+  background: rgba(136, 192, 208, 0.5);
 }
 
 .modal-footer {
@@ -112,7 +115,7 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--blue-500);
+  color: var(--theme-accent-primary);
   margin-bottom: 10px;
   letter-spacing: 0.3px;
   text-transform: uppercase;
@@ -121,8 +124,8 @@
 .modal-body .form-input {
   width: 100%;
   padding: 14px 16px;
-  background: rgba(31, 36, 48, 0.6);
-  border: 2px solid rgba(92, 207, 230, 0.2);
+  background: rgba(46, 52, 64, 0.6);
+  border: 2px solid rgba(136, 192, 208, 0.2);
   border-radius: 10px;
   color: var(--text-white);
   font-size: 15px;
@@ -132,26 +135,26 @@
 }
 
 .modal-body .form-input:hover {
-  border-color: rgba(92, 207, 230, 0.4);
-  background: rgba(31, 36, 48, 0.8);
+  border-color: rgba(136, 192, 208, 0.4);
+  background: rgba(46, 52, 64, 0.8);
 }
 
 .modal-body .form-input:focus {
-  border-color: var(--blue-500);
-  background: rgba(31, 36, 48, 0.9);
-  box-shadow: 0 0 0 4px rgba(92, 207, 230, 0.1), 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--theme-accent-primary);
+  background: color-mix(in srgb, var(--theme-bg-secondary) 90%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-accent-primary) 15%, transparent), var(--shadow-md);
   outline: none;
   transform: translateY(-1px);
 }
 
 .modal-body .form-input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-placeholder);
 }
 
 .error-message {
-  background: rgba(242, 135, 121, 0.1);
-  border: 1px solid rgba(242, 135, 121, 0.3);
-  color: var(--red-500);
+  background: color-mix(in srgb, var(--theme-error) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-error) 30%, transparent);
+  color: var(--theme-error);
   padding: 12px 14px;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -164,9 +167,9 @@
 }
 
 .info-message {
-  background: rgba(92, 207, 230, 0.1);
-  border: 1px solid rgba(92, 207, 230, 0.3);
-  color: var(--blue-500);
+  background: color-mix(in srgb, var(--theme-accent-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
+  color: var(--theme-accent-primary);
   padding: 10px 12px;
   border-radius: var(--radius-md);
   font-size: 12px;
@@ -209,16 +212,16 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
-  color: #1a1f2e;
+  background: linear-gradient(135deg, var(--theme-accent-primary) 0%, var(--theme-accent-tertiary) 100%);
+  color: var(--theme-bg-primary);
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(92, 207, 230, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-md);
+  border: 1px solid color-mix(in srgb, var(--theme-text-white) 20%, transparent);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(92, 207, 230, 0.4);
+  box-shadow: 0 6px 16px rgba(136, 192, 208, 0.4);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -226,15 +229,15 @@
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--red-500) 0%, #d96459 100%);
-  color: var(--bg-primary);
+  background: linear-gradient(135deg, var(--theme-error) 0%, color-mix(in srgb, var(--theme-error) 90%, black 10%) 100%);
+  color: var(--text-white);
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(242, 135, 121, 0.2);
+  box-shadow: 0 2px 8px rgba(191, 97, 106, 0.25);
 }
 
 .btn-danger:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(242, 135, 121, 0.3);
+  box-shadow: 0 4px 12px rgba(191, 97, 106, 0.35);
 }
 
 .btn-danger:active:not(:disabled) {
@@ -256,7 +259,7 @@
 }
 
 .radio-option input[type='radio'] {
-  accent-color: var(--blue-500);
+  accent-color: var(--theme-accent-primary);
   cursor: pointer;
   width: 16px;
   height: 16px;
@@ -273,7 +276,7 @@
   width: 16px;
   height: 16px;
   border: 2px solid var(--border-color);
-  border-top-color: var(--blue-500);
+  border-top-color: var(--theme-accent-primary);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

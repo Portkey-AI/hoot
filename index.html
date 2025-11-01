@@ -1,33 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <link rel="manifest" href="/images/site.webmanifest" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hoot - MCP Testing Tool</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
-  <link rel="icon" href="/images/favicon.ico">
-  <link rel="manifest" href="/images/site.webmanifest">
-  <!-- Google Tag Manager -->
-  <script>(function (w, d, s, l, i) {
-      w[l] = w[l] || []; w[l].push({
-        'gtm.start':
-          new Date().getTime(), event: 'gtm.js'
-      }); var f = d.getElementsByTagName(s)[0],
-        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-    })(window, document, 'script', 'dataLayer', 'GTM-TVHPZ6C');</script>
-  <!-- End Google Tag Manager -->
+  <title>Hoot - MCP Inspector & Playground</title>
+
+  <!-- Theme CSS - Change this line to switch themes! -->
+  <link id="theme-link" rel="stylesheet" href="/src/themes/arctic-ice.css" />
+
+  <style>
+    /* Theme switcher UI - Subtle, bottom-right */
+    .theme-switcher {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      opacity: 0.6;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .theme-switcher:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .theme-switcher-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .theme-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .theme-btn {
+      padding: 6px 8px;
+      font-size: 16px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 150ms;
+      line-height: 1;
+    }
+
+    .theme-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-bright);
+      transform: scale(1.1);
+    }
+
+    .theme-btn.active {
+      background: var(--theme-accent-primary);
+      border-color: var(--theme-accent-primary);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 40%, transparent);
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVHPZ6C" height="0" width="0"
-      style="display:none;visibility:hidden"></iframe></noscript>
-  <!-- End Google Tag Manager (noscript) -->
   <div id="root"></div>
+
+  <!-- Theme Switcher UI - Subtle, bottom-right corner -->
+  <div class="theme-switcher">
+    <label class="theme-switcher-label">Themes</label>
+    <div class="theme-buttons">
+      <button class="theme-btn active" data-theme="arctic-ice" title="Arctic Ice">🏔️</button>
+      <button class="theme-btn" data-theme="duotone-dark" title="DuoTone Dark">🌙</button>
+      <button class="theme-btn" data-theme="duotone-sea" title="DuoTone Sea">🌊</button>
+      <button class="theme-btn" data-theme="duotone-forest" title="DuoTone Forest">🌲</button>
+    </div>
+  </div>
+
+  <script>
+    // Theme switcher logic
+    function switchTheme(themeName) {
+      const link = document.getElementById('theme-link');
+      link.href = `/src/themes/${themeName}.css`;
+
+      // Store preference
+      localStorage.setItem('hoot-theme', themeName);
+
+      // Update active button
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === themeName);
+      });
+
+      // Regenerate hills with new theme colors (after a brief delay for CSS to load)
+      setTimeout(() => {
+        if (window.initializeHills) {
+          window.initializeHills();
+        }
+      }, 100);
+    }
+
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem('hoot-theme');
+    if (savedTheme) {
+      switchTheme(savedTheme);
+    }
+
+    // Attach click handlers
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchTheme(btn.dataset.theme);
+      });
+    });
+  </script>
+
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

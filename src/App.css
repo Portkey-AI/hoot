@@ -38,15 +38,16 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
   flex-shrink: 0;
+  text-shadow: 0 0 30px rgba(136, 192, 208, 0.2);
 }
 
 .app-tagline {
   font-size: 0.8125rem;
-  color: var(--text-tertiary);
+  color: var(--theme-accent-tertiary);
   font-weight: 500;
   margin-left: 0.5rem;
   padding-left: 0.75rem;
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--theme-accent-deep);
   flex-shrink: 0;
 }
 
@@ -65,7 +66,7 @@
   padding: 0.625rem 1.25rem;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--theme-accent-tertiary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -76,12 +77,12 @@
 
 .nav-button:hover {
   background: var(--bg-hover);
-  color: var(--text-primary);
+  color: var(--theme-accent-secondary);
 }
 
 .nav-button.active {
   background: var(--bg-active);
-  color: var(--text-white);
+  color: var(--theme-accent-primary);
 }
 
 .nav-button.active::after {
@@ -91,7 +92,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--blue-500);
+  background: var(--theme-accent-primary);
 }
 
 .nav-button span {
@@ -124,7 +125,7 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  color: var(--text-secondary);
+  color: var(--theme-accent-tertiary);
   border-radius: 6px;
   transition: all 0.2s ease;
   text-decoration: none;
@@ -132,7 +133,7 @@
 
 .header-link:hover {
   background: var(--bg-hover);
-  color: var(--text-primary);
+  color: var(--theme-accent-secondary);
 }
 
 .version-badge {
@@ -140,12 +141,12 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.75rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--theme-accent-tertiary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-accent-tertiary) 20%, transparent);
   border-radius: 6px;
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--text-tertiary);
+  color: var(--theme-accent-tertiary);
   font-family: var(--font-mono);
   text-decoration: none;
   transition: all 0.2s ease;
@@ -153,9 +154,9 @@
 }
 
 .version-badge:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border-color: var(--blue-500);
+  background: color-mix(in srgb, var(--theme-accent-tertiary) 15%, transparent);
+  color: var(--theme-accent-secondary);
+  border-color: var(--theme-accent-primary);
 }
 
 /* Content Area */

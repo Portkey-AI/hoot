@@ -1,0 +1,113 @@
+/**
+ * Hoot Theme: DuoTone Dark
+ * Inspired by Atom's DuoTone Dark (purple/gold tones)
+ * Base: Deep purple, Accent: Warm gold
+ */
+
+:root {
+    /* DuoTone Dark Color Palette */
+    /* Base colors - Purple tones */
+    --duo-dark-0: #1e1726;
+    /* Deepest purple - backgrounds */
+    --duo-dark-1: #2c2233;
+    /* Dark purple - elevated */
+    --duo-dark-2: #3a2f47;
+    /* Mid purple - hover */
+    --duo-dark-3: #4a3f5a;
+    /* Light purple - borders */
+    --duo-dark-4: #6c5f7c;
+    /* Muted purple - subtle */
+
+    /* Accent colors - Gold/amber tones */
+    --duo-gold-0: #eeebdd;
+    /* Brightest text */
+    --duo-gold-1: #d4c5a9;
+    /* Primary text */
+    --duo-gold-2: #c5ae8a;
+    /* Secondary text */
+    --duo-gold-3: #b8935f;
+    /* Tertiary text */
+    --duo-gold-4: #9d7a47;
+    /* Warm accent */
+
+    /* Semantic accent colors */
+    --duo-accent: #e09142;
+    /* Primary - warm gold */
+    --duo-accent-bright: #f5a962;
+    /* Hover/focus */
+    --duo-blue: #7c9dd6;
+    /* Info - soft blue */
+    --duo-green: #98c379;
+    /* Success - nature green */
+    --duo-red: #e06c75;
+    /* Error - soft red */
+    --duo-yellow: #e5c07b;
+    /* Warning - amber */
+    --duo-purple: #c678dd;
+    /* Special - bright purple */
+
+    /* Theme mapping */
+    --theme-bg-primary: var(--duo-dark-0);
+    --theme-bg-secondary: var(--duo-dark-1);
+    --theme-bg-tertiary: var(--duo-dark-2);
+    --theme-bg-hover: var(--duo-dark-2);
+    --theme-bg-active: var(--duo-dark-3);
+
+    --theme-text-primary: var(--duo-gold-0);
+    --theme-text-secondary: var(--duo-gold-1);
+    --theme-text-tertiary: var(--duo-gold-2);
+    --theme-text-white: var(--duo-gold-0);
+    --theme-text-placeholder: var(--duo-dark-4);
+
+    --theme-border-color: var(--duo-dark-3);
+    --theme-border-bright: var(--duo-accent);
+
+    --theme-accent-primary: var(--duo-accent);
+    --theme-accent-primary-hover: var(--duo-accent-bright);
+    --theme-accent-secondary: var(--duo-gold-4);
+    --theme-accent-tertiary: var(--duo-purple);
+    --theme-accent-deep: var(--duo-blue);
+
+    --theme-success: var(--duo-green);
+    --theme-success-bright: #a8d389;
+    --theme-error: var(--duo-red);
+    --theme-warning: var(--duo-yellow);
+  --theme-info: var(--duo-blue);
+  --theme-special: var(--duo-purple);
+
+  /* Hills - Purple gradient layers */
+  --hills-layer-1: #2c2233;
+  /* Darkest back */
+  --hills-layer-2: #3a2f47;
+  /* Middle */
+  --hills-layer-3: #4a3f5a;
+  /* Front */
+
+  /* ============================================ */
+  /* Legacy Support - Components use these */
+  /* ============================================ */
+  
+  --bg-primary: var(--theme-bg-primary);
+  --bg-secondary: var(--theme-bg-secondary);
+  --bg-tertiary: var(--theme-bg-tertiary);
+  --bg-hover: var(--theme-bg-hover);
+  --bg-active: var(--theme-bg-active);
+
+  --text-primary: var(--theme-text-primary);
+  --text-secondary: var(--theme-text-secondary);
+  --text-tertiary: var(--theme-text-tertiary);
+  --text-white: var(--theme-text-white);
+  --text-placeholder: var(--theme-text-placeholder);
+
+  --border-color: var(--theme-border-color);
+  --border-bright: var(--theme-border-bright);
+
+  --blue-500: var(--theme-accent-primary);
+  --blue-600: var(--theme-accent-tertiary);
+  --green-500: var(--theme-success);
+  --green-600: var(--theme-success-bright);
+  --red-500: var(--theme-error);
+  --yellow-500: var(--theme-warning);
+  --purple-500: var(--theme-special);
+  --orange-500: var(--theme-info);
+}

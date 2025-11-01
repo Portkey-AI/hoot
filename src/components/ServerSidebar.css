@@ -1,10 +1,29 @@
 .server-sidebar {
     width: 260px;
-    background: var(--bg-primary);
+    background: transparent;
+    /* Transparent to show hills */
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     transform: translateZ(0);
+    position: relative;
+}
+
+/* Subtle rolling ice hills at the bottom - always visible - Randomized */
+.server-sidebar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background-image: var(--hills-server-sidebar);
+    background-size: cover;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
 }
 
 /* Sidebar Actions - Replaces header */
@@ -12,6 +31,8 @@
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-primary);
+    position: relative;
+    z-index: 1;
 }
 
 .add-server-btn {
@@ -29,12 +50,12 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    box-shadow: 0 2px 8px rgba(92, 207, 230, 0.2);
+    box-shadow: var(--shadow-sm), 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
 }
 
 .add-server-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(92, 207, 230, 0.3);
+    box-shadow: var(--shadow-md), 0 0 12px color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
 }
 
 .add-server-btn:active {
@@ -52,6 +73,8 @@
     overflow-y: auto;
     padding: var(--spacing-md);
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 1;
 }
 
 .server-item {
@@ -202,21 +225,21 @@
 }
 
 .transport-badge[data-transport="http"] {
-    background: rgba(92, 207, 230, 0.15);
-    color: var(--ayu-accent-cyan);
-    border: 1px solid rgba(92, 207, 230, 0.3);
+    background: color-mix(in srgb, var(--theme-accent-primary) 15%, transparent);
+    color: var(--theme-accent-primary);
+    border: 1px solid color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
 }
 
 .transport-badge[data-transport="sse"] {
-    background: rgba(115, 208, 255, 0.15);
-    color: var(--ayu-accent-blue);
-    border: 1px solid rgba(115, 208, 255, 0.3);
+    background: color-mix(in srgb, var(--theme-accent-tertiary) 15%, transparent);
+    color: var(--theme-accent-tertiary);
+    border: 1px solid color-mix(in srgb, var(--theme-accent-tertiary) 30%, transparent);
 }
 
 .transport-badge[data-transport="stdio"] {
-    background: rgba(186, 230, 126, 0.15);
-    color: var(--ayu-accent-green);
-    border: 1px solid rgba(186, 230, 126, 0.3);
+    background: color-mix(in srgb, var(--theme-success) 15%, transparent);
+    color: var(--theme-success);
+    border: 1px solid color-mix(in srgb, var(--theme-success) 30%, transparent);
 }
 
 .auth-badge {
@@ -233,15 +256,15 @@
 }
 
 .auth-badge[data-auth-type="headers"] {
-    background: rgba(255, 209, 115, 0.15);
-    color: var(--ayu-accent-yellow);
-    border: 1px solid rgba(255, 209, 115, 0.3);
+    background: color-mix(in srgb, var(--theme-warning) 15%, transparent);
+    color: var(--theme-warning);
+    border: 1px solid color-mix(in srgb, var(--theme-warning) 30%, transparent);
 }
 
 .auth-badge[data-auth-type="oauth"] {
-    background: rgba(212, 191, 255, 0.15);
-    color: var(--ayu-accent-purple);
-    border: 1px solid rgba(212, 191, 255, 0.3);
+    background: color-mix(in srgb, var(--theme-special) 15%, transparent);
+    color: var(--theme-special);
+    border: 1px solid color-mix(in srgb, var(--theme-special) 30%, transparent);
 }
 
 .server-actions {
@@ -317,7 +340,7 @@
 }
 
 .dropdown-item.danger:hover:not(:disabled) {
-    background: rgba(242, 135, 121, 0.1);
+    background: color-mix(in srgb, var(--theme-error) 10%, transparent);
     color: var(--red-500);
 }
 
@@ -348,6 +371,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    position: relative;
+    z-index: 1;
 }
 
 .footer-links {
@@ -377,7 +402,7 @@
     border-color: var(--blue-500);
     color: var(--blue-500);
     transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(92, 207, 230, 0.2);
+    box-shadow: var(--shadow-sm), 0 0 8px color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
 }
 
 .footer-link:active {

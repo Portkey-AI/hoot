@@ -1,10 +1,29 @@
 .tools-sidebar {
     width: 300px;
-    background: var(--bg-secondary);
+    background: transparent;
+    /* Transparent to show hills */
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     transform: translateZ(0);
+    position: relative;
+}
+
+/* Subtle rolling ice hills at the bottom - always visible - Randomized */
+.tools-sidebar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background-image: var(--hills-tools-sidebar);
+    background-size: cover;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
 }
 
 .tools-sidebar .empty-state-description {
@@ -18,6 +37,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
+    z-index: 1;
 }
 
 .tools-header h3 {
@@ -42,6 +63,8 @@
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-primary);
+    position: relative;
+    z-index: 1;
 }
 
 .search-box {
@@ -72,6 +95,8 @@
     overflow-y: auto;
     padding: var(--spacing-sm);
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 1;
 }
 
 .tool-item {
