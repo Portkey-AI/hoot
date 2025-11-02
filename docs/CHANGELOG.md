@@ -5,6 +5,16 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-11-02
+
+### Added
+- Enhanced URL state management and navigation in App component
+  - Improved routing and state preservation across navigation events
+
+### Fixed
+- Updated LLM Settings Modal to match product design specifications
+  - Aligned modal styling and behavior with design system
+
 ## [0.6.0] - 2025-11-01
 
 ### Added
@@ -291,6 +301,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.6.1** - URL state management enhancements and LLM Settings Modal design updates
 - **0.6.0** - Theme system, advanced authentication UI, automatic OAuth discovery, and major componentization improvements
 - **0.5.0** - OAuth auto-detection, auth selection modal, enhanced modal system, and backend credential management
 - **0.4.2** - Favicon assets, package metadata updates, and configuration improvements
