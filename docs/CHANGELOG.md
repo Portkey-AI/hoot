@@ -5,6 +5,54 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-11-02
+
+### Added
+- **Intelligent Tool Filtering**: Context-aware tool selection for LLM interactions
+  - Integrated `@portkey-ai/mcp-tool-filter` for intelligent tool filtering
+  - New `toolFilter.ts` library for filtering tools based on user context
+  - New `useToolFilter` hook for managing tool filter state
+  - Filter metrics and performance tracking displayed in UI
+  - Backend tool filtering support via `mcp-backend-tool-filter.js`
+  - Filter controls in HybridInterface (Filter and Clear buttons)
+  - Automatic tool filtering based on user query context
+  
+- **Chat Message Persistence**: Conversations now persist across sessions
+  - Chat history automatically saved to localStorage
+  - Restored conversations on app reload
+  - Seamless continuation of previous sessions
+  
+- **Enhanced Chat Interface**: Improved messaging capabilities
+  - System message support for better context
+  - Filter metrics displayed inline with chat messages
+  - Tool usage statistics (tools used vs. total available)
+  - Detailed tool information in filter metrics
+
+### Changed
+- **HybridInterface Enhancements**: Major improvements to chat interface
+  - Refactored message handling with persistent storage
+  - Enhanced UI with filter controls
+  - Improved message display with metrics
+  - Better tool call visualization
+  
+- **LLM Settings Modal**: Extended functionality
+  - Enhanced configuration options
+  - Better integration with tool filtering
+  - Improved user experience
+  
+- **Backend Architecture**: Enhanced backend capabilities
+  - New tool filtering endpoint support
+  - Better integration with MCP tool filter
+  - Improved tool conversion utilities
+
+### Fixed
+- Tool context management in chat sessions
+- Message persistence across page reloads
+- Filter state synchronization
+
+### Removed
+- Deprecated `faviconUtils.ts` - Cleanup of unused utility
+
 ## [0.6.1] - 2025-11-02
 
 ### Added
@@ -301,6 +349,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.7.0** - Intelligent tool filtering, chat message persistence, and enhanced chat interface
 - **0.6.1** - URL state management enhancements and LLM Settings Modal design updates
 - **0.6.0** - Theme system, advanced authentication UI, automatic OAuth discovery, and major componentization improvements
 - **0.5.0** - OAuth auto-detection, auth selection modal, enhanced modal system, and backend credential management
