@@ -5,6 +5,83 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-11-02
+
+### Added
+- **Markdown Rendering**: Full markdown support for LLM responses
+  - Integrated `react-markdown` with `remark-gfm`, `rehype-highlight`, and `rehype-raw`
+  - Real-time streaming markdown with proper formatting during response generation
+  - Sanitization of incomplete markdown during streaming to prevent rendering issues
+  - Code syntax highlighting in code blocks
+  - Proper rendering of links, lists, headings, and other markdown elements
+  
+- **Enhanced Tool Call Cards**: Rich tool execution display
+  - Server favicon display in tool call cards
+  - Server name and execution time metadata
+  - Accent-colored borders (30% opacity default, 100% on hover)
+  - Clickable cards that open Live API viewer sidebar
+  - Cached favicon fetching for optimal performance
+  
+- **Compact Filter Metrics Card**: Improved tool filtering visibility
+  - Inline badge showing filtered tool count and execution time
+  - Hover card with detailed tool breakdown by server
+  - Server favicons and tool counts in hover details
+  - Smooth animation and professional styling
+  
+- **Keyboard Shortcuts**: Comprehensive keyboard navigation
+  - `/` - Focus message input (with visual hint)
+  - `⌘K / Ctrl+K` - Clear chat history (with visual hint on button)
+  - `Escape` - Blur from message input
+  - All shortcuts documented in keyboard shortcuts modal
+  - `getShortcutHint` integration for consistent tooltips
+  
+- **Tool Filter Debug Logging**: Console logs for debugging
+  - Input context logged before filtering
+  - Response from filtering library logged after
+  - Helps debug filtering behavior and performance
+
+### Changed
+- **Claude-Style UI Overhaul**: Modern, clean interface design
+  - Removed message avatars for cleaner look
+  - User messages in rounded bubbles (aligned right, max-width 70%)
+  - Assistant messages in full-width plain text
+  - JetBrains Mono font for all assistant and tool messages
+  - Tool calls as prominent cards (no expand/collapse)
+  - Reduced message gap (1.5rem → 1rem)
+  - Better visual hierarchy and information density
+  
+- **Improved Input Experience**:
+  - Sticky input container that stays at bottom while scrolling
+  - Perfect vertical alignment of textarea and send button
+  - Visual keyboard shortcut hint (`/`) when input is empty
+  - Fixed send button dimensions (42x42px) for consistency
+  - Background and border restored for better visual separation
+  
+- **Scrollbar Positioning**: 
+  - Moved scrollbar to chat-pane (parent) for rightmost positioning
+  - Scrollbar no longer indented with centered chat content
+  - Chat content remains centered with proper margins
+  
+- **Simplified Tool Call Flow**:
+  - Removed redundant "I need to use some tools" message
+  - Removed intermediate "Calling tool: tool_name" message
+  - Only shows final tool result card with all metadata
+  
+- **Clear Chat Enhancement**:
+  - Removed confirmation dialog for faster workflow
+  - Added keyboard shortcut with visual hint
+  - Instant clear action
+
+### Fixed
+- Markdown not showing during streaming response
+- Assistant message icon disappearing after stream completes
+- Layout shifting when filter metrics rendered
+- Filter metrics showing after LLM response instead of before
+- Duplicate filter metrics card display
+- Scrollbar positioning with centered content
+- Vertical alignment of message input and send button
+- Keyboard hint overlapping with button text
+
 ## [0.7.2] - 2025-11-02
 
 ### Changed
@@ -385,6 +462,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.8.0** - Markdown rendering, Claude-style UI overhaul, enhanced tool call cards, keyboard shortcuts, and improved input experience
 - **0.7.2** - Improved asset references and enhanced error handling in tool filter functionality
 - **0.7.1** - New UI components (APIKeyInput, Tabs) and styling improvements across components
 - **0.7.0** - Intelligent tool filtering, chat message persistence, and enhanced chat interface
