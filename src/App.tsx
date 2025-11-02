@@ -11,7 +11,9 @@ import { ToastContainer } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { useAutoReconnect } from './hooks/useAutoReconnect';
+import { useURLState } from './hooks/useURLState';
 import { useToastStore } from './stores/toastStore';
+import { useAppStore } from './stores/appStore';
 import { initializeBackendClient } from './lib/backendClient';
 import type { ServerConfig } from './types';
 import { Wrench, Sparkles, Github, BookOpen, MessageCircle } from 'lucide-react';
@@ -27,13 +29,39 @@ const ENABLE_HYBRID_MODE = true;
 
 type ViewMode = 'test' | 'hybrid';
 
+/**
+ * Get view mode from URL path
+ */
+function getViewModeFromPath(pathname: string): ViewMode {
+  if (pathname.startsWith('/chat')) return 'hybrid';
+  return 'test';
+}
+
+/**
+ * Navigate to a specific view mode
+ */
+function navigateToView(mode: ViewMode) {
+  const path = mode === 'hybrid' ? '/chat' : '/test';
+  const searchParams = new URLSearchParams(window.location.search);
+  const newURL = `${path}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+  window.history.pushState({}, '', newURL);
+
+  // Trigger popstate to update the UI
+  window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
 function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingServer, setEditingServer] = useState<ServerConfig | null>(null);
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const [viewMode, setViewMode] = useState<ViewMode>('test');
+  const viewMode = getViewModeFromPath(currentPath);
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
+
+  const { readURL } = useURLState();
+  const setSelectedServer = useAppStore((state) => state.setSelectedServer);
+  const setSelectedTool = useAppStore((state) => state.setSelectedTool);
+  const setSearchQuery = useAppStore((state) => state.setSearchQuery);
 
   // Initialize backend client (fetch session token) on app start
   useEffect(() => {
@@ -43,7 +71,30 @@ function App() {
   // Auto-reconnect to saved servers with cached tools
   useAutoReconnect();
 
-  // Listen for navigation events
+  // Restore state from URL on mount and when URL changes
+  useEffect(() => {
+    const urlState = readURL();
+
+    if (urlState.server) {
+      setSelectedServer(urlState.server);
+    }
+
+    if (urlState.tool) {
+      setSelectedTool(urlState.tool);
+    }
+
+    if (urlState.search) {
+      setSearchQuery(urlState.search);
+    }
+
+    // Handle execution deep links (future enhancement)
+    if (urlState.execution) {
+      // TODO: Scroll to and highlight specific execution
+      console.log('Deep link to execution:', urlState.execution);
+    }
+  }, [currentPath, readURL, setSelectedServer, setSelectedTool, setSearchQuery]);
+
+  // Listen for navigation events (back/forward and programmatic navigation)
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
@@ -75,7 +126,7 @@ function App() {
               <nav className="app-nav">
                 <button
                   className={`nav-button ${viewMode === 'test' ? 'active' : ''}`}
-                  onClick={() => setViewMode('test')}
+                  onClick={() => navigateToView('test')}
                   title="Test MCP tools manually"
                 >
                   <Wrench size={18} />
@@ -83,7 +134,7 @@ function App() {
                 </button>
                 <button
                   className={`nav-button ${viewMode === 'hybrid' ? 'active' : ''}`}
-                  onClick={() => setViewMode('hybrid')}
+                  onClick={() => navigateToView('hybrid')}
                   title="Chat with AI to test tools"
                 >
                   <Sparkles size={18} />

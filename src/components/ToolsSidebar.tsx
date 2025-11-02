@@ -1,6 +1,7 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useToolStateStore } from '../stores/toolStateStore';
+import { useURLState } from '../hooks/useURLState';
 import { NoToolsState, EmptyState } from './EmptyState';
 import { Server } from 'lucide-react';
 import './ToolsSidebar.css';
@@ -13,9 +14,23 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
     const searchQuery = useAppStore((state) => state.searchQuery);
     const setSearchQuery = useAppStore((state) => state.setSearchQuery);
     const executingTools = useAppStore((state) => state.executingTools);
+    const { updateURL } = useURLState();
 
     // Get tool state for showing saved parameters indicator
     const getToolParameters = useToolStateStore((state) => state.getToolParameters);
+
+    // Handle tool selection with URL sync
+    const handleToolSelect = useCallback((toolName: string) => {
+        setSelectedTool(toolName);
+        updateURL({ tool: toolName });
+    }, [setSelectedTool, updateURL]);
+
+    // Handle search with URL sync (debounced in practice, but simple here)
+    const handleSearchChange = useCallback((query: string) => {
+        setSearchQuery(query);
+        // Update URL with search query (empty string clears it)
+        updateURL({ search: query || null }, true); // Use replace for search
+    }, [setSearchQuery, updateURL]);
 
     // Get tools for selected server - memoized to prevent re-renders
     const tools = useMemo(() => {
@@ -65,7 +80,7 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                     className="search-box"
                     placeholder="Search tools..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                 />
             </div>
 
@@ -84,7 +99,7 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                             <div
                                 key={tool.name}
                                 className={`tool-item ${selectedToolName === tool.name ? 'active' : ''} ${isExecuting ? 'executing' : ''}`}
-                                onClick={() => setSelectedTool(tool.name)}
+                                onClick={() => handleToolSelect(tool.name)}
                             >
                                 <div className="tool-name">
                                     {isExecuting && <span className="tool-pulse" />}

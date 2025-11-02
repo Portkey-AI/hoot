@@ -137,7 +137,6 @@ export interface AppState {
   selectedToolName: string | null;
   tools: Record<string, ToolSchema[]>; // serverId -> tools
   history: ExecutionHistory[];
-  inputMode: InputMode;
   searchQuery: string;
   executingTools: string[]; // Array of "serverId:toolName" keys for tools currently executing
 }

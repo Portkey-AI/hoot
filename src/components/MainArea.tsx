@@ -2,6 +2,7 @@ import { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useToolStateStore } from '../stores/toolStateStore';
 import { useMCPExecution } from '../hooks/useMCP';
+import { useInputMode } from '../hooks/useInputMode';
 import { EmptyState as EmptyStateComponent } from './EmptyState';
 import { CopyButton } from './CopyButton';
 import { JsonViewer } from './JsonViewer';
@@ -57,8 +58,7 @@ interface ToolExecutionViewProps {
 }
 
 function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
-    const inputMode = useAppStore((state) => state.inputMode);
-    const setInputMode = useAppStore((state) => state.setInputMode);
+    const { inputMode, setInputMode } = useInputMode();
     const setToolExecuting = useAppStore((state) => state.setToolExecuting);
 
     // Get a unique key for this tool
@@ -185,7 +185,7 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     }, [inputValues, serverId, tool.name, saveToolParameters]);
 
     // Update JSON when inputValues change or when switching to JSON mode
-    useMemo(() => {
+    useEffect(() => {
         if (inputMode === 'json') {
             setJsonInput(JSON.stringify(inputValues, null, 2));
         }

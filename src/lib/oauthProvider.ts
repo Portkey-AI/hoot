@@ -33,11 +33,29 @@ export class HootOAuthProvider implements OAuthClientProvider {
 
     /**
      * Generate a random OAuth state parameter
+     * Includes current app state for restoration after OAuth redirect
      */
     async state(): Promise<string> {
+        // Generate random state for CSRF protection
         const array = new Uint8Array(32);
         crypto.getRandomValues(array);
-        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        const csrfToken = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        
+        // Capture current app state to restore after OAuth
+        const currentState = {
+            path: window.location.pathname,
+            search: window.location.search,
+            serverId: this.serverId,
+        };
+        
+        // Combine CSRF token with app state
+        const stateData = {
+            csrf: csrfToken,
+            return: currentState,
+        };
+        
+        // Encode as base64
+        return btoa(JSON.stringify(stateData));
     }
 
     /**

@@ -36,8 +36,27 @@ export function OAuthCallback() {
             // Parse URL parameters
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
+            const state = params.get('state');
             const error = params.get('error');
             const errorDescription = params.get('error_description');
+
+            // Decode state to get return URL and server ID
+            let returnPath = '/test';
+            let returnSearch = '';
+            let serverId: string | null = null;
+
+            if (state) {
+                try {
+                    const stateData = JSON.parse(atob(state));
+                    if (stateData.return) {
+                        returnPath = stateData.return.path || '/test';
+                        returnSearch = stateData.return.search || '';
+                        serverId = stateData.return.serverId;
+                    }
+                } catch (err) {
+                    console.warn('Failed to parse OAuth state, using defaults:', err);
+                }
+            }
 
             // Check for errors from OAuth provider
             if (error) {
@@ -61,8 +80,11 @@ export function OAuthCallback() {
                 throw new Error('No authorization code was received from the OAuth provider. This may indicate a configuration issue with the server.');
             }
 
-            // Get the server ID that initiated OAuth (check both keys for compatibility)
-            const serverId = sessionStorage.getItem('oauth_server_id') || sessionStorage.getItem('oauth_pending_server');
+            // Get the server ID that initiated OAuth
+            // First check decoded state, then fallback to sessionStorage
+            if (!serverId) {
+                serverId = sessionStorage.getItem('oauth_server_id') || sessionStorage.getItem('oauth_pending_server');
+            }
             if (!serverId) {
                 throw new Error('OAuth session expired. Please return to Hoot and try connecting again.');
             }
@@ -137,9 +159,11 @@ export function OAuthCallback() {
             sessionStorage.removeItem('oauth_pending_server');
             sessionStorage.removeItem('oauth_last_redirect');
 
-            // Navigate back WITHOUT reload to preserve connection state
+            // Navigate back to preserved state
             setTimeout(() => {
-                window.history.pushState({}, '', '/');
+                const redirectURL = `${returnPath}${returnSearch}`;
+                console.log('OAuth success, redirecting to:', redirectURL);
+                window.history.pushState({}, '', redirectURL);
                 // Trigger a popstate event to update the UI
                 window.dispatchEvent(new PopStateEvent('popstate'));
             }, 1000);

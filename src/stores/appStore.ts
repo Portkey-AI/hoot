@@ -5,7 +5,6 @@ import type {
     ServerConfig,
     ToolSchema,
     ExecutionHistory,
-    InputMode,
 } from '../types';
 import { useToolStateStore } from './toolStateStore';
 
@@ -26,7 +25,6 @@ interface AppStore extends AppState {
     setToolExecuting: (serverId: string, toolName: string, executing: boolean) => void;
 
     // UI actions
-    setInputMode: (mode: InputMode) => void;
     setSearchQuery: (query: string) => void;
 }
 
@@ -77,7 +75,6 @@ export const useAppStore = create<AppStore>()(
             selectedToolName: null,
             tools: {},
             history: [],
-            inputMode: 'form',
             searchQuery: '',
             executingTools: [],
 
@@ -161,7 +158,6 @@ export const useAppStore = create<AppStore>()(
                 }),
 
             // UI actions
-            setInputMode: (mode) => set({ inputMode: mode }),
             setSearchQuery: (query) => set({ searchQuery: query }),
         }),
         {
@@ -176,7 +172,6 @@ export const useAppStore = create<AppStore>()(
                     error: undefined, // Don't persist errors
                 })),
                 tools: state.tools, // Cache discovered tools
-                inputMode: state.inputMode,
                 history: state.history.slice(0, 50), // Keep last 50 history items
                 selectedServerId: null, // Reset selected server on load
                 selectedToolName: null, // Reset selected tool on load
