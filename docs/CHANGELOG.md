@@ -5,6 +5,15 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2025-11-02
+
+### Changed
+- Improved asset references across the application for better performance
+
+### Fixed
+- Enhanced error handling in tool filter functionality
+- Improved robustness of tool filtering operations
+
 ## [0.7.1] - 2025-11-02
 
 ### Added
@@ -376,6 +385,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.7.2** - Improved asset references and enhanced error handling in tool filter functionality
 - **0.7.1** - New UI components (APIKeyInput, Tabs) and styling improvements across components
 - **0.7.0** - Intelligent tool filtering, chat message persistence, and enhanced chat interface
 - **0.6.1** - URL state management enhancements and LLM Settings Modal design updates
