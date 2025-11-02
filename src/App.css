@@ -142,6 +142,10 @@
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   text-decoration: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
 }
 
 .header-link:hover {

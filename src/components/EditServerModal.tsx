@@ -81,6 +81,21 @@ export const EditServerModal = memo(function EditServerModal({
         }
     }, [authType, headers.length]);
 
+    // Handle Escape key to close modal
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [onClose]);
+
     // Auto-detect OAuth based on URL using MCP SDK discovery
     const handleUrlBlur = async () => {
         // Only attempt discovery if URL looks valid

@@ -1,8 +1,9 @@
-import { memo, useMemo, useCallback } from 'react';
+import { memo, useMemo, useCallback, useRef } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { useToolStateStore } from '../stores/toolStateStore';
 import { useURLState } from '../hooks/useURLState';
 import { NoToolsState, EmptyState } from './EmptyState';
+import { getShortcutHint } from '../hooks/useKeyboardShortcuts';
 import { Server } from 'lucide-react';
 import './ToolsSidebar.css';
 
@@ -19,6 +20,9 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
     // Get tool state for showing saved parameters indicator
     const getToolParameters = useToolStateStore((state) => state.getToolParameters);
 
+    // Reference to search input for focus management
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
     // Handle tool selection with URL sync
     const handleToolSelect = useCallback((toolName: string) => {
         setSelectedTool(toolName);
@@ -31,6 +35,13 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
         // Update URL with search query (empty string clears it)
         updateURL({ search: query || null }, true); // Use replace for search
     }, [setSearchQuery, updateURL]);
+
+    // Handle Escape key to defocus search
+    const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Escape') {
+            e.currentTarget.blur();
+        }
+    }, []);
 
     // Get tools for selected server - memoized to prevent re-renders
     const tools = useMemo(() => {
@@ -71,12 +82,16 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
         <div className="tools-sidebar">
             <div className="tools-search">
                 <input
+                    ref={searchInputRef}
                     type="text"
                     className="search-box"
                     placeholder={`Search ${tools.length} tools...`}
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    title={getShortcutHint('Search tools', { key: '/' })}
                 />
+                <kbd className="search-shortcut-hint">/</kbd>
             </div>
 
             <div className="tools-list">
@@ -93,6 +108,7 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                         return (
                             <div
                                 key={tool.name}
+                                data-tool-name={tool.name}
                                 className={`tool-item ${selectedToolName === tool.name ? 'active' : ''} ${isExecuting ? 'executing' : ''}`}
                                 onClick={() => handleToolSelect(tool.name)}
                             >

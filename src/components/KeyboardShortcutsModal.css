@@ -1,0 +1,95 @@
+.keyboard-shortcuts-modal {
+    max-width: 700px;
+    max-height: 80vh;
+}
+
+.keyboard-shortcuts-modal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.shortcut-category {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.shortcut-category-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary-color);
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shortcut-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.shortcut-item:hover {
+    background-color: rgba(92, 207, 230, 0.05);
+}
+
+.shortcut-description {
+    font-size: 14px;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.shortcut-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: var(--text-white);
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: center;
+    justify-content: center;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 768px) {
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .keyboard-shortcuts-modal {
+        max-width: 90vw;
+    }
+}

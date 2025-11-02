@@ -159,6 +159,8 @@
 
 .input-section {
   margin-top: var(--spacing-2xl);
+  position: relative;
+  z-index: 1;
 }
 
 /* Simple spacing for form elements */
@@ -301,29 +303,52 @@
 }
 
 .execute-btn {
-  padding: 10px 20px;
-  background: var(--theme-success);
-  color: var(--theme-bg-primary);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  margin-top: var(--spacing-lg);
-  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-md);
+  gap: 12px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--theme-success) 0%, color-mix(in srgb, var(--theme-success) 85%, black) 100%);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+  text-shadow: none;
+  margin-top: var(--spacing-lg);
 }
 
 .execute-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
   background: var(--theme-success-bright);
+}
+
+.execute-btn-shortcut {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: var(--bg-primary);
+  opacity: 0.95;
+  transition: opacity var(--transition-fast);
+  line-height: 1;
+}
+
+.execute-btn:hover .execute-btn-shortcut {
+  opacity: 1;
 }
 
 .execute-btn:active:not(:disabled) {
   background: color-mix(in srgb, var(--theme-success) 90%, black 10%);
+  transform: translateY(0);
 }
 
 .execute-btn:disabled {
@@ -342,6 +367,18 @@
 
 .execute-btn.executing:hover {
   background: var(--theme-error);
+}
+
+.execute-timer {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.execute-cancel-hint {
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 400;
 }
 
 .result-section {

@@ -28,10 +28,20 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    // Handle Escape key to close modal
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.removeEventListener('keydown', handleEscape);
     };
-  }, []);
+  }, [onClose]);
 
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
@@ -348,6 +358,16 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
                 disabled={!url.trim()}
               >
                 Detect Server
+                <kbd style={{
+                  marginLeft: '8px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  background: 'rgba(0, 0, 0, 0.25)',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  fontFamily: 'var(--font-mono)',
+                  lineHeight: '1',
+                }}>↵</kbd>
               </Button>
             ) : null}
           </div>

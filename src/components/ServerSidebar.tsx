@@ -6,6 +6,7 @@ import { useURLState } from '../hooks/useURLState';
 import { NoServersState } from './EmptyState';
 import { ConfirmDialog } from './ConfirmDialog';
 import { toast } from '../stores/toastStore';
+import { getShortcutHint } from '../hooks/useKeyboardShortcuts';
 import type { ServerConfig } from '../types';
 import * as backendClient from '../lib/backendClient';
 import './ServerSidebar.css';
@@ -19,9 +20,15 @@ export const ServerSidebar = memo(function ServerSidebar({ onAddServer, onEditSe
     return (
         <div className="server-sidebar">
             <div className="sidebar-actions">
-                <button type="button" className="add-server-btn" onClick={onAddServer}>
+                <button
+                    type="button"
+                    className="add-server-btn"
+                    onClick={onAddServer}
+                    title={getShortcutHint('Add new server', { key: 'a' })}
+                >
                     <span className="btn-icon">+</span>
                     <span>Add Server</span>
+                    <kbd className="btn-shortcut-hint">A</kbd>
                 </button>
             </div>
             <ServersList onAddServer={onAddServer} onEditServer={onEditServer} />
@@ -372,6 +379,7 @@ const ServerItem = memo(function ServerItem({
     return (
         <div
             className={`server-item ${isSelected ? 'active' : ''}`}
+            data-server-id={server.id}
             onClick={onClick}
         >
             <div className="server-header">

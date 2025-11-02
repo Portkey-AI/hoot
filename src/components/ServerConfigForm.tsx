@@ -199,8 +199,16 @@ export const ServerConfigForm = memo(function ServerConfigForm({
         await onSubmit(config);
     };
 
+    // Handle Enter key to submit
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !isSubmitting) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
     return (
-        <>
+        <div onKeyDown={handleKeyDown}>
             {(error || externalError) && <div className="error-message">{error || externalError}</div>}
 
             {/* 1. URL or Command based on transport */}
@@ -500,9 +508,21 @@ export const ServerConfigForm = memo(function ServerConfigForm({
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? 'Connecting...' : (mode === 'add' ? 'Add Server' : 'Save & Reconnect')}
+                    {!isSubmitting && (
+                        <kbd style={{
+                            marginLeft: '8px',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            background: 'rgba(0, 0, 0, 0.25)',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            fontFamily: 'var(--font-mono)',
+                            lineHeight: '1',
+                        }}>↵</kbd>
+                    )}
                 </Button>
             </div>
-        </>
+        </div>
     );
 });
 

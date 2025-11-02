@@ -3,6 +3,7 @@ import { useAppStore } from '../stores/appStore';
 import { useToolStateStore } from '../stores/toolStateStore';
 import { useMCPExecution } from '../hooks/useMCP';
 import { useInputMode } from '../hooks/useInputMode';
+import { useKeyboardShortcuts, getShortcutHint } from '../hooks/useKeyboardShortcuts';
 import { EmptyState as EmptyStateComponent } from './EmptyState';
 import { CopyButton } from './CopyButton';
 import { JsonViewer } from './JsonViewer';
@@ -348,6 +349,17 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
         }
     }, [toolKey, serverId, tool.name, setToolExecuting, updateExecutionState]);
 
+    // Register keyboard shortcuts for tool execution
+    useKeyboardShortcuts([
+        {
+            key: 'm',
+            description: 'Toggle Form/JSON input mode',
+            handler: () => {
+                setInputMode(inputMode === 'form' ? 'json' : 'form');
+            },
+        },
+    ]);
+
     return (
         <div className="main-area">
             <div className="main-header">
@@ -410,6 +422,7 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                             type="button"
                             className={`execute-btn ${executionState.isExecuting ? 'executing' : ''}`}
                             onClick={executionState.isExecuting ? handleCancel : handleExecute}
+                            title={executionState.isExecuting ? 'Click to cancel execution' : getShortcutHint('Execute tool', { key: 'Enter', ctrl: true })}
                         >
                             {executionState.isExecuting ? (
                                 <>
@@ -418,7 +431,10 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                                     <span className="execute-cancel-hint">(click to cancel)</span>
                                 </>
                             ) : (
-                                'Execute Tool'
+                                <>
+                                    Execute Tool
+                                    <kbd className="execute-btn-shortcut">⌘↵</kbd>
+                                </>
                             )}
                         </button>
                     </div>
