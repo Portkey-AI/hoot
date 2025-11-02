@@ -57,6 +57,16 @@ export function HybridInterface() {
     useEffect(() => {
         if (apiKey) {
             getPortkeyClient({ apiKey });
+            // Update welcome message if this is the first load with an existing API key
+            setMessages((prev) => {
+                if (prev.length === 1 && prev[0].role === 'assistant' && prev[0].content.includes('Please configure your Portkey API key')) {
+                    return [{
+                        role: 'assistant',
+                        content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
+                    }];
+                }
+                return prev;
+            });
         }
     }, [apiKey]);
 

@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { X, Key, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Key } from 'lucide-react';
+import { Button } from './ui';
+import './Modal.css';
 import './LLMSettingsModal.css';
 
 interface LLMSettingsModalProps {
@@ -12,6 +14,16 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
     const [apiKey, setApiKey] = useState(currentApiKey || '');
     const [showKey, setShowKey] = useState(false);
 
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, []);
+
     const handleSave = () => {
         if (!apiKey.trim()) {
             alert('Please enter a valid Portkey API key');
@@ -23,26 +35,34 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content llm-settings-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal llm-settings-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <div className="modal-title">
-                        <Key size={20} />
-                        <h2>LLM Configuration</h2>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        marginBottom: '8px'
+                    }}>
+                        <Key size={24} style={{ color: 'var(--theme-accent-primary)' }} />
+                        <h2 style={{ margin: 0 }}>LLM Configuration</h2>
                     </div>
-                    <button className="modal-close" onClick={onClose} aria-label="Close">
-                        <X size={20} />
-                    </button>
+                    <p style={{
+                        textAlign: 'center',
+                        color: 'var(--text-secondary)',
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        marginTop: '4px',
+                        marginBottom: '24px'
+                    }}>
+                        Configure your Portkey API key to enable AI conversations
+                    </p>
                 </div>
 
                 <div className="modal-body">
                     <div className="settings-section">
-                        <h3>Portkey API Key</h3>
-                        <p className="settings-description">
-                            Enter your Portkey API key to enable real LLM conversations with OpenAI GPT-4o.
-                        </p>
-
                         <div className="form-group">
-                            <label htmlFor="portkey-api-key">API Key</label>
+                            <label className="form-label">API Key</label>
                             <div className="api-key-input-wrapper">
                                 <input
                                     id="portkey-api-key"
@@ -52,6 +72,7 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
                                     placeholder="sk-..."
                                     className="api-key-input"
                                     autoComplete="off"
+                                    autoFocus
                                 />
                                 <button
                                     type="button"
@@ -108,16 +129,14 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
                 </div>
 
                 <div className="modal-footer">
-                    <button className="button-secondary" onClick={onClose}>
+                    <Button variant="secondary" onClick={onClose}>
                         Cancel
-                    </button>
-                    <button className="button-primary" onClick={handleSave} disabled={!apiKey.trim()}>
-                        <Save size={16} />
+                    </Button>
+                    <Button variant="primary" onClick={handleSave} disabled={!apiKey.trim()}>
                         Save Configuration
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
     );
 }
-
