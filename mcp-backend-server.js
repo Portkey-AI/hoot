@@ -31,7 +31,8 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use(express.json());
+// Increase payload limit for tool filter initialization with many tools
+app.use(express.json({ limit: '10mb' }));
 
 // Initialize SQLite database in user's home directory
 // This ensures persistence across npx runs and npm cache clears

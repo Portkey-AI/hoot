@@ -56,7 +56,10 @@ class BackendToolFilterManager {
             console.log('[ToolFilter] Initialization complete');
             return { success: true };
         } catch (error) {
-            console.error('[ToolFilter] Initialization failed:', error);
+            console.error('[ToolFilter] Initialization failed with error:', error);
+            console.error('[ToolFilter] Error stack:', error.stack);
+            console.error('[ToolFilter] Error name:', error.name);
+            console.error('[ToolFilter] Error message:', error.message);
             this.initialized = false;
             return {
                 success: false,

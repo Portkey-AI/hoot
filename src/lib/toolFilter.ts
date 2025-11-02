@@ -84,7 +84,9 @@ export async function initializeToolFilter(
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-            throw new Error(data.error || 'Backend initialization failed');
+            const errorMsg = data.error || 'Backend initialization failed';
+            console.error('[ToolFilter] Backend initialization failed:', errorMsg);
+            throw new Error(errorMsg);
         }
 
         isInitialized = true;
