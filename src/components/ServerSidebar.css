@@ -29,7 +29,6 @@
 /* Sidebar Actions - Replaces header */
 .sidebar-actions {
     padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color);
     background: var(--bg-primary);
     position: relative;
     z-index: 1;
@@ -37,14 +36,14 @@
 
 .add-server-btn {
     width: 100%;
-    padding: 10px 16px;
-    background: var(--blue-500);
-    color: var(--bg-primary);
-    border: none;
+    padding: 10px 12px;
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     transition: all var(--transition-fast);
     display: flex;
     align-items: center;
@@ -53,23 +52,25 @@
 }
 
 .add-server-btn:hover {
-    background: var(--blue-600);
+    background: var(--bg-hover);
+    border-color: var(--border-bright);
+    color: var(--text-white);
 }
 
 .add-server-btn:active {
-    background: var(--blue-600);
+    background: var(--bg-active);
 }
 
 .add-server-btn .btn-icon {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     line-height: 1;
 }
 
 .servers-list {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     -webkit-overflow-scrolling: touch;
     position: relative;
     z-index: 1;

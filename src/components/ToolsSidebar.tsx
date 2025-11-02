@@ -69,16 +69,11 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
 
     return (
         <div className="tools-sidebar">
-            <div className="tools-header">
-                <h3>Tools</h3>
-                <span className="tools-count">{tools.length}</span>
-            </div>
-
             <div className="tools-search">
                 <input
                     type="text"
                     className="search-box"
-                    placeholder="Search tools..."
+                    placeholder={`Search ${tools.length} tools...`}
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
                 />

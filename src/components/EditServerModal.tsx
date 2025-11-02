@@ -332,9 +332,11 @@ export const EditServerModal = memo(function EditServerModal({
                                 <div style={{
                                     position: 'absolute',
                                     right: '12px',
-                                    top: '38px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
                                     display: 'flex',
                                     alignItems: 'center',
+                                    pointerEvents: 'none',
                                 }}>
                                     <Spinner size="sm" />
                                 </div>

@@ -1,11 +1,11 @@
 /* Base Spinner */
 .spinner {
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 2px solid rgba(0, 0, 0, 0.1);
   border-top-color: currentColor;
-  border-right-color: currentColor;
-  animation: spin 0.6s linear infinite;
   display: inline-block;
+  will-change: transform;
+  animation: spinner-rotate 0.6s linear infinite;
 }
 
 .spinner-sr-only {
@@ -53,9 +53,12 @@
 }
 
 /* Animation */
-@keyframes spin {
-  to {
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
     transform: rotate(360deg);
   }
 }
-

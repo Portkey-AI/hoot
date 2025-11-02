@@ -33,7 +33,7 @@
     filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--theme-accent-primary) 30%, transparent));
 }
 
-.spinner {
+.oauth-processing {
     animation: pulse 1.5s ease-in-out infinite;
 }
 

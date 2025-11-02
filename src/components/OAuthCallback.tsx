@@ -200,7 +200,7 @@ export function OAuthCallback() {
         <div className="oauth-callback">
             <div className={`oauth-callback-content ${status === 'error' ? 'error' : ''}`}>
                 <div className="oauth-icon">
-                    {status === 'processing' && <div className="spinner">🦉</div>}
+                    {status === 'processing' && <div className="oauth-processing">🦉</div>}
                     {status === 'success' && <div className="success-icon">✓</div>}
                     {status === 'error' && <div className="error-icon">✗</div>}
                 </div>

@@ -89,7 +89,7 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     }, [toolKey]);
 
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-    const [isDescriptionLong, setIsDescriptionLong] = useState(false);
+    const [isDescriptionLong, setIsDescriptionLong] = useState(true); // Start as true to apply clamp
     const descriptionRef = useRef<HTMLParagraphElement>(null);
     const { execute } = useMCPExecution();
 
@@ -101,9 +101,13 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     // Check if description actually overflows (not just character count)
     useEffect(() => {
         if (descriptionRef.current && tool.description) {
-            // Check if the content is actually overflowing the 3-line clamp
-            const isOverflowing = descriptionRef.current.scrollHeight > descriptionRef.current.clientHeight;
-            setIsDescriptionLong(isOverflowing);
+            // Force a reflow to ensure styles are applied, then check if clamped
+            requestAnimationFrame(() => {
+                if (descriptionRef.current) {
+                    const isOverflowing = descriptionRef.current.scrollHeight > descriptionRef.current.clientHeight;
+                    setIsDescriptionLong(isOverflowing);
+                }
+            });
         } else {
             setIsDescriptionLong(false);
         }
@@ -361,7 +365,7 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
                             className="description-toggle"
                             onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                         >
-                            {isDescriptionExpanded ? 'Show less' : 'Show more'}
+                            {isDescriptionExpanded ? 'Show less' : '+ Show more'}
                         </button>
                     )}
                 </div>
