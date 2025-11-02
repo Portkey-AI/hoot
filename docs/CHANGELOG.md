@@ -5,6 +5,33 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2025-11-02
+
+### Added
+- **New UI Components**: Enhanced component library with reusable elements
+  - New `APIKeyInput` component for secure API key input with show/hide functionality
+  - New `Tabs` component for tab-based navigation
+  - Component stories for Storybook integration
+  - Exported components in UI library index
+
+### Changed
+- **LLM Settings Modal**: Major refactoring with improved user experience
+  - New tab-based structure for better organization
+  - Enhanced filter settings interface
+  - Improved layout and styling consistency
+  - Better integration with new UI components
+  
+- **Styling Improvements**: Consistent theme variable usage
+  - Updated `HybridInterface.css` for improved layout
+  - Refactored `LLMSettingsModal.css` with cleaner structure
+  - Enhanced `ServerSidebar.css` with optimized properties
+  - Cleaned up unused CSS rules
+  - Better consistency across components
+
+### Fixed
+- Layout consistency across different components
+- CSS property optimization in ServerSidebar
+
 ## [0.7.0] - 2025-11-02
 
 ### Added
@@ -349,6 +376,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.7.1** - New UI components (APIKeyInput, Tabs) and styling improvements across components
 - **0.7.0** - Intelligent tool filtering, chat message persistence, and enhanced chat interface
 - **0.6.1** - URL state management enhancements and LLM Settings Modal design updates
 - **0.6.0** - Theme system, advanced authentication UI, automatic OAuth discovery, and major componentization improvements
