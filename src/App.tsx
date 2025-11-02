@@ -132,28 +132,9 @@ function App() {
         }
       },
     },
-    // Server navigation with Up/Down arrows
+    // Server navigation with j/k (Vim-style)
     {
-      key: 'ArrowUp',
-      description: 'Previous server',
-      handler: () => {
-        if (servers.length === 0) return;
-        const currentIndex = servers.findIndex(s => s.id === selectedServerId);
-        const prevIndex = currentIndex <= 0 ? servers.length - 1 : currentIndex - 1;
-        const newServerId = servers[prevIndex].id;
-        setSelectedServer(newServerId);
-
-        // Scroll server into view
-        setTimeout(() => {
-          const serverElement = document.querySelector(`.server-item[data-server-id="${newServerId}"]`);
-          if (serverElement) {
-            serverElement.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-          }
-        }, 0);
-      },
-    },
-    {
-      key: 'ArrowDown',
+      key: 'j',
       description: 'Next server',
       handler: () => {
         if (servers.length === 0) return;
@@ -171,17 +152,36 @@ function App() {
         }, 0);
       },
     },
-    // Tool navigation with j/k (Vim-style)
     {
-      key: 'j',
-      description: 'Next tool',
+      key: 'k',
+      description: 'Previous server',
+      handler: () => {
+        if (servers.length === 0) return;
+        const currentIndex = servers.findIndex(s => s.id === selectedServerId);
+        const prevIndex = currentIndex <= 0 ? servers.length - 1 : currentIndex - 1;
+        const newServerId = servers[prevIndex].id;
+        setSelectedServer(newServerId);
+
+        // Scroll server into view
+        setTimeout(() => {
+          const serverElement = document.querySelector(`.server-item[data-server-id="${newServerId}"]`);
+          if (serverElement) {
+            serverElement.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+          }
+        }, 0);
+      },
+    },
+    // Tool navigation with Up/Down arrows
+    {
+      key: 'ArrowUp',
+      description: 'Previous tool',
       handler: () => {
         if (!selectedServerId) return;
         const serverTools = tools[selectedServerId] || [];
         if (serverTools.length === 0) return;
         const currentIndex = serverTools.findIndex(t => t.name === selectedToolName);
-        const nextIndex = currentIndex >= serverTools.length - 1 ? 0 : currentIndex + 1;
-        const newToolName = serverTools[nextIndex].name;
+        const prevIndex = currentIndex <= 0 ? serverTools.length - 1 : currentIndex - 1;
+        const newToolName = serverTools[prevIndex].name;
         setSelectedTool(newToolName);
 
         // Scroll tool into view
@@ -194,15 +194,15 @@ function App() {
       },
     },
     {
-      key: 'k',
-      description: 'Previous tool',
+      key: 'ArrowDown',
+      description: 'Next tool',
       handler: () => {
         if (!selectedServerId) return;
         const serverTools = tools[selectedServerId] || [];
         if (serverTools.length === 0) return;
         const currentIndex = serverTools.findIndex(t => t.name === selectedToolName);
-        const prevIndex = currentIndex <= 0 ? serverTools.length - 1 : currentIndex - 1;
-        const newToolName = serverTools[prevIndex].name;
+        const nextIndex = currentIndex >= serverTools.length - 1 ? 0 : currentIndex + 1;
+        const newToolName = serverTools[nextIndex].name;
         setSelectedTool(newToolName);
 
         // Scroll tool into view

@@ -31,6 +31,12 @@ export const ServerSidebar = memo(function ServerSidebar({ onAddServer, onEditSe
                     <kbd className="btn-shortcut-hint">A</kbd>
                 </button>
             </div>
+            <div className="nav-hint">
+                <div className="nav-hint-keys">
+                    <kbd>j</kbd>
+                    <kbd>k</kbd>
+                </div>
+            </div>
             <ServersList onAddServer={onAddServer} onEditServer={onEditServer} />
         </div>
     );

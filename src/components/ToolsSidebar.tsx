@@ -94,6 +94,13 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                 <kbd className="search-shortcut-hint">/</kbd>
             </div>
 
+            <div className="nav-hint">
+                <div className="nav-hint-keys">
+                    <kbd>↑</kbd>
+                    <kbd>↓</kbd>
+                </div>
+            </div>
+
             <div className="tools-list">
                 {filteredTools.length === 0 ? (
                     <div className="no-results">
