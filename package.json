@@ -54,6 +54,7 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-router-dom": "^5.3.3",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^5.0.4",
     "@vitest/browser-playwright": "^4.0.6",
     "@vitest/coverage-v8": "^4.0.6",
@@ -74,7 +75,11 @@
     "portkey-ai": "^3.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.4",
+    "rehype-highlight": "^7.0.2",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
     "zustand": "^5.0.8"
   }
 }

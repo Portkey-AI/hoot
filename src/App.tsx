@@ -276,6 +276,14 @@ function App() {
       ],
     },
     {
+      category: 'Chat',
+      shortcuts: [
+        { key: '/', description: 'Focus message input' },
+        { key: 'k', ctrl: true, description: 'Clear chat history' },
+        { key: 'Escape', description: 'Blur from message input' },
+      ],
+    },
+    {
       category: 'General',
       shortcuts: [
         { key: '?', shift: true, description: 'Show shortcuts' },

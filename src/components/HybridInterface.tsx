@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../stores/appStore';
-import { Send, Sparkles, Code2, Settings, Copy, Check, Filter, Trash2 } from 'lucide-react';
+import { getShortcutHint } from '../hooks/useKeyboardShortcuts';
+import { Send, Sparkles, Code2, Settings, Copy, Check, Filter, Trash2, ChevronRight } from 'lucide-react';
 import { LLMSettingsModal } from './LLMSettingsModal';
 import { JsonViewer } from './JsonViewer';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { getPortkeyClient, type ChatMessage } from '../lib/portkeyClient';
 import { convertAllMCPToolsToOpenAI, convertFilteredToolsToOpenAI, findServerForTool } from '../lib/toolConverter';
 import { mcpClient } from '../lib/mcpClient';
@@ -23,6 +25,10 @@ interface Message {
         id: string;
         name: string;
         result: string;
+        serverId?: string;
+        serverIcon?: string;
+        serverName?: string;
+        executionTime?: number;
     };
     filterMetrics?: {
         toolsUsed: number;
@@ -71,6 +77,7 @@ export function HybridInterface() {
     const [messages, setMessages] = useState<Message[]>(getInitialMessages());
     const [input, setInput] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [streamingMessageIndex, setStreamingMessageIndex] = useState<number>(-1);
     const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
@@ -83,7 +90,11 @@ export function HybridInterface() {
         lastFilterTime: number;
     } | null>(null);
 
+    // Cache for server favicons (similar to ServerSidebar)
+    const faviconCacheRef = useRef<Map<string, string | null>>(new Map());
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const servers = useAppStore((state) => state.servers);
     const tools = useAppStore((state) => state.tools);
     const toolFilterEnabled = useAppStore((state) => state.toolFilterEnabled);
@@ -117,6 +128,32 @@ export function HybridInterface() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // Helper to get server favicon with caching
+    const getServerFavicon = async (serverId: string): Promise<string | null> => {
+        // Check cache first
+        const cached = faviconCacheRef.current.get(serverId);
+        if (cached !== undefined) {
+            return cached;
+        }
+
+        // Fetch and cache
+        const server = servers.find(s => s.id === serverId);
+        if (server?.url) {
+            try {
+                const oauthLogoUri = server.auth?.oauthServerMetadata?.logo_uri;
+                const faviconUrl = await backendClient.getFaviconUrl(server.url, oauthLogoUri);
+                faviconCacheRef.current.set(serverId, faviconUrl);
+                return faviconUrl;
+            } catch (e) {
+                faviconCacheRef.current.set(serverId, null);
+                return null;
+            }
+        }
+
+        faviconCacheRef.current.set(serverId, null);
+        return null;
+    };
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -125,6 +162,28 @@ export function HybridInterface() {
     useEffect(() => {
         localStorage.setItem(CHAT_MESSAGES_STORAGE_KEY, JSON.stringify(messages));
     }, [messages]);
+
+    // Global keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Cmd+K (Mac) or Ctrl+K (Windows/Linux) to clear chat
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                if (messages.length > 1) {
+                    handleClearChat();
+                }
+            }
+
+            // "/" to focus message input (only if not already focused)
+            if (e.key === '/' && document.activeElement !== textareaRef.current) {
+                e.preventDefault();
+                textareaRef.current?.focus();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [messages.length]);
 
     const handleSaveApiKey = (newApiKey: string) => {
         setApiKey(newApiKey);
@@ -141,15 +200,13 @@ export function HybridInterface() {
     };
 
     const handleClearChat = () => {
-        if (confirm('Are you sure you want to clear the chat history? This cannot be undone.')) {
-            const welcomeMessage: Message = {
-                role: 'assistant',
-                content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
-            };
-            setMessages([welcomeMessage]);
-            setSelectedMessage(null);
-            localStorage.removeItem(CHAT_MESSAGES_STORAGE_KEY);
-        }
+        const welcomeMessage: Message = {
+            role: 'assistant',
+            content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
+        };
+        setMessages([welcomeMessage]);
+        setSelectedMessage(null);
+        localStorage.removeItem(CHAT_MESSAGES_STORAGE_KEY);
     };
 
     /**
@@ -162,7 +219,9 @@ export function HybridInterface() {
         // Try to use semantic filtering if enabled and ready
         if (toolFilterEnabled && toolFilterReady && totalTools > 0) {
             try {
+                console.log('[Tool Filter] Context sent to filtering library:', conversationContext);
                 const result = await filterToolsForContext(conversationContext, toolFilterConfig);
+                console.log('[Tool Filter] Response from filtering library:', result);
 
                 if (result) {
                     const openaiTools = convertFilteredToolsToOpenAI(result.tools);
@@ -334,68 +393,136 @@ export function HybridInterface() {
                 iteration++;
                 console.log(`[Chat] LLM call iteration ${iteration}`);
 
+                // Show filtering indicator for first iteration only (before actual filtering)
+                let filteringMessageIndex = -1;
+                if (iteration === 1 && toolFilterEnabled) {
+                    setMessages((prev) => {
+                        filteringMessageIndex = prev.length;
+                        return [
+                            ...prev,
+                            {
+                                role: 'system' as const,
+                                content: '🔍 Filtering tools for context...',
+                            },
+                        ];
+                    });
+                }
+
                 // Filter tools based on current conversation context
                 const { tools: openaiTools, metrics: filterMetrics } = await getFilteredTools(currentMessages);
 
-                const apiRequest = {
-                    model: 'gpt-4o',
-                    messages: currentMessages,
-                    tools: openaiTools.length > 0 ? openaiTools : undefined,
-                };
+                // Replace filtering message with actual metrics
+                if (filteringMessageIndex !== -1 && filterMetrics) {
+                    setMessages((prev) => {
+                        const newMessages = [...prev];
+                        newMessages[filteringMessageIndex] = {
+                            role: 'system' as const,
+                            content: '',
+                            filterMetrics: filterMetrics,
+                        };
+                        return newMessages;
+                    });
+                } else if (iteration > 1 && filterMetrics) {
+                    // For subsequent iterations, just add the metrics
+                    setMessages((prev) => [
+                        ...prev,
+                        {
+                            role: 'system' as const,
+                            content: '',
+                            filterMetrics: filterMetrics,
+                        },
+                    ]);
+                }
 
-                // Make API call
-                const response: any = await client.createChatCompletion({
+                // Track streaming message index locally
+                let localStreamingIndex = -1;
+                let accumulatedContent = '';
+                let accumulatedToolCalls: any[] = [];
+
+                // Make streaming API call
+                const stream = client.createChatCompletionStream({
                     messages: currentMessages,
                     tools: openaiTools.length > 0 ? openaiTools : undefined,
                 });
 
-                const choice = response.choices[0];
-                const assistantMessage = choice.message;
+                // Process stream chunks
+                for await (const chunk of stream) {
+                    const delta = chunk.choices?.[0]?.delta;
+
+                    if (!delta) continue;
+
+                    // Handle content streaming
+                    if (delta.content) {
+                        accumulatedContent += delta.content;
+
+                        // Create or update streaming message
+                        setMessages((prev) => {
+                            if (localStreamingIndex === -1) {
+                                // First chunk - add new message
+                                localStreamingIndex = prev.length;
+                                setStreamingMessageIndex(localStreamingIndex);
+                                return [
+                                    ...prev,
+                                    {
+                                        role: 'assistant' as const,
+                                        content: accumulatedContent,
+                                    },
+                                ];
+                            } else {
+                                // Update existing message - preserve all properties
+                                const newMessages = [...prev];
+                                newMessages[localStreamingIndex] = {
+                                    role: 'assistant' as const,
+                                    content: accumulatedContent,
+                                };
+                                return newMessages;
+                            }
+                        });
+                    }
+
+                    // Handle tool calls
+                    if (delta.tool_calls) {
+                        for (const toolCall of delta.tool_calls) {
+                            const index = toolCall.index;
+                            if (!accumulatedToolCalls[index]) {
+                                accumulatedToolCalls[index] = {
+                                    id: toolCall.id || '',
+                                    type: 'function',
+                                    function: {
+                                        name: toolCall.function?.name || '',
+                                        arguments: toolCall.function?.arguments || '',
+                                    },
+                                };
+                            } else {
+                                if (toolCall.id) {
+                                    accumulatedToolCalls[index].id = toolCall.id;
+                                }
+                                if (toolCall.function?.name) {
+                                    accumulatedToolCalls[index].function.name = toolCall.function.name;
+                                }
+                                if (toolCall.function?.arguments) {
+                                    accumulatedToolCalls[index].function.arguments += toolCall.function.arguments;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Create the final assistant message from accumulated data
+                const assistantMessage = {
+                    role: 'assistant',
+                    content: accumulatedContent || null,
+                    tool_calls: accumulatedToolCalls.length > 0 ? accumulatedToolCalls : undefined,
+                };
 
                 // Check if the LLM wants to call tools
                 if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-                    // Add filter metrics FIRST (before assistant response)
-                    setMessages((prev) => [
-                        ...prev,
-                        // Add subtle filter metrics indicator if filtering was used
-                        ...(filterMetrics
-                            ? [
-                                {
-                                    role: 'system' as const,
-                                    content: '',
-                                    filterMetrics: filterMetrics,
-                                },
-                            ]
-                            : []),
-                        {
-                            role: 'assistant',
-                            content: assistantMessage.content || 'I need to use some tools to help with that.',
-                            apiRequest,
-                            apiResponse: response,
-                        },
-                    ]);
-
                     // Execute ALL tool calls and collect results
                     const toolResults: Array<{ toolCall: any; result: any; error?: string }> = [];
 
                     for (const toolCall of assistantMessage.tool_calls) {
                         const toolName = toolCall.function.name;
                         const toolArgs = toolCall.function.arguments;
-
-                        // Show tool call message
-                        setMessages((prev) => [
-                            ...prev,
-                            {
-                                role: 'tool',
-                                content: `Calling tool: ${toolName}`,
-                                toolCall: {
-                                    id: toolCall.id,
-                                    name: toolName,
-                                    arguments: toolArgs,
-                                },
-                                apiRequest: { function: toolName, arguments: toolArgs },
-                            },
-                        ]);
 
                         // Find which server has this tool
                         const serverId = findServerForTool(toolName, tools);
@@ -420,8 +547,15 @@ export function HybridInterface() {
 
                         // Execute the tool
                         try {
+                            const startTime = performance.now();
                             const result = await mcpClient.executeTool(serverId, toolName, JSON.parse(toolArgs));
+                            const executionTime = performance.now() - startTime;
                             toolResults.push({ toolCall, result, error: undefined });
+
+                            // Get server info
+                            const server = servers.find(s => s.id === serverId);
+                            const serverName = server?.name || 'Unknown Server';
+                            const serverIcon = await getServerFavicon(serverId);
 
                             // Show tool result
                             setMessages((prev) => [
@@ -433,6 +567,10 @@ export function HybridInterface() {
                                         id: toolCall.id,
                                         name: toolName,
                                         result: JSON.stringify(result, null, 2),
+                                        serverId,
+                                        serverIcon: serverIcon || undefined,
+                                        serverName,
+                                        executionTime,
                                     },
                                     apiResponse: result,
                                 },
@@ -478,25 +616,20 @@ export function HybridInterface() {
                     continue;
                 } else {
                     // No tool calls - we have a final response
-                    setMessages((prev) => [
-                        ...prev,
-                        // Add subtle filter metrics indicator if filtering was used
-                        ...(filterMetrics
-                            ? [
-                                {
-                                    role: 'system' as const,
-                                    content: '',
-                                    filterMetrics: filterMetrics,
-                                },
-                            ]
-                            : []),
-                        {
-                            role: 'assistant',
-                            content: assistantMessage.content || 'I apologize, I could not generate a response.',
-                            apiRequest,
-                            apiResponse: response,
-                        },
-                    ]);
+                    // Clear streaming state
+                    setStreamingMessageIndex(-1);
+
+                    // The message is already added via streaming
+                    // If no streaming happened (empty response), add message manually
+                    if (localStreamingIndex === -1) {
+                        setMessages((prev) => [
+                            ...prev,
+                            {
+                                role: 'assistant',
+                                content: assistantMessage.content || 'I apologize, I could not generate a response.',
+                            },
+                        ]);
+                    }
 
                     // Exit the loop - we're done
                     break;
@@ -515,6 +648,7 @@ export function HybridInterface() {
             }
         } catch (error: any) {
             console.error('Error in LLM conversation:', error);
+            setStreamingMessageIndex(-1); // Clear streaming state on error
             setMessages((prev) => [
                 ...prev,
                 {
@@ -592,10 +726,11 @@ export function HybridInterface() {
                     <button
                         className="info-settings-button"
                         onClick={handleClearChat}
-                        title="Clear chat history"
+                        title={getShortcutHint('Clear chat history', { key: 'k', ctrl: true })}
                     >
                         <Trash2 size={14} />
                         Clear Chat
+                        <kbd className="btn-shortcut-hint">⌘K</kbd>
                     </button>
                 )}
             </div>
@@ -613,15 +748,17 @@ export function HybridInterface() {
                                 }
                             >
                                 {message.role === 'system' && message.filterMetrics ? (
-                                    // Detailed filter metrics indicator with tool list, grouped by server
-                                    <div className="filter-metrics-detailed">
-                                        <div className="filter-metrics-header">
-                                            <Filter size={14} />
-                                            <span>
-                                                Filtered <strong>{message.filterMetrics.toolsUsed}</strong> of {message.filterMetrics.toolsTotal} tools
+                                    // Compact filter metrics card with hover details
+                                    <div className="filter-metrics-card">
+                                        <div className="filter-metrics-main">
+                                            <Filter size={12} />
+                                            <span className="filter-metrics-text">
+                                                Used <strong>{message.filterMetrics.toolsUsed}</strong> of {message.filterMetrics.toolsTotal} tools
                                             </span>
                                             {message.filterMetrics.filterTime > 0 && (
-                                                <span className="filter-time"> • {message.filterMetrics.filterTime.toFixed(0)}ms</span>
+                                                <span className="filter-metrics-time">
+                                                    {message.filterMetrics.filterTime.toFixed(0)}ms
+                                                </span>
                                             )}
                                         </div>
                                         {message.filterMetrics.toolDetails && message.filterMetrics.toolDetails.length > 0 && (() => {
@@ -639,22 +776,23 @@ export function HybridInterface() {
                                             }, {} as Record<string, { serverName: string; serverIcon?: string; tools: string[] }>);
 
                                             return (
-                                                <div className="filter-servers-list">
+                                                <div className="filter-metrics-hover-card">
                                                     {Object.values(toolsByServer).map((server, idx) => (
-                                                        <div key={idx} className="filter-server-group">
-                                                            {server.serverIcon && (
-                                                                <img src={server.serverIcon} alt="" className="filter-server-favicon" />
-                                                            )}
-                                                            {!server.serverIcon && (
-                                                                <div className="filter-server-favicon-placeholder">
-                                                                    <Code2 size={10} />
-                                                                </div>
-                                                            )}
-                                                            <span className="filter-server-name">{server.serverName}</span>
-                                                            <span className="filter-server-count">({server.tools.length}):</span>
-                                                            <div className="filter-server-tools">
+                                                        <div key={idx} className="filter-hover-server">
+                                                            <div className="filter-hover-server-header">
+                                                                {server.serverIcon ? (
+                                                                    <img src={server.serverIcon} alt="" className="filter-hover-favicon" />
+                                                                ) : (
+                                                                    <div className="filter-hover-favicon-placeholder">
+                                                                        <Code2 size={10} />
+                                                                    </div>
+                                                                )}
+                                                                <span className="filter-hover-server-name">{server.serverName}</span>
+                                                                <span className="filter-hover-tool-count">{server.tools.length}</span>
+                                                            </div>
+                                                            <div className="filter-hover-tools">
                                                                 {server.tools.map((toolName, toolIdx) => (
-                                                                    <span key={toolIdx} className="filter-server-tool">
+                                                                    <span key={toolIdx} className="filter-hover-tool">
                                                                         {toolName}
                                                                     </span>
                                                                 ))}
@@ -667,21 +805,59 @@ export function HybridInterface() {
                                     </div>
                                 ) : (
                                     <>
-                                        {message.role === 'user' && <div className="message-avatar-hybrid user">You</div>}
-                                        {message.role === 'assistant' && (
-                                            <div className="message-avatar-hybrid assistant">
-                                                <Sparkles size={14} />
-                                            </div>
-                                        )}
-                                        {message.role === 'tool' && (
-                                            <div className="message-avatar-hybrid tool">
-                                                <Code2 size={14} />
-                                            </div>
-                                        )}
-
                                         <div className="message-content-hybrid">
-                                            <div className="message-text-hybrid">{message.content}</div>
-                                            {(message.apiRequest || message.apiResponse) && (
+                                            {message.role === 'tool' && message.toolResult ? (
+                                                <div
+                                                    className="tool-call-card"
+                                                    onClick={() => setSelectedMessage(index)}
+                                                >
+                                                    <div className="tool-call-header">
+                                                        <div className="tool-call-icon">
+                                                            {message.toolResult.serverIcon ? (
+                                                                <img
+                                                                    src={message.toolResult.serverIcon}
+                                                                    alt=""
+                                                                    className="tool-call-favicon"
+                                                                />
+                                                            ) : (
+                                                                <Code2 size={12} />
+                                                            )}
+                                                        </div>
+                                                        <div className="tool-call-info">
+                                                            <div className="tool-call-name">
+                                                                {message.toolResult.name}
+                                                            </div>
+                                                            {(message.toolResult.serverName || message.toolResult.executionTime) && (
+                                                                <div className="tool-call-meta">
+                                                                    {message.toolResult.serverName && (
+                                                                        <span className="tool-call-server">{message.toolResult.serverName}</span>
+                                                                    )}
+                                                                    {message.toolResult.serverName && message.toolResult.executionTime && (
+                                                                        <span className="tool-call-meta-divider">•</span>
+                                                                    )}
+                                                                    {message.toolResult.executionTime && (
+                                                                        <span className="tool-call-time">
+                                                                            {message.toolResult.executionTime.toFixed(0)}ms
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <ChevronRight
+                                                            size={16}
+                                                            className="tool-call-chevron"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ) : message.role === 'assistant' ? (
+                                                <MarkdownRenderer
+                                                    content={message.content}
+                                                    isStreaming={index === streamingMessageIndex}
+                                                />
+                                            ) : (
+                                                <div className="message-text-hybrid">{message.content}</div>
+                                            )}
+                                            {(message.apiRequest || message.apiResponse) && !message.toolResult && (
                                                 <div className="api-indicator">
                                                     <Code2 size={12} />
                                                     Click to view API details
@@ -695,9 +871,6 @@ export function HybridInterface() {
 
                         {isProcessing && (
                             <div className="chat-message-hybrid chat-message-assistant">
-                                <div className="message-avatar-hybrid assistant">
-                                    <Sparkles size={14} />
-                                </div>
                                 <div className="message-content-hybrid">
                                     <div className="typing-indicator-hybrid">
                                         <span></span>
@@ -714,9 +887,15 @@ export function HybridInterface() {
                     <div className="chat-input-container-hybrid">
                         <div className="chat-input-wrapper-hybrid">
                             <textarea
+                                ref={textareaRef}
                                 className="chat-input-hybrid"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        e.currentTarget.blur();
+                                    }
+                                }}
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
@@ -730,7 +909,11 @@ export function HybridInterface() {
                                 }
                                 rows={1}
                                 disabled={isProcessing || !hasApiKey}
+                                title={getShortcutHint('Focus message input', { key: '/' })}
                             />
+                            {!input && !isProcessing && (
+                                <kbd className="input-shortcut-hint">/</kbd>
+                            )}
                             <button
                                 className="chat-send-button-hybrid"
                                 onClick={handleSend}
