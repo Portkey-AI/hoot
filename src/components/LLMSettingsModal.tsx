@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Key, Filter } from 'lucide-react';
-import { Button } from './ui';
+import { Key, Filter, Settings } from 'lucide-react';
+import { Button, Tabs, ToggleGroup, Switch, APIKeyInput } from './ui';
 import { useAppStore } from '../stores/appStore';
-import { getFilterStats } from '../lib/toolFilter';
 import './Modal.css';
 import './LLMSettingsModal.css';
 
@@ -14,20 +13,17 @@ interface LLMSettingsModalProps {
 
 export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettingsModalProps) {
     const [apiKey, setApiKey] = useState(currentApiKey || '');
-    const [showKey, setShowKey] = useState(false);
+    const [activeTab, setActiveTab] = useState('llm');
 
     // Tool filter state
     const toolFilterEnabled = useAppStore((state) => state.toolFilterEnabled);
     const toolFilterConfig = useAppStore((state) => state.toolFilterConfig);
-    const toolFilterReady = useAppStore((state) => state.toolFilterReady);
     const setToolFilterEnabled = useAppStore((state) => state.setToolFilterEnabled);
     const updateToolFilterConfig = useAppStore((state) => state.updateToolFilterConfig);
 
     const [localFilterEnabled, setLocalFilterEnabled] = useState(toolFilterEnabled);
-    const [localTopK, setLocalTopK] = useState(toolFilterConfig.topK);
-    const [localMinScore, setLocalMinScore] = useState(toolFilterConfig.minScore);
-
-    const filterStats = getFilterStats();
+    const [localTopK, setLocalTopK] = useState(toolFilterConfig.topK.toString());
+    const [localMinScore, setLocalMinScore] = useState(toolFilterConfig.minScore.toString());
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -35,7 +31,12 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
         document.body.style.overflow = 'hidden';
 
         return () => {
-            document.body.style.overflow = originalOverflow;
+            // Restore original overflow or remove inline style if it was empty
+            if (originalOverflow) {
+                document.body.style.overflow = originalOverflow;
+            } else {
+                document.body.style.removeProperty('overflow');
+            }
         };
     }, []);
 
@@ -51,12 +52,26 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
         // Save tool filter settings
         setToolFilterEnabled(localFilterEnabled);
         updateToolFilterConfig({
-            topK: localTopK,
-            minScore: localMinScore,
+            topK: parseInt(localTopK),
+            minScore: parseFloat(localMinScore),
         });
 
         onClose();
     };
+
+    const topKOptions = [
+        { value: '10', label: 'Aggressive' },
+        { value: '20', label: 'Moderate' },
+        { value: '30', label: 'Balanced' },
+        { value: '50', label: 'Conservative' },
+    ];
+
+    const minScoreOptions = [
+        { value: '0.20', label: 'Relaxed' },
+        { value: '0.30', label: 'Standard' },
+        { value: '0.40', label: 'Strict' },
+        { value: '0.50', label: 'Very Strict' },
+    ];
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -69,8 +84,8 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
                         gap: '8px',
                         marginBottom: '8px'
                     }}>
-                        <Key size={24} style={{ color: 'var(--theme-accent-primary)' }} />
-                        <h2 style={{ margin: 0 }}>LLM Configuration</h2>
+                        <Settings size={24} style={{ color: 'var(--theme-accent-primary)' }} />
+                        <h2 style={{ margin: 0 }}>Settings</h2>
                     </div>
                     <p style={{
                         textAlign: 'center',
@@ -80,171 +95,116 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
                         marginTop: '4px',
                         marginBottom: '24px'
                     }}>
-                        Configure your Portkey API key to enable AI conversations
+                        Configure Portkey API Key and Semantic Filtering
                     </p>
                 </div>
 
                 <div className="modal-body">
-                    <div className="settings-section">
-                        <div className="form-group">
-                            <label className="form-label">API Key</label>
-                            <div className="api-key-input-wrapper">
-                                <input
-                                    id="portkey-api-key"
-                                    type={showKey ? 'text' : 'password'}
-                                    value={apiKey}
-                                    onChange={(e) => setApiKey(e.target.value)}
-                                    placeholder="sk-..."
-                                    className="api-key-input"
-                                    autoComplete="off"
-                                    autoFocus
-                                />
-                                <button
-                                    type="button"
-                                    className="toggle-visibility"
-                                    onClick={() => setShowKey(!showKey)}
-                                >
-                                    {showKey ? '👁️' : '👁️‍🗨️'}
-                                </button>
-                            </div>
-                        </div>
+                    <Tabs
+                        tabs={[
+                            { value: 'llm', label: 'LLM Settings', icon: <Key size={16} /> },
+                            { value: 'filtering', label: 'Tool Filtering', icon: <Filter size={16} /> },
+                        ]}
+                        value={activeTab}
+                        onChange={setActiveTab}
+                    >
+                        {(tab) => {
+                            if (tab === 'llm') {
+                                return (
+                                    <div className="tab-content-wrapper">
+                                        <div className="form-section">
+                                            <APIKeyInput
+                                                label="Portkey API Key"
+                                                value={apiKey}
+                                                onChange={(e) => setApiKey(e.target.value)}
+                                                placeholder="sk-..."
+                                                helperText="Get your free API key at portkey.ai"
+                                                autoFocus
+                                                required
+                                            />
+                                        </div>
 
-                        <div className="info-box">
-                            <div className="info-box-header">ℹ️ About Portkey</div>
-                            <p>
-                                Portkey is an LLM gateway that provides observability, caching, and reliability
-                                features for OpenAI and other LLM providers.
-                            </p>
-                            <p>
-                                <a
-                                    href="https://portkey.ai"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="info-link"
-                                >
-                                    Get your API key at portkey.ai →
-                                </a>
-                            </p>
-                        </div>
-
-                        <div className="info-box security-note">
-                            <div className="info-box-header">🔒 Security Note</div>
-                            <p>
-                                Your API key is stored locally in your browser only. It never leaves your machine
-                                and is only used to make direct API calls to Portkey from your browser.
-                            </p>
-                            <p>
-                                Hoot is a local development tool - your key is as safe as any other browser-stored
-                                credential.
-                            </p>
-                        </div>
-
-                        <div className="settings-info">
-                            <div className="info-item">
-                                <strong>Model:</strong> gpt-4o
-                            </div>
-                            <div className="info-item">
-                                <strong>Provider:</strong> OpenAI via Portkey
-                            </div>
-                            <div className="info-item">
-                                <strong>Storage:</strong> API key stored locally in browser
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Semantic Tool Filtering Section */}
-                    <div className="settings-section" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border-primary)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                            <Filter size={20} style={{ color: 'var(--theme-accent-primary)' }} />
-                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Semantic Tool Filtering</h3>
-                        </div>
-
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
-                            Intelligently filter tools based on conversation context, reducing LLM context size while maintaining relevance.
-                        </p>
-
-                        <div className="form-group" style={{ marginBottom: '16px' }}>
-                            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={localFilterEnabled}
-                                    onChange={(e) => setLocalFilterEnabled(e.target.checked)}
-                                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                                />
-                                <span>Enable intelligent tool filtering</span>
-                            </label>
-                        </div>
-
-                        {localFilterEnabled && (
-                            <>
-                                <div className="form-group" style={{ marginBottom: '16px' }}>
-                                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span>Maximum Tools</span>
-                                        <span style={{ fontWeight: 'bold', color: 'var(--theme-accent-primary)' }}>{localTopK}</span>
-                                    </label>
-                                    <input
-                                        type="range"
-                                        min="10"
-                                        max="50"
-                                        step="1"
-                                        value={localTopK}
-                                        onChange={(e) => setLocalTopK(parseInt(e.target.value))}
-                                        style={{ width: '100%' }}
-                                    />
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                                        <span>10 (Aggressive)</span>
-                                        <span>50 (Conservative)</span>
+                                        <div className="info-section">
+                                            <div className="info-box">
+                                                <div className="info-box-header">ℹ️ What is Portkey?</div>
+                                                <p>
+                                                    Portkey is an LLM gateway providing observability, caching, and reliability. Hoot uses it to connect to GPT-4o for the AI chat interface.
+                                                </p>
+                                                <p style={{ marginTop: '8px', fontSize: '12px' }}>
+                                                    <strong>Model:</strong> GPT-4o &nbsp;&nbsp;•&nbsp;&nbsp;
+                                                    <strong>Storage:</strong> Browser localStorage &nbsp;&nbsp;•&nbsp;&nbsp;
+                                                    <strong>Security:</strong> Never leaves your machine
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                );
+                            }
 
-                                <div className="form-group" style={{ marginBottom: '16px' }}>
-                                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span>Minimum Score</span>
-                                        <span style={{ fontWeight: 'bold', color: 'var(--theme-accent-primary)' }}>{localMinScore.toFixed(2)}</span>
-                                    </label>
-                                    <input
-                                        type="range"
-                                        min="0.20"
-                                        max="0.50"
-                                        step="0.05"
-                                        value={localMinScore}
-                                        onChange={(e) => setLocalMinScore(parseFloat(e.target.value))}
-                                        style={{ width: '100%' }}
-                                    />
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                                        <span>0.20 (More tools)</span>
-                                        <span>0.50 (Fewer tools)</span>
+                            if (tab === 'filtering') {
+                                return (
+                                    <div className="tab-content-wrapper">
+                                        <div className="info-section" style={{ marginBottom: '0', marginTop: 0 }}>
+                                            <div className="info-box">
+                                                <div className="info-box-header">💡 How It Works</div>
+                                                <p>
+                                                    Semantic filtering ranks tools by relevance using sentence embeddings. Only top-ranked tools are sent to the LLM, reducing token usage while maintaining accuracy.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="form-section">
+                                            <div className="form-group">
+                                                <Switch
+                                                    label="Enable Semantic Filtering"
+                                                    checked={localFilterEnabled}
+                                                    onChange={(e) => setLocalFilterEnabled(e.target.checked)}
+                                                    helperText="Automatically select relevant tools based on conversation context"
+                                                />
+                                            </div>
+
+                                            {localFilterEnabled && (
+                                                <>
+                                                    <div className="form-group">
+                                                        <ToggleGroup
+                                                            label="Filter Strength"
+                                                            options={topKOptions}
+                                                            value={localTopK}
+                                                            onChange={setLocalTopK}
+                                                            helperText="How many tools to include after filtering"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group">
+                                                        <ToggleGroup
+                                                            label="Match Sensitivity"
+                                                            options={minScoreOptions}
+                                                            value={localMinScore}
+                                                            onChange={setLocalMinScore}
+                                                            helperText="How closely tools must match your query"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {!localFilterEnabled && (
+                                            <div className="info-section">
+                                                <div className="info-box warning-box">
+                                                    <div className="info-box-header">⚠️ Warning</div>
+                                                    <p>
+                                                        All tools will be sent to the LLM. May exceed OpenAI's 128 tool limit for large toolsets.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                );
+                            }
 
-                                <div className="info-box" style={{ marginTop: '16px' }}>
-                                    <div className="info-box-header">ℹ️ Filter Status</div>
-                                    {filterStats.initialized ? (
-                                        <>
-                                            <p>
-                                                ✅ Filter initialized with <strong>{filterStats.stats?.toolCount || 0}</strong> tools
-                                            </p>
-                                            <p style={{ fontSize: '12px', marginTop: '8px', color: 'var(--text-secondary)' }}>
-                                                Using local embeddings for ultra-fast filtering (&lt;5ms per request)
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p>
-                                            {toolFilterReady ? '⚠️ Filter initializing...' : '⏳ Filter will initialize when servers connect'}
-                                        </p>
-                                    )}
-                                </div>
-                            </>
-                        )}
-
-                        {!localFilterEnabled && (
-                            <div className="info-box" style={{ background: 'var(--bg-secondary)' }}>
-                                <p style={{ fontSize: '14px' }}>
-                                    When disabled, all available tools will be sent to the LLM. This may exceed context limits for large tool sets.
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                            return null;
+                        }}
+                    </Tabs>
                 </div>
 
                 <div className="modal-footer">

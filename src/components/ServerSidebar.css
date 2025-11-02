@@ -190,11 +190,11 @@
 .server-favicon {
     width: 20px;
     height: 20px;
-    border-radius: 4px;
+    /* border-radius: 4px; */
     object-fit: contain;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    padding: 2px;
+    /* background: var(--bg-primary); */
+    /* border: 1px solid var(--border-color); */
+    /* padding: 2px; */
     display: block;
 }
 

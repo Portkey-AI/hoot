@@ -7,6 +7,9 @@ export type { ButtonProps } from './Button';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
+export { APIKeyInput } from './APIKeyInput';
+export type { APIKeyInputProps } from './APIKeyInput';
+
 export { Textarea } from './Textarea';
 export type { TextareaProps } from './Textarea';
 
@@ -33,4 +36,7 @@ export type { CardProps, CardHeaderProps, CardTitleProps, CardDescriptionProps, 
 
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
+
+export { Tabs } from './Tabs';
+export type { TabsProps, Tab } from './Tabs';
 
