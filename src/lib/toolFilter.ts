@@ -21,11 +21,11 @@ async function getSessionToken(): Promise<string> {
 
     const data = await response.json();
     sessionToken = data.token;
-    
+
     if (!sessionToken) {
         throw new Error('Session token is null');
     }
-    
+
     return sessionToken;
 }
 
