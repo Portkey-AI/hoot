@@ -8,6 +8,7 @@ import { homedir } from 'os';
 import { join } from 'path';
 import { mkdirSync, existsSync, appendFileSync } from 'fs';
 import { randomBytes } from 'crypto';
+import { toolFilterManager } from './mcp-backend-tool-filter.js';
 
 const app = express();
 const PORT = process.env.PORT || 8008;
@@ -62,6 +63,13 @@ db.exec(`
         server_id TEXT PRIMARY KEY,
         verifier TEXT NOT NULL,
         created_at INTEGER DEFAULT (strftime('%s', 'now'))
+    );
+    
+    CREATE TABLE IF NOT EXISTS favicon_cache (
+        server_url TEXT PRIMARY KEY,
+        favicon_url TEXT,
+        oauth_logo_uri TEXT,
+        cached_at INTEGER DEFAULT (strftime('%s', 'now'))
     );
 `);
 
@@ -886,6 +894,245 @@ app.get('/mcp/oauth-metadata/:serverId', async (req, res) => {
     }
 });
 
+// Get favicon for a server URL
+app.post('/mcp/favicon', async (req, res) => {
+    try {
+        const { serverUrl, oauthLogoUri } = req.body;
+
+        if (!serverUrl) {
+            return res.status(400).json({
+                success: false,
+                error: 'Server URL is required'
+            });
+        }
+
+        // Check database cache first (24 hour TTL)
+        const CACHE_TTL_SECONDS = 24 * 60 * 60; // 24 hours
+        const cached = db.prepare(`
+            SELECT favicon_url, cached_at 
+            FROM favicon_cache 
+            WHERE server_url = ? 
+            AND (oauth_logo_uri IS NULL OR oauth_logo_uri = ?)
+            AND cached_at > ?
+        `).get(serverUrl, oauthLogoUri || null, Math.floor(Date.now() / 1000) - CACHE_TTL_SECONDS);
+
+        if (cached) {
+            console.log(`✓ Favicon cache hit for: ${serverUrl}`);
+            return res
+                .set('Cache-Control', 'public, max-age=86400') // 24 hours
+                .json({
+                    success: true,
+                    faviconUrl: cached.favicon_url
+                });
+        }
+
+        console.log(`⟳ Fetching favicon for: ${serverUrl}`);
+
+        const faviconPaths = ['/favicon.ico', '/favicon.png', '/favicon.svg', '/favicon'];
+
+        // Helper to check if a URL is accessible
+        const checkUrl = async (url) => {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    signal: controller.signal,
+                    headers: {
+                        'User-Agent': 'Hoot-MCP-Client/1.0'
+                    }
+                });
+                clearTimeout(timeout);
+
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        };
+
+        // Helper to extract favicon URL from HTML
+        const extractFaviconFromHtml = async (pageUrl) => {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+                const response = await fetch(pageUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'User-Agent': 'Hoot-MCP-Client/1.0'
+                    }
+                });
+                clearTimeout(timeout);
+
+                if (!response.ok) return null;
+
+                const html = await response.text();
+
+                // Match various favicon link formats
+                const patterns = [
+                    /<link[^>]+rel=["'](?:icon|shortcut icon|apple-touch-icon)["'][^>]+href=["']([^"']+)["']/i,
+                    /<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:icon|shortcut icon|apple-touch-icon)["']/i
+                ];
+
+                for (const pattern of patterns) {
+                    const match = html.match(pattern);
+                    if (match && match[1]) {
+                        let faviconUrl = match[1];
+
+                        // Handle relative URLs
+                        if (faviconUrl.startsWith('//')) {
+                            faviconUrl = new URL(pageUrl).protocol + faviconUrl;
+                        } else if (faviconUrl.startsWith('/')) {
+                            faviconUrl = new URL(pageUrl).origin + faviconUrl;
+                        } else if (!faviconUrl.startsWith('http')) {
+                            faviconUrl = new URL(faviconUrl, pageUrl).href;
+                        }
+
+                        // Verify the URL is accessible
+                        if (await checkUrl(faviconUrl)) {
+                            return faviconUrl;
+                        }
+                    }
+                }
+
+                return null;
+            } catch (error) {
+                return null;
+            }
+        };
+
+        let foundFaviconUrl = null;
+
+        // 1. Try OAuth logo_uri first
+        if (oauthLogoUri) {
+            try {
+                new URL(oauthLogoUri); // Validate URL
+                if (await checkUrl(oauthLogoUri)) {
+                    foundFaviconUrl = oauthLogoUri;
+                }
+            } catch {
+                // Invalid URL, skip
+            }
+        }
+
+        // 2. Extract domain and try standard paths (if not found yet)
+        if (!foundFaviconUrl) {
+            let urlObj;
+            try {
+                urlObj = new URL(serverUrl);
+            } catch {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid server URL'
+                });
+            }
+
+            const domain = urlObj.origin;
+
+            // Try specific domain
+            for (const path of faviconPaths) {
+                const url = `${domain}${path}`;
+                if (await checkUrl(url)) {
+                    foundFaviconUrl = url;
+                    break;
+                }
+            }
+
+            // 3. Try primary domain if subdomain (and still not found)
+            if (!foundFaviconUrl) {
+                const parts = urlObj.hostname.split('.');
+                if (parts.length > 2) {
+                    const primaryDomain = parts.slice(-2).join('.');
+                    const primaryOrigin = `${urlObj.protocol}//${primaryDomain}`;
+
+                    if (primaryOrigin !== domain) {
+                        for (const path of faviconPaths) {
+                            const url = `${primaryOrigin}${path}`;
+                            if (await checkUrl(url)) {
+                                foundFaviconUrl = url;
+                                break;
+                            }
+                        }
+
+                        // 4. Parse HTML from primary domain as final fallback
+                        if (!foundFaviconUrl) {
+                            foundFaviconUrl = await extractFaviconFromHtml(primaryOrigin);
+                        }
+                    }
+                }
+            }
+
+            // 5. Parse HTML from subdomain as final fallback (if not a primary domain)
+            if (!foundFaviconUrl && urlObj.hostname.split('.').length > 2) {
+                foundFaviconUrl = await extractFaviconFromHtml(domain);
+            }
+        }
+
+        // Cache the result in database (including null)
+        db.prepare(`
+            INSERT OR REPLACE INTO favicon_cache (server_url, favicon_url, oauth_logo_uri, cached_at)
+            VALUES (?, ?, ?, ?)
+        `).run(serverUrl, foundFaviconUrl, oauthLogoUri || null, Math.floor(Date.now() / 1000));
+
+        console.log(`✓ Favicon result for ${serverUrl}: ${foundFaviconUrl || 'none'}`);
+
+        res
+            .set('Cache-Control', 'public, max-age=86400') // 24 hours
+            .json({
+                success: true,
+                faviconUrl: foundFaviconUrl
+            });
+    } catch (error) {
+        console.error('Favicon fetch error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to fetch favicon'
+        });
+    }
+});
+
+// Proxy favicon images to avoid CORS/COEP issues
+app.get('/mcp/favicon-proxy', async (req, res) => {
+    try {
+        const { url } = req.query;
+
+        if (!url) {
+            return res.status(400).send('URL parameter is required');
+        }
+
+        // Fetch the favicon
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+        const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+                'User-Agent': 'Hoot-MCP-Client/1.0'
+            }
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+            return res.status(404).send('Favicon not found');
+        }
+
+        // Get the image data
+        const buffer = await response.arrayBuffer();
+        const contentType = response.headers.get('content-type') || 'image/x-icon';
+
+        // Send with proper cache headers
+        res
+            .set('Content-Type', contentType)
+            .set('Cache-Control', 'public, max-age=86400') // 24 hours
+            .set('Cross-Origin-Resource-Policy', 'cross-origin')
+            .send(Buffer.from(buffer));
+    } catch (error) {
+        console.error('Favicon proxy error:', error);
+        res.status(500).send('Failed to fetch favicon');
+    }
+});
+
 /**
  * Discover if a server requires OAuth
  * POST /mcp/discover-oauth
@@ -1206,6 +1453,117 @@ app.get('/mcp/connections', (req, res) => {
         connections,
         count: connections.length,
     });
+});
+
+// ==============================================
+// Tool Filter Endpoints
+// ==============================================
+
+/**
+ * Initialize the tool filter with connected servers and their tools
+ * POST /mcp/tool-filter/initialize
+ */
+app.post('/mcp/tool-filter/initialize', async (req, res) => {
+    try {
+        const { servers: serversWithTools } = req.body;
+
+        if (!serversWithTools || !Array.isArray(serversWithTools)) {
+            return res.status(400).json({
+                error: 'Invalid request: servers array required'
+            });
+        }
+
+        const result = await toolFilterManager.initialize(serversWithTools);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                message: 'Tool filter initialized successfully'
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: result.error
+            });
+        }
+    } catch (error) {
+        console.error('Tool filter initialization error:', error);
+        res.status(500).json({
+            error: 'Failed to initialize tool filter',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * Filter tools based on conversation context
+ * POST /mcp/tool-filter/filter
+ */
+app.post('/mcp/tool-filter/filter', async (req, res) => {
+    try {
+        const { messages, options = {} } = req.body;
+
+        if (!messages || !Array.isArray(messages)) {
+            return res.status(400).json({
+                error: 'Invalid request: messages array required'
+            });
+        }
+
+        const result = await toolFilterManager.filterTools(messages, options);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                tools: result.tools,
+                metrics: result.metrics
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: result.error
+            });
+        }
+    } catch (error) {
+        console.error('Tool filtering error:', error);
+        res.status(500).json({
+            error: 'Failed to filter tools',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * Get tool filter stats
+ * GET /mcp/tool-filter/stats
+ */
+app.get('/mcp/tool-filter/stats', (req, res) => {
+    try {
+        const stats = toolFilterManager.getStats();
+        res.json({ success: true, stats });
+    } catch (error) {
+        console.error('Get filter stats error:', error);
+        res.status(500).json({
+            error: 'Failed to get filter stats',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * Clear tool filter cache
+ * POST /mcp/tool-filter/clear-cache
+ */
+app.post('/mcp/tool-filter/clear-cache', (req, res) => {
+    try {
+        toolFilterManager.clearCache();
+        res.json({ success: true, message: 'Cache cleared' });
+    } catch (error) {
+        console.error('Clear cache error:', error);
+        res.status(500).json({
+            error: 'Failed to clear cache',
+            details: error.message
+        });
+    }
 });
 
 /**

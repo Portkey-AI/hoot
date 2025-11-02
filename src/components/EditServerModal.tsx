@@ -253,11 +253,6 @@ export const EditServerModal = memo(function EditServerModal({
                 auth,
             };
 
-            // Invalidate favicon cache if URL or transport changed
-            if (url.trim() !== server.url || transport !== server.transport) {
-                updates.faviconUrl = undefined; // Clear cache to trigger re-fetch
-            }
-
             updateServer(server.id, updates);
 
             // Try to reconnect with new configuration

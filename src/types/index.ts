@@ -48,7 +48,6 @@ export interface ServerConfig {
   connected: boolean;
   lastConnected?: Date;
   error?: string;
-  faviconUrl?: string | null; // Cached favicon URL for the server (null = no favicon found)
 }
 
 export interface ToolSchema {

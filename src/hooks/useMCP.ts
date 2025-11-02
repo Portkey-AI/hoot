@@ -12,13 +12,14 @@ export function useMCPConnection() {
     const updateServer = useAppStore((state) => state.updateServer);
     const setTools = useAppStore((state) => state.setTools);
 
-    const connect = useCallback(async (server: ServerConfig, authorizationCode?: string, skipOAuthRedirect?: boolean) => {
+    const connect = useCallback(async (server: ServerConfig, authorizationCode?: string, skipOAuthRedirect?: boolean, suppressErrorToast?: boolean) => {
         setIsConnecting(true);
         try {
             console.log(`🔌 Attempting to connect to ${server.name}...`, {
                 hasAuth: !!server.auth,
                 authType: server.auth?.type,
-                hasAuthCode: !!authorizationCode
+                hasAuthCode: !!authorizationCode,
+                suppressErrorToast: suppressErrorToast
             });
 
             const connected = await mcpClient.connect(server, authorizationCode, skipOAuthRedirect);
@@ -117,7 +118,7 @@ export function useMCPConnection() {
                 error: finalErrorMessage,
             });
 
-            // Show toast for non-OAuth errors
+            // Show toast for non-OAuth errors (unless suppressed during auto-reconnect)
             // During OAuth callback flow, we shouldn't show toasts as the callback page handles the UI
             const isOAuthFlow = finalErrorMessage.includes('OAuth authorization required') ||
                 finalErrorMessage.includes('Redirecting to authorization') ||
@@ -126,8 +127,10 @@ export function useMCPConnection() {
                 !!authorizationCode || // We're in the OAuth callback flow
                 error instanceof UnauthorizedError;
 
-            if (!isOAuthFlow) {
+            if (!isOAuthFlow && !suppressErrorToast) {
                 toast.error(`Failed to connect to ${server.name}`, finalErrorMessage);
+            } else if (suppressErrorToast) {
+                console.log(`🔇 Error toast suppressed during auto-reconnect for ${server.name}`);
             }
 
             return false;

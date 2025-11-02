@@ -297,6 +297,24 @@
     background: var(--bg-tertiary);
 }
 
+.api-close-button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.api-close-button:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
 .api-pane-content {
     flex: 1;
     overflow-y: auto;
@@ -482,4 +500,151 @@
 .api-pane-content {
     scrollbar-width: thin;
     scrollbar-color: var(--border-bright) var(--bg-primary);
+}
+
+/* Detailed filter metrics indicator in chat history */
+.filter-metrics-detailed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    max-width: 100%;
+    background: var(--bg-tertiary);
+    border-left: 3px solid var(--theme-accent-primary);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+.filter-metrics-detailed:hover {
+    opacity: 1;
+}
+
+.filter-metrics-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.filter-metrics-header svg {
+    color: var(--theme-accent-primary);
+    flex-shrink: 0;
+}
+
+.filter-metrics-header .filter-time {
+    opacity: 0.7;
+    font-size: 10px;
+}
+
+/* Server-grouped tool list - Compact single-line layout */
+.filter-servers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.filter-server-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-server-favicon,
+.filter-server-favicon-placeholder {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    object-fit: contain;
+}
+
+.filter-server-favicon-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    color: var(--theme-accent-primary);
+}
+
+.filter-server-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.filter-server-count {
+    font-size: 9px;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.filter-server-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.filter-server-tool {
+    padding: 2px 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: 'Courier New', monospace;
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
+
+.filter-server-tool:hover {
+    background: var(--bg-hover);
+}
+
+/* Backwards compatibility - keep old simple indicator styles for fallback */
+.filter-metrics-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    margin: 4px auto;
+    max-width: fit-content;
+    background: rgba(16, 185, 129, 0.08);
+    border-radius: 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.filter-metrics-indicator:hover {
+    opacity: 1;
+}
+
+.filter-metrics-indicator svg {
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.filter-metrics-indicator .filter-time {
+    opacity: 0.7;
+    font-size: 10px;
+}
+
+.chat-message-hybrid.chat-message-system {
+    display: flex;
+    justify-content: flex-start;
+    /* Changed from center to left */
+    padding: 0;
+    margin: 4px 0;
+    border: none;
+    background: transparent;
+    cursor: default;
+}
+
+.chat-message-hybrid.chat-message-system:hover {
+    background: transparent;
 }

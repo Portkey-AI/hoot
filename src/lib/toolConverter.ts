@@ -1,5 +1,6 @@
 import type { ToolSchema } from '../types';
 import type { ToolDefinition } from './portkeyClient';
+import type { ScoredTool } from '@portkey-ai/mcp-tool-filter';
 
 /**
  * Converts MCP tool schema to OpenAI function calling format
@@ -17,6 +18,24 @@ export function convertMCPToolToOpenAI(mcpTool: ToolSchema): ToolDefinition {
             },
         },
     };
+}
+
+/**
+ * Converts filtered/scored tools from semantic filter to OpenAI format
+ */
+export function convertFilteredToolsToOpenAI(scoredTools: ScoredTool[]): ToolDefinition[] {
+    return scoredTools.map((scoredTool) => ({
+        type: 'function',
+        function: {
+            name: scoredTool.toolName,
+            description: scoredTool.tool.description || `Call the ${scoredTool.toolName} tool`,
+            parameters: {
+                type: 'object',
+                properties: (scoredTool.tool.inputSchema as any)?.properties || {},
+                required: (scoredTool.tool.inputSchema as any)?.required || [],
+            },
+        },
+    }));
 }
 
 /**

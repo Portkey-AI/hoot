@@ -43,8 +43,10 @@ export function useAutoReconnect() {
             serversToReconnect.forEach((server) => {
                 // For OAuth servers, skip redirect (auto-reconnect should be silent)
                 const skipOAuthRedirect = server.auth?.type === 'oauth';
+                // Also pass a flag to suppress error toasts during auto-reconnect
+                const suppressErrorToast = true;
 
-                connect(server, undefined, skipOAuthRedirect).catch((error) => {
+                connect(server, undefined, skipOAuthRedirect, suppressErrorToast).catch((error) => {
                     // Silently fail for OAuth servers - they need manual reconnection
                     if (server.auth?.type === 'oauth') {
                         console.log(`🔐 ${server.name} needs manual reconnection (OAuth)`);

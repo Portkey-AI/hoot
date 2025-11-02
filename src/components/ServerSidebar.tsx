@@ -82,121 +82,26 @@ const ServerItem = memo(function ServerItem({
     const [showDropdown, setShowDropdown] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [faviconUrl, setFaviconUrl] = useState<string | null>(
-        // Check if we have a cached result (including "no favicon found")
-        server.faviconUrl !== undefined ? server.faviconUrl : null
-    );
-    const [faviconError, setFaviconError] = useState(server.faviconUrl === null);
-    const [faviconAttempts, setFaviconAttempts] = useState<string[]>([]);
-    const [currentAttemptIndex, setCurrentAttemptIndex] = useState(0);
+    const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Build list of favicon URLs to try (with async HTML parsing fallback)
-    // Only run if we don't have a cached result (including "no favicon" cache)
+    // Fetch favicon from backend
     useEffect(() => {
-        // If we have a cached result (either a URL or explicit null), use it
-        if (server.faviconUrl !== undefined) {
-            if (server.faviconUrl === null) {
-                // Cached as "no favicon found"
-                setFaviconUrl(null);
-                setFaviconError(true);
-            } else {
-                // Cached favicon URL found
-                setFaviconUrl(server.faviconUrl);
-                setFaviconError(false);
-            }
+        if (!server.url) {
+            // No URL means no favicon possible (stdio server)
+            setFaviconUrl(null);
             return;
         }
 
-        if (!server.url) return;
-
+        // Fetch favicon from backend (backend handles caching)
         const oauthLogoUri = server.auth?.oauthServerMetadata?.logo_uri;
-
-        // Start with synchronous attempts
-        const syncAttempts: string[] = [];
-
-        // 1. OAuth logo_uri
-        if (oauthLogoUri) {
-            try {
-                new URL(oauthLogoUri);
-                syncAttempts.push(oauthLogoUri);
-            } catch {
-                // Invalid URL, skip
-            }
-        }
-
-        // 2. Specific domain with all formats
-        try {
-            const urlObj = new URL(server.url);
-            const domain = urlObj.origin;
-            syncAttempts.push(`${domain}/favicon.ico`);
-            syncAttempts.push(`${domain}/favicon.png`);
-            syncAttempts.push(`${domain}/favicon.svg`);
-            syncAttempts.push(`${domain}/favicon`);
-
-            // 3. Primary domain with all formats (if different from subdomain)
-            const parts = urlObj.hostname.split('.');
-            if (parts.length > 2) {
-                const primaryDomain = parts.slice(-2).join('.');
-                const primaryOrigin = `${urlObj.protocol}//${primaryDomain}`;
-                if (primaryOrigin !== domain) {
-                    syncAttempts.push(`${primaryOrigin}/favicon.ico`);
-                    syncAttempts.push(`${primaryOrigin}/favicon.png`);
-                    syncAttempts.push(`${primaryOrigin}/favicon.svg`);
-                    syncAttempts.push(`${primaryOrigin}/favicon`);
-                }
-            }
-        } catch (error) {
-            console.warn(`Failed to parse URL for ${server.name}:`, error);
-        }
-
-        // Set sync attempts first for immediate display
-        setFaviconAttempts(syncAttempts);
-        setCurrentAttemptIndex(0);
-        setFaviconError(false);
-
-        if (syncAttempts.length > 0) {
-            setFaviconUrl(syncAttempts[0]);
-        }
-
-        // Then fetch HTML-based favicons asynchronously
-        import('../lib/faviconUtils').then(({ getAllFaviconUrls }) => {
-            getAllFaviconUrls(server.url, oauthLogoUri).then((allUrls) => {
-                // Only update if we got more URLs than the sync attempts
-                if (allUrls.length > syncAttempts.length) {
-                    setFaviconAttempts(allUrls);
-                }
-            }).catch((error) => {
-                console.warn(`Failed to get all favicon URLs for ${server.name}:`, error);
-            });
+        backendClient.getFaviconUrl(server.url, oauthLogoUri).then((url) => {
+            setFaviconUrl(url);
+        }).catch((error) => {
+            console.warn(`Failed to fetch favicon for ${server.name}:`, error);
+            setFaviconUrl(null);
         });
-    }, [server.url, server.name, server.auth?.oauthServerMetadata?.logo_uri, server.faviconUrl]);
-
-    // Handle favicon load errors by trying the next URL
-    const handleFaviconError = () => {
-        const nextIndex = currentAttemptIndex + 1;
-        if (nextIndex < faviconAttempts.length) {
-            setCurrentAttemptIndex(nextIndex);
-            setFaviconUrl(faviconAttempts[nextIndex]);
-            setFaviconError(false);
-        } else {
-            // All attempts failed - cache this result as null
-            setFaviconError(true);
-            updateServer(server.id, {
-                faviconUrl: null, // Explicitly cache "no favicon found"
-            });
-        }
-    };
-
-    // Cache successful favicon URL to server config
-    const handleFaviconLoad = () => {
-        if (faviconUrl && faviconUrl !== server.faviconUrl) {
-            // Cache the successful URL in the server config
-            updateServer(server.id, {
-                faviconUrl: faviconUrl,
-            });
-        }
-    };
+    }, [server.url, server.name, server.auth?.oauthServerMetadata?.logo_uri]);
 
     // Fetch OAuth metadata when server connects
     useEffect(() => {
@@ -470,14 +375,12 @@ const ServerItem = memo(function ServerItem({
             onClick={onClick}
         >
             <div className="server-header">
-                {faviconUrl && !faviconError ? (
+                {faviconUrl ? (
                     <div className="server-favicon-container">
                         <img
                             src={faviconUrl}
                             alt={`${server.name} favicon`}
                             className="server-favicon"
-                            onError={handleFaviconError}
-                            onLoad={handleFaviconLoad}
                         />
                         <div
                             className={`favicon-status-dot ${server.connected ? 'connected' : 'disconnected'}`}

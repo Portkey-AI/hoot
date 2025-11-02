@@ -8,6 +8,13 @@ import type {
 } from '../types';
 import { useToolStateStore } from './toolStateStore';
 
+interface ToolFilterConfig {
+    topK: number;
+    minScore: number;
+    contextMessages: number;
+    maxContextTokens: number;
+}
+
 interface AppStore extends AppState {
     // Server actions
     addServer: (server: Omit<ServerConfig, 'connected'> | Omit<ServerConfig, 'id' | 'connected'>) => void;
@@ -26,6 +33,14 @@ interface AppStore extends AppState {
 
     // UI actions
     setSearchQuery: (query: string) => void;
+
+    // Tool filter actions
+    toolFilterEnabled: boolean;
+    toolFilterConfig: ToolFilterConfig;
+    toolFilterReady: boolean;
+    setToolFilterEnabled: (enabled: boolean) => void;
+    updateToolFilterConfig: (config: Partial<ToolFilterConfig>) => void;
+    setToolFilterReady: (ready: boolean) => void;
 }
 
 // Custom storage with proper Date handling
@@ -77,6 +92,16 @@ export const useAppStore = create<AppStore>()(
             history: [],
             searchQuery: '',
             executingTools: [],
+
+            // Tool filter state
+            toolFilterEnabled: true, // Enabled by default (now backend-based)
+            toolFilterConfig: {
+                topK: 22,
+                minScore: 0.30,
+                contextMessages: 3,
+                maxContextTokens: 500,
+            },
+            toolFilterReady: false,
 
             // Server actions
             addServer: (server) =>
@@ -159,6 +184,16 @@ export const useAppStore = create<AppStore>()(
 
             // UI actions
             setSearchQuery: (query) => set({ searchQuery: query }),
+
+            // Tool filter actions
+            setToolFilterEnabled: (enabled) => set({ toolFilterEnabled: enabled }),
+
+            updateToolFilterConfig: (config) =>
+                set((state) => ({
+                    toolFilterConfig: { ...state.toolFilterConfig, ...config },
+                })),
+
+            setToolFilterReady: (ready) => set({ toolFilterReady: ready }),
         }),
         {
             name: 'hoot-storage',
@@ -177,6 +212,9 @@ export const useAppStore = create<AppStore>()(
                 selectedToolName: null, // Reset selected tool on load
                 searchQuery: '', // Reset search on load
                 executingTools: [], // Don't persist executing state
+                toolFilterEnabled: state.toolFilterEnabled, // Persist filter enabled state
+                toolFilterConfig: state.toolFilterConfig, // Persist filter config
+                toolFilterReady: false, // Reset ready state on load
             }),
         }
     )

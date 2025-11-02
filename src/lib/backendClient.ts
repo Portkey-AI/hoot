@@ -429,3 +429,33 @@ export async function getOAuthMetadata(serverId: string): Promise<{
     }
 }
 
+/**
+ * Get favicon URL for a server
+ * Backend checks multiple favicon paths and returns the first working one
+ * This avoids CORS issues and client-side jitter
+ */
+export async function getFaviconUrl(serverUrl: string, oauthLogoUri?: string): Promise<string | null> {
+    try {
+        const response = await authenticatedFetch(`${BACKEND_URL}/mcp/favicon`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                serverUrl,
+                oauthLogoUri,
+            }),
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return data.faviconUrl || null;
+    } catch (error) {
+        console.error('Backend get favicon error:', error);
+        return null;
+    }
+}
+

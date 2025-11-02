@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Key } from 'lucide-react';
+import { Key, Filter } from 'lucide-react';
 import { Button } from './ui';
+import { useAppStore } from '../stores/appStore';
+import { getFilterStats } from '../lib/toolFilter';
 import './Modal.css';
 import './LLMSettingsModal.css';
 
@@ -13,6 +15,19 @@ interface LLMSettingsModalProps {
 export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettingsModalProps) {
     const [apiKey, setApiKey] = useState(currentApiKey || '');
     const [showKey, setShowKey] = useState(false);
+
+    // Tool filter state
+    const toolFilterEnabled = useAppStore((state) => state.toolFilterEnabled);
+    const toolFilterConfig = useAppStore((state) => state.toolFilterConfig);
+    const toolFilterReady = useAppStore((state) => state.toolFilterReady);
+    const setToolFilterEnabled = useAppStore((state) => state.setToolFilterEnabled);
+    const updateToolFilterConfig = useAppStore((state) => state.updateToolFilterConfig);
+
+    const [localFilterEnabled, setLocalFilterEnabled] = useState(toolFilterEnabled);
+    const [localTopK, setLocalTopK] = useState(toolFilterConfig.topK);
+    const [localMinScore, setLocalMinScore] = useState(toolFilterConfig.minScore);
+
+    const filterStats = getFilterStats();
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -29,7 +44,17 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
             alert('Please enter a valid Portkey API key');
             return;
         }
+
+        // Save API key
         onSave(apiKey.trim());
+
+        // Save tool filter settings
+        setToolFilterEnabled(localFilterEnabled);
+        updateToolFilterConfig({
+            topK: localTopK,
+            minScore: localMinScore,
+        });
+
         onClose();
     };
 
@@ -125,6 +150,100 @@ export function LLMSettingsModal({ onClose, onSave, currentApiKey }: LLMSettings
                                 <strong>Storage:</strong> API key stored locally in browser
                             </div>
                         </div>
+                    </div>
+
+                    {/* Semantic Tool Filtering Section */}
+                    <div className="settings-section" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border-primary)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                            <Filter size={20} style={{ color: 'var(--theme-accent-primary)' }} />
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Semantic Tool Filtering</h3>
+                        </div>
+
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+                            Intelligently filter tools based on conversation context, reducing LLM context size while maintaining relevance.
+                        </p>
+
+                        <div className="form-group" style={{ marginBottom: '16px' }}>
+                            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={localFilterEnabled}
+                                    onChange={(e) => setLocalFilterEnabled(e.target.checked)}
+                                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                                />
+                                <span>Enable intelligent tool filtering</span>
+                            </label>
+                        </div>
+
+                        {localFilterEnabled && (
+                            <>
+                                <div className="form-group" style={{ marginBottom: '16px' }}>
+                                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span>Maximum Tools</span>
+                                        <span style={{ fontWeight: 'bold', color: 'var(--theme-accent-primary)' }}>{localTopK}</span>
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="10"
+                                        max="50"
+                                        step="1"
+                                        value={localTopK}
+                                        onChange={(e) => setLocalTopK(parseInt(e.target.value))}
+                                        style={{ width: '100%' }}
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                                        <span>10 (Aggressive)</span>
+                                        <span>50 (Conservative)</span>
+                                    </div>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: '16px' }}>
+                                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span>Minimum Score</span>
+                                        <span style={{ fontWeight: 'bold', color: 'var(--theme-accent-primary)' }}>{localMinScore.toFixed(2)}</span>
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="0.20"
+                                        max="0.50"
+                                        step="0.05"
+                                        value={localMinScore}
+                                        onChange={(e) => setLocalMinScore(parseFloat(e.target.value))}
+                                        style={{ width: '100%' }}
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                                        <span>0.20 (More tools)</span>
+                                        <span>0.50 (Fewer tools)</span>
+                                    </div>
+                                </div>
+
+                                <div className="info-box" style={{ marginTop: '16px' }}>
+                                    <div className="info-box-header">ℹ️ Filter Status</div>
+                                    {filterStats.initialized ? (
+                                        <>
+                                            <p>
+                                                ✅ Filter initialized with <strong>{filterStats.stats?.toolCount || 0}</strong> tools
+                                            </p>
+                                            <p style={{ fontSize: '12px', marginTop: '8px', color: 'var(--text-secondary)' }}>
+                                                Using local embeddings for ultra-fast filtering (&lt;5ms per request)
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p>
+                                            {toolFilterReady ? '⚠️ Filter initializing...' : '⏳ Filter will initialize when servers connect'}
+                                        </p>
+                                    )}
+                                </div>
+                            </>
+                        )}
+
+                        {!localFilterEnabled && (
+                            <div className="info-box" style={{ background: 'var(--bg-secondary)' }}>
+                                <p style={{ fontSize: '14px' }}>
+                                    When disabled, all available tools will be sent to the LLM. This may exceed context limits for large tool sets.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
