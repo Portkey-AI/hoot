@@ -5,6 +5,12 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2025-11-03
+
+### Fixed
+- Fixed message roles in HybridInterface from 'assistant' to 'system' for system messages
+- Added `dist/` directory to `.gitignore` to prevent build artifacts from being committed to version control
+
 ## [0.8.2] - 2025-11-03
 
 ### Fixed
@@ -477,6 +483,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.8.3** - Fixed message roles and added dist/ to .gitignore
 - **0.8.2** - Fixed theme loading in production builds with inline CSS bundling
 - **0.8.1** - Fixed npm/npx installation error with mcp-tool-filter dependency
 - **0.8.0** - Markdown rendering, Claude-style UI overhaul, enhanced tool call cards, keyboard shortcuts, and improved input experience
