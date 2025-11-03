@@ -58,6 +58,8 @@
     --theme-text-tertiary: var(--ayu-text-2);
     --theme-text-white: var(--ayu-text-0);
     --theme-text-placeholder: var(--ayu-bg-4);
+    --theme-text-on-accent: var(--ayu-text-0);
+    /* Text on colored buttons/accents */
 
     --theme-border-color: var(--ayu-bg-3);
     --theme-border-bright: var(--ayu-accent-cyan);

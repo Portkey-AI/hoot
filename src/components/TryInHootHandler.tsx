@@ -264,7 +264,7 @@ function ServerDetail({ label, value, icon, mono, badge, isLast }: ServerDetailP
                 <span>{label}</span>
             </div>
             <div style={{
-                color: 'var(--text-white)',
+                color: 'var(--text-primary)',
                 fontSize: '14px',
                 fontWeight: 500,
                 fontFamily: mono ? 'var(--font-mono)' : 'var(--font-sans)',

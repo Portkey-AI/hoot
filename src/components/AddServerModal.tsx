@@ -294,7 +294,7 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
                         {stage.status === 'pending' && <span style={{ color: 'var(--text-tertiary)', fontSize: '16px' }}>○</span>}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-white)' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
                           {stage.label}
                         </div>
                         {stage.message && (

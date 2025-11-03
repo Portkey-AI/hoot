@@ -20,7 +20,7 @@
 .main-header h2 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin-bottom: var(--spacing-sm);
   font-family: var(--font-mono);
   letter-spacing: -0.5px;
@@ -308,23 +308,23 @@
   justify-content: center;
   gap: 12px;
   padding: 14px 28px;
-  background: linear-gradient(135deg, var(--theme-success) 0%, color-mix(in srgb, var(--theme-success) 85%, black) 100%);
-  color: var(--bg-primary);
+  background: var(--theme-accent-primary);
+  color: var(--theme-text-on-accent);
   border: none;
   border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-normal);
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
   text-shadow: none;
   margin-top: var(--spacing-lg);
 }
 
 .execute-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
-  background: var(--theme-success-bright);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--theme-accent-primary) 40%, transparent);
+  background: var(--theme-accent-primary-hover);
 }
 
 .execute-btn-shortcut {
@@ -334,10 +334,10 @@
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  color: var(--bg-primary);
-  opacity: 0.95;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: var(--theme-text-on-accent);
+  opacity: 0.85;
   transition: opacity var(--transition-fast);
   line-height: 1;
 }
@@ -347,7 +347,7 @@
 }
 
 .execute-btn:active:not(:disabled) {
-  background: color-mix(in srgb, var(--theme-success) 90%, black 10%);
+  background: var(--theme-accent-tertiary);
   transform: translateY(0);
 }
 

@@ -1,0 +1,124 @@
+/**
+ * Hoot Theme: Nordic Snow (Light)
+ * Inspired by the Nord color palette (light variant)
+ * Base: Bright snow white, Accent: Cool blue/frost
+ */
+
+:root {
+    /* ☀️ Nordic Snow Color Palette - Bright and airy */
+    /* https://www.nordtheme.com/docs/colors-and-palettes */
+
+    /* Snow Storm - Light backgrounds (reversed for light theme) */
+    --nord-light-0: #ffffff;
+    /* Pure white - deepest backgrounds */
+    --nord-light-1: #f9fafb;
+    /* Snow white - primary backgrounds */
+    --nord-light-2: #eceff4;
+    /* Bright snow - elevated surfaces */
+    --nord-light-3: #e5e9f0;
+    /* Light gray - hover states */
+    --nord-light-4: #d8dee9;
+    /* Subtle gray - borders */
+
+    /* Polar Night - Dark text (for contrast) */
+    --nord-dark-0: #2e3440;
+    /* Deepest dark - primary text */
+    --nord-dark-1: #3b4252;
+    /* Dark gray - secondary text */
+    --nord-dark-2: #434c5e;
+    /* Mid gray - tertiary text */
+    --nord-dark-3: #4c566a;
+    /* Light gray - muted text */
+
+    /* Frost - Blue accents (same as dark theme) */
+    --nord-frost-0: #8fbcbb;
+    /* Calm polar water */
+    --nord-frost-1: #88c0d0;
+    /* Pure ice - PRIMARY ACCENT */
+    --nord-frost-2: #81a1c1;
+    /* Arctic waters */
+    --nord-frost-3: #5e81ac;
+    /* Deep ocean */
+    --nord-frost-bright: #6eb3c7;
+    /* Brighter frost for hover */
+
+    /* Aurora - Colorful accents (slightly adjusted for light bg) */
+    --nord-red: #bf616a;
+    /* Red - Errors */
+    --nord-orange: #d08770;
+    /* Orange - Highlights */
+    --nord-yellow: #ebcb8b;
+    /* Yellow - Warnings */
+    --nord-green: #a3be8c;
+    /* Green - Success */
+    --nord-purple: #b48ead;
+    /* Purple - Special */
+
+    /* Theme mapping */
+    --theme-bg-primary: var(--nord-light-1);
+    --theme-bg-secondary: var(--nord-light-0);
+    --theme-bg-tertiary: var(--nord-light-2);
+    --theme-bg-hover: var(--nord-light-3);
+    --theme-bg-active: var(--nord-light-4);
+
+    --theme-text-primary: var(--nord-dark-0);
+    --theme-text-secondary: var(--nord-dark-1);
+    --theme-text-tertiary: var(--nord-dark-2);
+    --theme-text-white: var(--nord-light-0);
+    --theme-text-placeholder: #9199a1;
+    /* Light gray placeholder */
+    --theme-text-on-accent: var(--nord-light-0);
+    /* Text on colored buttons/accents */
+
+    --theme-border-color: var(--nord-light-4);
+    --theme-border-bright: var(--nord-frost-1);
+
+    --theme-accent-primary: var(--nord-frost-3);
+    --theme-accent-primary-hover: var(--nord-frost-2);
+    --theme-accent-secondary: var(--nord-frost-0);
+    --theme-accent-tertiary: var(--nord-frost-1);
+    --theme-accent-deep: var(--nord-frost-3);
+
+    --theme-success: var(--nord-green);
+    --theme-success-bright: #8fb577;
+    --theme-error: var(--nord-red);
+    --theme-warning: #d4a657;
+    --theme-info: var(--nord-orange);
+    --theme-special: var(--nord-purple);
+
+    /* Hills - Light snow gradient layers */
+    --hills-layer-1: #f5f7fa;
+    /* Lightest back */
+    --hills-layer-2: #eaeef3;
+    /* Middle */
+    --hills-layer-3: #dfe4eb;
+    /* Front */
+
+    /* ============================================ */
+    /* Legacy Support - Components use these */
+    /* ============================================ */
+
+    --bg-primary: var(--theme-bg-primary);
+    --bg-secondary: var(--theme-bg-secondary);
+    --bg-tertiary: var(--theme-bg-tertiary);
+    --bg-hover: var(--theme-bg-hover);
+    --bg-active: var(--theme-bg-active);
+
+    --text-primary: var(--theme-text-primary);
+    --text-secondary: var(--theme-text-secondary);
+    --text-tertiary: var(--theme-text-tertiary);
+    --text-white: var(--theme-text-white);
+    --text-placeholder: var(--theme-text-placeholder);
+
+    --border-color: var(--theme-border-color);
+    --border-bright: var(--theme-border-bright);
+
+    --blue-500: var(--theme-accent-primary);
+    --blue-600: var(--theme-accent-tertiary);
+    --green-500: var(--theme-success);
+    --green-600: var(--theme-success-bright);
+    --red-500: var(--theme-error);
+    --yellow-500: var(--theme-warning);
+    --purple-500: var(--theme-special);
+    --orange-500: var(--theme-info);
+}

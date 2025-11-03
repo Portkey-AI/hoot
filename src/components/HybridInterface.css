@@ -804,7 +804,7 @@
     width: 24px;
     height: 24px;
     border-radius: 4px;
-    color: var(--text-white);
+    color: var(--theme-text-on-accent);
     flex-shrink: 0;
 }
 

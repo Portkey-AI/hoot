@@ -76,7 +76,7 @@
     background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
     border: 1px solid var(--border-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    color: var(--text-white);
+    color: var(--text-primary);
     white-space: nowrap;
     min-width: 50px;
     text-align: center;

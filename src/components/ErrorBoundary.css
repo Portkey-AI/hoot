@@ -28,7 +28,7 @@
 .error-title {
     font-size: 24px;
     font-weight: 700;
-    color: var(--text-white);
+    color: var(--theme-error);
     margin-bottom: var(--spacing-md);
     letter-spacing: -0.5px;
 }
@@ -59,7 +59,7 @@
 }
 
 .error-details summary:hover {
-    color: var(--text-white);
+    color: var(--text-primary);
 }
 
 .error-stack {

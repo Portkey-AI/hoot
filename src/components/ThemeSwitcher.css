@@ -8,18 +8,17 @@
     justify-content: center;
     width: 36px;
     height: 36px;
-    color: var(--theme-accent-secondary);
+    color: var(--theme-accent-tertiary);
     background: transparent;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .theme-trigger:hover {
     background: var(--bg-hover);
-    color: var(--theme-accent-primary);
-    transform: scale(1.05);
+    color: var(--theme-accent-secondary);
 }
 
 /* Dropdown appears on hover with delay to prevent accidental close */
@@ -77,10 +76,30 @@
     font-size: 18px;
 }
 
+/* Dark theme indicator - darker background */
+.theme-option-dark {
+    background: color-mix(in srgb, var(--bg-tertiary) 85%, black);
+    border-color: color-mix(in srgb, var(--border-color) 80%, black);
+}
+
+/* Light theme indicator - lighter background */
+.theme-option-light {
+    background: color-mix(in srgb, var(--bg-tertiary) 85%, white);
+    border-color: color-mix(in srgb, var(--border-color) 85%, white);
+}
+
 .theme-option:hover {
     background: var(--bg-hover);
     border-color: var(--border-bright);
     transform: scale(1.1);
+}
+
+.theme-option-dark:hover {
+    background: color-mix(in srgb, var(--bg-hover) 90%, black);
+}
+
+.theme-option-light:hover {
+    background: color-mix(in srgb, var(--bg-hover) 90%, white);
 }
 
 .theme-option.active {

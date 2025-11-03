@@ -1,0 +1,120 @@
+/**
+ * Hoot Theme: Ayu Light
+ * The light variant of the original Hoot theme - warm and eye-friendly
+ * Base: Warm off-white, Accent: Soft desaturated colors
+ */
+
+:root {
+    /* Ayu Light Color Palette */
+    /* Base colors - Warm whites and beiges */
+    --ayu-light-0: #ffffff;
+    /* Pure white - elevated surfaces */
+    --ayu-light-1: #fafafa;
+    /* Off-white - primary backgrounds */
+    --ayu-light-2: #f3f4f5;
+    /* Light gray - secondary surfaces */
+    --ayu-light-3: #e7e8e9;
+    /* Mid gray - hover states */
+    --ayu-light-4: #d9dadb;
+    /* Subtle gray - borders */
+
+    /* Text colors - Dark grays and blacks */
+    --ayu-dark-0: #5c6166;
+    /* Primary text */
+    --ayu-dark-1: #828c99;
+    /* Secondary text */
+    --ayu-dark-2: #959da8;
+    /* Tertiary text */
+    --ayu-dark-3: #a0a8b5;
+    /* Muted text */
+    --ayu-dark-4: #bcc5d1;
+    /* Very muted */
+
+    /* Semantic accent colors - Slightly more saturated for light bg */
+    --ayu-accent-orange: #fa8d3e;
+    /* Primary - warm orange */
+    --ayu-accent-orange-bright: #ff9940;
+    /* Hover state */
+    --ayu-accent-yellow: #f2ae49;
+    /* Warnings - golden yellow */
+    --ayu-accent-green: #86b300;
+    /* Success - vibrant green */
+    --ayu-accent-green-bright: #95c700;
+    /* Brighter green */
+    --ayu-accent-blue: #399ee6;
+    /* Info - sky blue */
+    --ayu-accent-blue-bright: #55b4fc;
+    /* Brighter blue */
+    --ayu-accent-red: #f51818;
+    /* Error - bright red */
+    --ayu-accent-purple: #a37acc;
+    /* Special - soft purple */
+
+    /* Theme mapping */
+    --theme-bg-primary: var(--ayu-light-1);
+    --theme-bg-secondary: var(--ayu-light-0);
+    --theme-bg-tertiary: var(--ayu-light-2);
+    --theme-bg-hover: var(--ayu-light-3);
+    --theme-bg-active: var(--ayu-light-4);
+
+    --theme-text-primary: var(--ayu-dark-0);
+    --theme-text-secondary: var(--ayu-dark-1);
+    --theme-text-tertiary: var(--ayu-dark-2);
+    --theme-text-white: var(--ayu-light-0);
+    --theme-text-placeholder: #b8bdc4;
+    /* Light gray placeholder */
+    --theme-text-on-accent: var(--ayu-light-0);
+    /* Text on colored buttons/accents */
+
+    --theme-border-color: var(--ayu-light-4);
+    --theme-border-bright: var(--ayu-accent-orange);
+
+    --theme-accent-primary: var(--ayu-accent-orange);
+    --theme-accent-primary-hover: var(--ayu-accent-orange-bright);
+    --theme-accent-secondary: var(--ayu-accent-blue);
+    --theme-accent-tertiary: var(--ayu-accent-blue-bright);
+    --theme-accent-deep: #2b88d1;
+
+    --theme-success: var(--ayu-accent-green);
+    --theme-success-bright: var(--ayu-accent-green-bright);
+    --theme-error: var(--ayu-accent-red);
+    --theme-warning: var(--ayu-accent-yellow);
+    --theme-info: var(--ayu-accent-blue);
+    --theme-special: var(--ayu-accent-purple);
+
+    /* Hills - Warm light gradient layers */
+    --hills-layer-1: #f8f8f8;
+    /* Lightest back */
+    --hills-layer-2: #efefef;
+    /* Middle */
+    --hills-layer-3: #e5e5e5;
+    /* Front */
+
+    /* ============================================ */
+    /* Legacy Support - Components use these */
+    /* ============================================ */
+
+    --bg-primary: var(--theme-bg-primary);
+    --bg-secondary: var(--theme-bg-secondary);
+    --bg-tertiary: var(--theme-bg-tertiary);
+    --bg-hover: var(--theme-bg-hover);
+    --bg-active: var(--theme-bg-active);
+
+    --text-primary: var(--theme-text-primary);
+    --text-secondary: var(--theme-text-secondary);
+    --text-tertiary: var(--theme-text-tertiary);
+    --text-white: var(--theme-text-white);
+    --text-placeholder: var(--theme-text-placeholder);
+
+    --border-color: var(--theme-border-color);
+    --border-bright: var(--theme-border-bright);
+
+    --blue-500: var(--theme-accent-primary);
+    --blue-600: var(--theme-accent-tertiary);
+    --green-500: var(--theme-success);
+    --green-600: var(--theme-success-bright);
+    --red-500: var(--theme-error);
+    --yellow-500: var(--theme-warning);
+    --purple-500: var(--theme-special);
+    --orange-500: var(--theme-info);
+}

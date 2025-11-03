@@ -1,0 +1,118 @@
+/**
+ * Hoot Theme: DuoTone Light
+ * Inspired by Atom's DuoTone themes (light variant)
+ * Base: Warm champagne/cream, Accent: Warm amber and honey tones
+ */
+
+:root {
+    /* DuoTone Light Color Palette */
+    /* Base colors - Warm cream tones */
+    --duo-cream-0: #ffffff;
+    /* Pure white - elevated */
+    --duo-cream-1: #faf8f5;
+    /* Champagne - primary backgrounds */
+    --duo-cream-2: #f2ede4;
+    /* Light cream - secondary */
+    --duo-cream-3: #e6dfd0;
+    /* Mid cream - hover */
+    --duo-cream-4: #d9d0bd;
+    /* Warm beige - borders */
+    --duo-cream-5: #c9bda5;
+    /* Subtle tan - muted */
+
+    /* Text colors - Warm dark browns */
+    --duo-brown-0: #3a312a;
+    /* Darkest brown - primary text */
+    --duo-brown-1: #63564c;
+    /* Dark brown - secondary text */
+    --duo-brown-2: #7d6e5f;
+    /* Mid brown - tertiary text */
+    --duo-brown-3: #968777;
+    /* Light brown - muted text */
+    --duo-brown-4: #a89885;
+    /* Very muted */
+
+    /* Semantic accent colors - Warm and vibrant */
+    --duo-accent: #d97d28;
+    /* Primary - warm amber */
+    --duo-accent-bright: #e59142;
+    /* Hover/focus - golden */
+    --duo-blue: #4c8fb5;
+    /* Info - sky blue */
+    --duo-green: #76a85d;
+    /* Success - olive green */
+    --duo-red: #d05858;
+    /* Error - terra cotta */
+    --duo-yellow: #d4a72c;
+    /* Warning - honey gold */
+    --duo-purple: #a46cb8;
+    /* Special - plum */
+
+    /* Theme mapping */
+    --theme-bg-primary: var(--duo-cream-1);
+    --theme-bg-secondary: var(--duo-cream-0);
+    --theme-bg-tertiary: var(--duo-cream-2);
+    --theme-bg-hover: var(--duo-cream-3);
+    --theme-bg-active: var(--duo-cream-4);
+
+    --theme-text-primary: var(--duo-brown-0);
+    --theme-text-secondary: var(--duo-brown-1);
+    --theme-text-tertiary: var(--duo-brown-2);
+    --theme-text-white: var(--duo-cream-0);
+    --theme-text-placeholder: #afa79a;
+    /* Light warm gray placeholder */
+    --theme-text-on-accent: var(--duo-cream-0);
+    /* Text on colored buttons/accents */
+
+    --theme-border-color: var(--duo-cream-4);
+    --theme-border-bright: var(--duo-accent);
+
+    --theme-accent-primary: var(--duo-accent);
+    --theme-accent-primary-hover: var(--duo-accent-bright);
+    --theme-accent-secondary: var(--duo-yellow);
+    --theme-accent-tertiary: var(--duo-purple);
+    --theme-accent-deep: var(--duo-blue);
+
+    --theme-success: var(--duo-green);
+    --theme-success-bright: #86b86d;
+    --theme-error: var(--duo-red);
+    --theme-warning: var(--duo-yellow);
+    --theme-info: var(--duo-blue);
+    --theme-special: var(--duo-purple);
+
+    /* Hills - Warm cream gradient layers */
+    --hills-layer-1: #f7f4ee;
+    /* Lightest back */
+    --hills-layer-2: #ebe4d8;
+    /* Middle */
+    --hills-layer-3: #dfd5c3;
+    /* Front */
+
+    /* ============================================ */
+    /* Legacy Support - Components use these */
+    /* ============================================ */
+
+    --bg-primary: var(--theme-bg-primary);
+    --bg-secondary: var(--theme-bg-secondary);
+    --bg-tertiary: var(--theme-bg-tertiary);
+    --bg-hover: var(--theme-bg-hover);
+    --bg-active: var(--theme-bg-active);
+
+    --text-primary: var(--theme-text-primary);
+    --text-secondary: var(--theme-text-secondary);
+    --text-tertiary: var(--theme-text-tertiary);
+    --text-white: var(--theme-text-white);
+    --text-placeholder: var(--theme-text-placeholder);
+
+    --border-color: var(--theme-border-color);
+    --border-bright: var(--theme-border-bright);
+
+    --blue-500: var(--theme-accent-primary);
+    --blue-600: var(--theme-accent-tertiary);
+    --green-500: var(--theme-success);
+    --green-600: var(--theme-success-bright);
+    --red-500: var(--theme-error);
+    --yellow-500: var(--theme-warning);
+    --purple-500: var(--theme-special);
+    --orange-500: var(--theme-info);
+}

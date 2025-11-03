@@ -121,7 +121,7 @@
 .add-server-btn:hover {
     background: var(--bg-hover);
     border-color: var(--border-bright);
-    color: var(--text-white);
+    color: var(--text-primary);
 }
 
 .add-server-btn:active {
@@ -290,7 +290,7 @@
 .server-name {
     font-weight: 500;
     font-size: 14px;
-    color: var(--text-white);
+    color: var(--text-primary);
     flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -429,7 +429,7 @@
 
 .dropdown-item:hover:not(:disabled) {
     background: var(--bg-hover);
-    color: var(--text-white);
+    color: var(--text-primary);
 }
 
 .dropdown-item:disabled {

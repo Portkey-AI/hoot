@@ -55,7 +55,7 @@
 .empty-state-title {
     font-size: 20px;
     font-weight: 700;
-    color: var(--text-white);
+    color: var(--text-primary);
     font-family: var(--font-mono);
     margin-bottom: var(--spacing-sm);
     letter-spacing: -0.3px;

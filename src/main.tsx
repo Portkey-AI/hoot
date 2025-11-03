@@ -5,19 +5,27 @@ import './index.css';
 import { initializeHills } from './lib/hillsGenerator';
 
 // Import all theme CSS files so they get bundled
-import arcticIceTheme from './themes/arctic-ice.css?inline';
+// Dark Themes
+import arcticNightTheme from './themes/arctic-night.css?inline';
 import ayuMirageTheme from './themes/ayu-mirage.css?inline';
 import duotoneDarkTheme from './themes/duotone-dark.css?inline';
 import duotoneSeaTheme from './themes/duotone-sea.css?inline';
 import duotoneForestTheme from './themes/duotone-forest.css?inline';
+// Light Themes
+import nordicSnowTheme from './themes/nordic-snow.css?inline';
+import ayuLightTheme from './themes/ayu-light.css?inline';
+import duotoneLightTheme from './themes/duotone-light.css?inline';
 
 // Create a map of themes
 const themes: Record<string, string> = {
-  'arctic-ice': arcticIceTheme,
+  'arctic-night': arcticNightTheme,
   'ayu-mirage': ayuMirageTheme,
   'duotone-dark': duotoneDarkTheme,
   'duotone-sea': duotoneSeaTheme,
   'duotone-forest': duotoneForestTheme,
+  'nordic-snow': nordicSnowTheme,
+  'ayu-light': ayuLightTheme,
+  'duotone-light': duotoneLightTheme,
 };
 
 // Function to apply theme
@@ -34,9 +42,21 @@ function applyTheme(themeId: string) {
   styleElement.textContent = themeCSS;
 }
 
-// Load saved theme or default
-const savedTheme = localStorage.getItem('hoot-theme') || 'ayu-mirage';
-applyTheme(savedTheme);
+// Get default theme based on system preference
+function getDefaultTheme(): string {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return prefersDark ? 'arctic-night' : 'nordic-snow';
+}
+
+// Load saved theme or default to system preference
+const savedTheme = localStorage.getItem('hoot-theme');
+const themeToApply = savedTheme || getDefaultTheme();
+applyTheme(themeToApply);
+
+// If no saved theme, save the detected default
+if (!savedTheme) {
+  localStorage.setItem('hoot-theme', themeToApply);
+}
 
 // Expose theme functions globally
 if (typeof window !== 'undefined') {

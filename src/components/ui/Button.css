@@ -72,7 +72,7 @@
 
 .btn-danger {
     background: var(--theme-error);
-    color: var(--text-white);
+    color: var(--theme-text-on-accent);
     border: 1px solid transparent;
     font-weight: 600;
 }

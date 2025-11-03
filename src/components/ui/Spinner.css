@@ -49,7 +49,7 @@
 }
 
 .spinner-white {
-  color: var(--text-white);
+  color: var(--theme-text-on-accent);
 }
 
 /* Animation */

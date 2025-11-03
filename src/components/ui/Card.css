@@ -59,7 +59,7 @@
 .card-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.02em;
 }
@@ -93,4 +93,3 @@
   padding-top: var(--spacing-lg);
   border-top: 1px solid var(--border-color);
 }
-

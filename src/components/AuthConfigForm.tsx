@@ -312,7 +312,7 @@ export function AuthConfigForm({
                                     onChange={(e) => onClientCredentialsToggle?.(e.target.checked)}
                                     style={{ accentColor: 'var(--blue-500)' }}
                                 />
-                                <label style={{ fontSize: '14px', color: 'var(--text-white)', cursor: 'pointer' }}>
+                                <label style={{ fontSize: '14px', color: 'var(--text-primary)', cursor: 'pointer' }}>
                                     Use Client Credentials OAuth
                                 </label>
                             </div>

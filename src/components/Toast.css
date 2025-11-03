@@ -62,7 +62,7 @@
 .toast-message {
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-white);
+    color: var(--text-primary);
     margin-bottom: 4px;
     line-height: 1.4;
 }

@@ -52,7 +52,7 @@
 .oauth-title {
     font-size: 26px;
     font-weight: 700;
-    color: var(--text-white);
+    color: var(--text-primary);
     margin-bottom: 16px;
     letter-spacing: -0.5px;
     line-height: 1.3;

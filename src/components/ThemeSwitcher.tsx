@@ -2,15 +2,25 @@ import { Palette } from 'lucide-react';
 import './ThemeSwitcher.css';
 
 const THEMES = [
-    { id: 'ayu-mirage', name: 'Ayu Mirage', emoji: '🌫️' },
-    { id: 'arctic-ice', name: 'Arctic Ice', emoji: '🏔️' },
-    { id: 'duotone-dark', name: 'DuoTone Dark', emoji: '🌙' },
-    { id: 'duotone-sea', name: 'DuoTone Sea', emoji: '🌊' },
-    { id: 'duotone-forest', name: 'DuoTone Forest', emoji: '🌲' },
-];
+    // Dark Themes
+    { id: 'arctic-night', name: 'Arctic Night', emoji: '🌑', type: 'dark' },
+    { id: 'ayu-mirage', name: 'Ayu Mirage', emoji: '🌀', type: 'dark' },
+    { id: 'duotone-dark', name: 'DuoTone Dark', emoji: '🌙', type: 'dark' },
+    { id: 'duotone-sea', name: 'DuoTone Sea', emoji: '🌊', type: 'dark' },
+    { id: 'duotone-forest', name: 'DuoTone Forest', emoji: '🌲', type: 'dark' },
+    // Light Themes
+    { id: 'nordic-snow', name: 'Nordic Snow', emoji: '❄️', type: 'light' },
+    { id: 'ayu-light', name: 'Ayu Light', emoji: '☀️', type: 'light' },
+    { id: 'duotone-light', name: 'DuoTone Light', emoji: '✨', type: 'light' },
+] as const;
 
 export function ThemeSwitcher() {
-    const currentTheme = localStorage.getItem('hoot-theme') || 'ayu-mirage';
+    const getDefaultTheme = () => {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return prefersDark ? 'arctic-night' : 'nordic-snow';
+    };
+
+    const currentTheme = localStorage.getItem('hoot-theme') || getDefaultTheme();
 
     const switchTheme = (themeId: string) => {
         // Use the globally exposed applyTheme function
@@ -44,8 +54,9 @@ export function ThemeSwitcher() {
                     <button
                         key={theme.id}
                         data-theme={theme.id}
+                        data-theme-type={theme.type}
                         data-tooltip={theme.name}
-                        className={`theme-option ${currentTheme === theme.id ? 'active' : ''}`}
+                        className={`theme-option ${currentTheme === theme.id ? 'active' : ''} theme-option-${theme.type}`}
                         onClick={() => switchTheme(theme.id)}
                     >
                         <span className="theme-emoji">{theme.emoji}</span>

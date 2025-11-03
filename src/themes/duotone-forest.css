@@ -5,73 +5,75 @@
  */
 
 :root {
-    /* DuoTone Forest Color Palette */
-    /* Base colors - Forest green tones */
-    --duo-forest-0: #1a2321;
-    /* Deepest forest - backgrounds */
-    --duo-forest-1: #243330;
-    /* Dark moss - elevated */
-    --duo-forest-2: #2f443f;
-    /* Mid green - hover */
-    --duo-forest-3: #3d544d;
-    /* Light green - borders */
-    --duo-forest-4: #536a61;
-    /* Muted green - subtle */
+  /* DuoTone Forest Color Palette */
+  /* Base colors - Forest green tones */
+  --duo-forest-0: #1a2321;
+  /* Deepest forest - backgrounds */
+  --duo-forest-1: #243330;
+  /* Dark moss - elevated */
+  --duo-forest-2: #2f443f;
+  /* Mid green - hover */
+  --duo-forest-3: #3d544d;
+  /* Light green - borders */
+  --duo-forest-4: #536a61;
+  /* Muted green - subtle */
 
-    /* Accent colors - Lime/spring green tones */
-    --duo-lime-0: #e8f5e9;
-    /* Brightest text */
-    --duo-lime-1: #c8e6c9;
-    /* Primary text */
-    --duo-lime-2: #a5d6a7;
-    /* Secondary text */
-    --duo-lime-3: #81c784;
-    /* Tertiary text */
-    --duo-lime-4: #66bb6a;
-    /* Spring accent */
+  /* Accent colors - Lime/spring green tones */
+  --duo-lime-0: #e8f5e9;
+  /* Brightest text */
+  --duo-lime-1: #c8e6c9;
+  /* Primary text */
+  --duo-lime-2: #a5d6a7;
+  /* Secondary text */
+  --duo-lime-3: #81c784;
+  /* Tertiary text */
+  --duo-lime-4: #66bb6a;
+  /* Spring accent */
 
-    /* Semantic accent colors */
-    --duo-accent: #7cb342;
-    /* Primary - lime green */
-    --duo-accent-bright: #9ccc65;
-    /* Hover/focus */
-    --duo-blue: #4dd0e1;
-    /* Info - spring blue */
-    --duo-green: #81c784;
-    /* Success - spring green */
-    --duo-red: #e57373;
-    /* Error - berry red */
-    --duo-yellow: #dce775;
-    /* Warning - spring yellow */
-    --duo-purple: #ba68c8;
-    /* Special - wildflower */
+  /* Semantic accent colors */
+  --duo-accent: #7cb342;
+  /* Primary - lime green */
+  --duo-accent-bright: #9ccc65;
+  /* Hover/focus */
+  --duo-blue: #4dd0e1;
+  /* Info - spring blue */
+  --duo-green: #81c784;
+  /* Success - spring green */
+  --duo-red: #e57373;
+  /* Error - berry red */
+  --duo-yellow: #dce775;
+  /* Warning - spring yellow */
+  --duo-purple: #ba68c8;
+  /* Special - wildflower */
 
-    /* Theme mapping */
-    --theme-bg-primary: var(--duo-forest-0);
-    --theme-bg-secondary: var(--duo-forest-1);
-    --theme-bg-tertiary: var(--duo-forest-2);
-    --theme-bg-hover: var(--duo-forest-2);
-    --theme-bg-active: var(--duo-forest-3);
+  /* Theme mapping */
+  --theme-bg-primary: var(--duo-forest-0);
+  --theme-bg-secondary: var(--duo-forest-1);
+  --theme-bg-tertiary: var(--duo-forest-2);
+  --theme-bg-hover: var(--duo-forest-2);
+  --theme-bg-active: var(--duo-forest-3);
 
-    --theme-text-primary: var(--duo-lime-0);
-    --theme-text-secondary: var(--duo-lime-1);
-    --theme-text-tertiary: var(--duo-lime-2);
-    --theme-text-white: var(--duo-lime-0);
-    --theme-text-placeholder: var(--duo-forest-4);
+  --theme-text-primary: var(--duo-lime-0);
+  --theme-text-secondary: var(--duo-lime-1);
+  --theme-text-tertiary: var(--duo-lime-2);
+  --theme-text-white: var(--duo-lime-0);
+  --theme-text-placeholder: var(--duo-forest-4);
+  --theme-text-on-accent: var(--duo-lime-0);
+  /* Text on colored buttons/accents */
 
-    --theme-border-color: var(--duo-forest-3);
-    --theme-border-bright: var(--duo-accent);
+  --theme-border-color: var(--duo-forest-3);
+  --theme-border-bright: var(--duo-accent);
 
-    --theme-accent-primary: var(--duo-accent);
-    --theme-accent-primary-hover: var(--duo-accent-bright);
-    --theme-accent-secondary: var(--duo-lime-4);
-    --theme-accent-tertiary: var(--duo-green);
-    --theme-accent-deep: var(--duo-blue);
+  --theme-accent-primary: var(--duo-accent);
+  --theme-accent-primary-hover: var(--duo-accent-bright);
+  --theme-accent-secondary: var(--duo-lime-4);
+  --theme-accent-tertiary: var(--duo-green);
+  --theme-accent-deep: var(--duo-blue);
 
-    --theme-success: var(--duo-green);
-    --theme-success-bright: #91d794;
-    --theme-error: var(--duo-red);
-    --theme-warning: var(--duo-yellow);
+  --theme-success: var(--duo-green);
+  --theme-success-bright: #91d794;
+  --theme-error: var(--duo-red);
+  --theme-warning: var(--duo-yellow);
   --theme-info: var(--duo-blue);
   --theme-special: var(--duo-purple);
 
@@ -86,7 +88,7 @@
   /* ============================================ */
   /* Legacy Support - Components use these */
   /* ============================================ */
-  
+
   --bg-primary: var(--theme-bg-primary);
   --bg-secondary: var(--theme-bg-secondary);
   --bg-tertiary: var(--theme-bg-tertiary);
