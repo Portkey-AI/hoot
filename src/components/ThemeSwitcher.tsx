@@ -13,23 +13,24 @@ export function ThemeSwitcher() {
     const currentTheme = localStorage.getItem('hoot-theme') || 'ayu-mirage';
 
     const switchTheme = (themeId: string) => {
-        const link = document.getElementById('theme-link') as HTMLLinkElement;
-        if (link) {
-            link.href = `/src/themes/${themeId}.css`;
-            localStorage.setItem('hoot-theme', themeId);
-
-            // Force re-render by updating a class
-            document.querySelectorAll('.theme-option').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-theme') === themeId);
-            });
-
-            // Regenerate hills with new theme colors
-            setTimeout(() => {
-                if ((window as any).initializeHills) {
-                    (window as any).initializeHills();
-                }
-            }, 100);
+        // Use the globally exposed applyTheme function
+        if ((window as any).applyTheme) {
+            (window as any).applyTheme(themeId);
         }
+        
+        localStorage.setItem('hoot-theme', themeId);
+
+        // Force re-render by updating the active state
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-theme') === themeId);
+        });
+
+        // Regenerate hills with new theme colors
+        setTimeout(() => {
+            if ((window as any).initializeHills) {
+                (window as any).initializeHills();
+            }
+        }, 100);
     };
 
     return (

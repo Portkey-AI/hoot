@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed npm/npx installation error by migrating `@portkey-ai/mcp-tool-filter` dependency from local file reference to published npm package (v1.0.0)
 - Resolved `ERR_MODULE_NOT_FOUND` error that occurred when installing Hoot via `npx -y @portkey-ai/hoot`
+- Fixed theme loading in production builds by bundling theme CSS files inline instead of loading from external paths
+
+### Changed
+- Theme CSS files are now bundled as inline strings in the JavaScript bundle for reliable loading across all environments
+- Removed external theme file references from HTML, improving portability and reliability
 
 ## [0.8.0] - 2025-11-02
 
