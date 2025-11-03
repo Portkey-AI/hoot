@@ -5,6 +5,12 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2025-11-03
+
+### Fixed
+- Fixed npm/npx installation error by migrating `@portkey-ai/mcp-tool-filter` dependency from local file reference to published npm package (v1.0.0)
+- Resolved `ERR_MODULE_NOT_FOUND` error that occurred when installing Hoot via `npx -y @portkey-ai/hoot`
+
 ## [0.8.0] - 2025-11-02
 
 ### Added
@@ -462,6 +468,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.8.1** - Fixed npm/npx installation error with mcp-tool-filter dependency
 - **0.8.0** - Markdown rendering, Claude-style UI overhaul, enhanced tool call cards, keyboard shortcuts, and improved input experience
 - **0.7.2** - Improved asset references and enhanced error handling in tool filter functionality
 - **0.7.1** - New UI components (APIKeyInput, Tabs) and styling improvements across components
