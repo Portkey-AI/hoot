@@ -58,17 +58,17 @@
 }
 
 .modal-body::-webkit-scrollbar-track {
-  background: rgba(46, 52, 64, 0.3);
+  background: color-mix(in srgb, var(--theme-bg-tertiary) 50%, transparent);
   border-radius: 4px;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
-  background: rgba(136, 192, 208, 0.3);
+  background: color-mix(in srgb, var(--theme-accent-primary) 40%, transparent);
   border-radius: 4px;
 }
 
 .modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(136, 192, 208, 0.5);
+  background: color-mix(in srgb, var(--theme-accent-primary) 60%, transparent);
 }
 
 .modal-footer {

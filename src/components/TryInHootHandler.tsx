@@ -160,11 +160,11 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
 
                 <div className="modal-body">
                     <div style={{
-                        background: 'rgba(31, 36, 48, 0.6)',
+                        background: 'var(--theme-bg-tertiary)',
                         padding: '20px',
-                        borderRadius: '10px',
+                        borderRadius: 'var(--radius-lg)',
                         marginBottom: '20px',
-                        border: '2px solid rgba(92, 207, 230, 0.2)'
+                        border: '2px solid color-mix(in srgb, var(--theme-accent-primary) 30%, transparent)'
                     }}>
                         <ServerDetail
                             label="Server Name"
@@ -208,13 +208,13 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
                     </div>
 
                     <div style={{
-                        background: 'rgba(255, 174, 87, 0.08)',
-                        border: '1px solid rgba(255, 174, 87, 0.25)',
+                        background: 'color-mix(in srgb, var(--theme-warning) 15%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--theme-warning) 30%, transparent)',
                         padding: '12px 14px',
-                        borderRadius: '8px',
+                        borderRadius: 'var(--radius-md)',
                         fontSize: '12px',
                         lineHeight: '1.5',
-                        color: 'rgba(255, 174, 87, 0.9)',
+                        color: 'var(--theme-warning)',
                         display: 'flex',
                         gap: '10px'
                     }}>
@@ -250,7 +250,7 @@ function ServerDetail({ label, value, icon, mono, badge, isLast }: ServerDetailP
     return (
         <div style={{ marginBottom: isLast ? '0' : '14px' }}>
             <div style={{
-                color: 'var(--blue-500)',
+                color: 'var(--theme-accent-primary)',
                 fontSize: '11px',
                 fontWeight: 600,
                 marginBottom: '6px',
@@ -264,7 +264,7 @@ function ServerDetail({ label, value, icon, mono, badge, isLast }: ServerDetailP
                 <span>{label}</span>
             </div>
             <div style={{
-                color: 'var(--text-primary)',
+                color: 'var(--theme-text-primary)',
                 fontSize: '14px',
                 fontWeight: 500,
                 fontFamily: mono ? 'var(--font-mono)' : 'var(--font-sans)',
@@ -272,11 +272,11 @@ function ServerDetail({ label, value, icon, mono, badge, isLast }: ServerDetailP
                 lineHeight: '1.4',
                 ...(badge && {
                     display: 'inline-block',
-                    background: 'rgba(31, 36, 48, 0.8)',
+                    background: 'var(--theme-bg-primary)',
                     padding: '4px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(92, 207, 230, 0.3)',
-                    color: 'var(--blue-500)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid color-mix(in srgb, var(--theme-accent-primary) 40%, transparent)',
+                    color: 'var(--theme-accent-primary)',
                     fontSize: '12px',
                     fontWeight: 600,
                 })
