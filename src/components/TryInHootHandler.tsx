@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
+import { autoDetectServer } from '../lib/backendClient';
 import { toast } from '../stores/toastStore';
 import type { TransportType, AuthConfig } from '../types';
 import { Button } from './ui';
@@ -18,9 +19,10 @@ interface ServerConfigImport {
 /**
  * Parses a "Try in Hoot" URL and extracts server configuration
  * 
- * URL Format:
- * - Hash-based: #/try?config=<base64-encoded-json>
- * - Query-based: ?try=<base64-encoded-json>
+ * URL Formats:
+ * 1. Hash-based: #/try?config=<base64-encoded-json>
+ * 2. Query-based: ?try=<base64-encoded-json>
+ * 3. Server reference: ?s=<name>:<url>
  * 
  * Config JSON Format:
  * {
@@ -56,6 +58,39 @@ function parseTryInHootURL(): ServerConfigImport | null {
             const decoded = atob(tryParam);
             const config = JSON.parse(decoded);
             return validateServerConfig(config);
+        }
+
+        // Check server reference format (?s=name:url)
+        const serverRef = searchParams.get('s') || searchParams.get('server');
+        if (serverRef) {
+            // Parse server reference (format: "name:url")
+            const colonIndex = serverRef.indexOf(':');
+            if (colonIndex > 0) {
+                const name = serverRef.substring(0, colonIndex);
+                const url = serverRef.substring(colonIndex + 1);
+
+                // Check if server already exists (by URL or name)
+                const servers = useAppStore.getState().servers;
+                const existingServer = servers.find(s => {
+                    // Match by URL primarily
+                    if (s.url === url) return true;
+                    // Fallback: match by name if URL is similar
+                    if (s.name === name && s.url) {
+                        const normalizeUrl = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                        return normalizeUrl(s.url) === normalizeUrl(url);
+                    }
+                    return false;
+                });
+
+                // If server doesn't exist, return config for adding it
+                if (!existingServer) {
+                    return {
+                        name,
+                        transport: 'http', // Will be auto-detected
+                        url,
+                    };
+                }
+            }
         }
 
         return null;
@@ -126,9 +161,10 @@ interface ConfirmAddServerProps {
     config: ServerConfigImport;
     onConfirm: () => void;
     onCancel: () => void;
+    isConnecting: boolean;
 }
 
-function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps) {
+function ConfirmAddServer({ config, onConfirm, onCancel, isConnecting }: ConfirmAddServerProps) {
     return createPortal(
         <div className="modal-overlay">
             <div className="modal" style={{ maxWidth: '520px' }}>
@@ -144,7 +180,7 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
                             fontSize: '28px',
                             filter: 'drop-shadow(0 2px 8px rgba(92, 207, 230, 0.3))'
                         }}>🦉</span>
-                        <h2 style={{ margin: 0 }}>Try in Hoot</h2>
+                        <h2 style={{ margin: 0 }}>Add MCP Server</h2>
                     </div>
                     <p style={{
                         textAlign: 'center',
@@ -154,7 +190,7 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
                         marginTop: '4px',
                         marginBottom: '24px'
                     }}>
-                        Add this server to get started
+                        Connect to this server to use its tools
                     </p>
                 </div>
 
@@ -224,12 +260,21 @@ function ConfirmAddServer({ config, onConfirm, onCancel }: ConfirmAddServerProps
                 </div>
 
                 <div className="modal-footer">
-                    <Button variant="secondary" onClick={onCancel}>
+                    <Button variant="secondary" onClick={onCancel} disabled={isConnecting}>
                         Cancel
                     </Button>
-                    <Button variant="primary" onClick={onConfirm}>
-                        Add & Connect
-                    </Button>
+                    {isConnecting ? (
+                        <Button variant="primary" disabled={true}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="spinner-small" />
+                                <span>Connecting...</span>
+                            </div>
+                        </Button>
+                    ) : (
+                        <Button variant="primary" onClick={onConfirm}>
+                            Add & Connect
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>,
@@ -296,14 +341,16 @@ export function TryInHootHandler() {
     const [pendingConfig, setPendingConfig] = useState<ServerConfigImport | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const addServer = useAppStore((state) => state.addServer);
+    const setSelectedServer = useAppStore((state) => state.setSelectedServer);
     const { connect } = useMCPConnection();
 
     useEffect(() => {
-        // Check if URL contains "try" parameter
+        // Check if URL contains "try" parameter or server reference
         const config = parseTryInHootURL();
         if (config) {
             setPendingConfig(config);
-            // Clear the URL parameter to avoid re-triggering
+            // Note: We don't clear URL params here anymore - they're used for state restoration
+            // Only clear the legacy "try" parameter
             const url = new URL(window.location.href);
             if (url.hash.startsWith('#/try')) {
                 url.hash = '';
@@ -321,24 +368,58 @@ export function TryInHootHandler() {
         setIsConnecting(true);
 
         try {
+            let configToAdd = pendingConfig;
+
+            // If this is a simple server reference (from URL ?s=name:url), auto-detect configuration
+            if (pendingConfig.url && !pendingConfig.command && pendingConfig.transport === 'http') {
+                try {
+                    const detection = await autoDetectServer(pendingConfig.url);
+
+                    if (detection.success) {
+                        // Use detected configuration
+                        let authConfig: AuthConfig = { type: 'none' };
+
+                        if (detection.requiresOAuth) {
+                            authConfig = { type: 'oauth' };
+                        } else if (detection.requiresClientCredentials) {
+                            authConfig = { type: 'oauth_client_credentials' };
+                        } else if (detection.requiresHeaderAuth) {
+                            authConfig = { type: 'headers', headers: {} };
+                        }
+
+                        configToAdd = {
+                            name: pendingConfig.name || detection.serverInfo?.name || 'MCP Server',
+                            transport: detection.transport || 'http',
+                            url: pendingConfig.url,
+                            auth: authConfig,
+                        };
+                    }
+                } catch (error) {
+                    console.warn('Auto-detection failed, using basic config:', error);
+                }
+            }
+
             // Add server to store
-            addServer(pendingConfig);
+            addServer(configToAdd);
 
             // Get the newly added server
             const servers = useAppStore.getState().servers;
             const newServer = servers[servers.length - 1];
 
+            // Auto-select the newly added server so tools show immediately
+            setSelectedServer(newServer.id);
+
             // Try to connect
             const success = await connect(newServer);
 
             if (success) {
-                toast.success('Server Added', `Successfully connected to ${pendingConfig.name}`);
+                toast.success('Server Added', `Successfully connected to ${configToAdd.name}`);
                 setPendingConfig(null);
             } else {
                 // Check if there was an error
                 const updatedServer = useAppStore.getState().servers.find(s => s.id === newServer.id);
                 if (updatedServer?.error) {
-                    // Connection failed - but keep server in list
+                    // Connection failed - but keep server in list and selected
                     toast.error('Connection Failed', updatedServer.error);
                     setPendingConfig(null);
                 } else {
@@ -369,6 +450,7 @@ export function TryInHootHandler() {
             config={pendingConfig}
             onConfirm={handleConfirm}
             onCancel={handleCancel}
+            isConnecting={isConnecting}
         />
     );
 }

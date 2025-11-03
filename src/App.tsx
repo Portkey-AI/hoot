@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ServerSidebar } from './components/ServerSidebar';
 import { ToolsSidebar } from './components/ToolsSidebar';
 import { MainArea } from './components/MainArea';
@@ -13,7 +13,7 @@ import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import type { ShortcutCategory } from './components/KeyboardShortcutsModal';
 import { useAutoReconnect } from './hooks/useAutoReconnect';
-import { useURLState } from './hooks/useURLState';
+import { useURLState, createServerReference } from './hooks/useURLState';
 import { useKeyboardShortcuts, getShortcutHint } from './hooks/useKeyboardShortcuts';
 import { useToastStore } from './stores/toastStore';
 import { useAppStore } from './stores/appStore';
@@ -46,6 +46,10 @@ function getViewModeFromPath(pathname: string): ViewMode {
 function navigateToView(mode: ViewMode) {
   const path = mode === 'hybrid' ? '/chat' : '/test';
   const searchParams = new URLSearchParams(window.location.search);
+
+  // Add view parameter to URL for sharing
+  searchParams.set('view', mode);
+
   const newURL = `${path}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
   window.history.pushState({}, '', newURL);
 
@@ -62,7 +66,7 @@ function App() {
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
 
-  const { readURL } = useURLState();
+  const { readURL, updateURL } = useURLState();
   const servers = useAppStore((state) => state.servers);
   const selectedServerId = useAppStore((state) => state.selectedServerId);
   const selectedToolName = useAppStore((state) => state.selectedToolName);
@@ -79,16 +83,128 @@ function App() {
   // Auto-reconnect to saved servers with cached tools
   useAutoReconnect();
 
+  // Track if this is the initial mount to avoid overwriting URL params on load
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    // After first render, mark as no longer initial mount
+    isInitialMount.current = false;
+  }, []);
+
+  // Automatically sync URL with app state (but preserve other params and skip initial mount)
+  useEffect(() => {
+    // Skip URL updates on initial mount to preserve URL parameters
+    if (isInitialMount.current) {
+      return;
+    }
+
+    if (selectedServerId) {
+      const server = servers.find(s => s.id === selectedServerId);
+      if (server && server.url) {
+        const serverRef = createServerReference(server.name, server.url);
+        // Only update if different to avoid clearing other params
+        const currentURL = readURL();
+        if (currentURL.server !== serverRef) {
+          updateURL({ server: serverRef }, true, false);
+        }
+      }
+    }
+  }, [selectedServerId, servers, updateURL, readURL]);
+
+  // Sync tool to URL (but preserve other params and skip initial mount)
+  useEffect(() => {
+    // Skip URL updates on initial mount to preserve URL parameters
+    if (isInitialMount.current) {
+      return;
+    }
+
+    const currentURL = readURL();
+
+    // If selectedToolName is null but URL has a tool parameter:
+    // - If we have a selected server with tools loaded, it means user deselected → clear URL
+    // - If no tools loaded yet, it means we're still initializing → preserve URL
+    if (selectedToolName === null && currentURL.tool) {
+      const hasToolsLoaded = selectedServerId && tools[selectedServerId]?.length > 0;
+      if (!hasToolsLoaded) {
+        // Still loading, preserve URL param
+        return;
+      }
+      // Tools are loaded and selectedToolName is null = user deselected, so clear URL
+    }
+
+    // Only update if different to avoid unnecessary updates
+    if (currentURL.tool !== selectedToolName) {
+      updateURL({ tool: selectedToolName }, true, false);
+    }
+  }, [selectedToolName, selectedServerId, tools, updateURL, readURL]);
+
   // Restore state from URL on mount and when URL changes
   useEffect(() => {
     const urlState = readURL();
+    console.log('📋 URL State restoration effect running:', {
+      urlState,
+      selectedServerId,
+      selectedToolName,
+      hasTools: selectedServerId ? tools[selectedServerId]?.length : 0,
+    });
 
     if (urlState.server) {
-      setSelectedServer(urlState.server);
+      // Parse server reference (format: "name:url")
+      const colonIndex = urlState.server.indexOf(':');
+      if (colonIndex > 0) {
+        const name = urlState.server.substring(0, colonIndex);
+        const url = urlState.server.substring(colonIndex + 1);
+
+        // Find matching server
+        const matchingServer = servers.find(s => {
+          // Match by URL primarily
+          if (s.url === url) return true;
+          // Fallback: match by name if URL is similar
+          if (s.name === name && s.url) {
+            const normalizeUrl = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            return normalizeUrl(s.url) === normalizeUrl(url);
+          }
+          return false;
+        });
+
+        if (matchingServer && matchingServer.id !== selectedServerId) {
+          console.log('🖥️ Selecting server from URL:', matchingServer.name);
+          setSelectedServer(matchingServer.id);
+        }
+      } else {
+        // Legacy ID format
+        const server = servers.find(s => s.id === urlState.server);
+        if (server && server.id !== selectedServerId) {
+          console.log('🖥️ Selecting server from URL (legacy):', server.name);
+          setSelectedServer(urlState.server);
+        }
+      }
     }
 
-    if (urlState.tool) {
-      setSelectedTool(urlState.tool);
+    // Tool selection - only restore if we have a selected server and its tools are loaded
+    if (urlState.tool && selectedServerId) {
+      const serverTools = tools[selectedServerId];
+      console.log('🔧 Tool selection check:', {
+        toolFromURL: urlState.tool,
+        selectedServerId,
+        toolsLoaded: !!serverTools,
+        toolsCount: serverTools?.length || 0,
+        currentlySelected: selectedToolName,
+      });
+
+      if (serverTools && serverTools.length > 0) {
+        const toolExists = serverTools.some(t => t.name === urlState.tool);
+        if (toolExists && urlState.tool !== selectedToolName) {
+          console.log('✅ Selecting tool from URL:', urlState.tool);
+          setSelectedTool(urlState.tool);
+        } else if (!toolExists) {
+          console.warn('⚠️ Tool from URL not found in server tools:', urlState.tool);
+        } else {
+          console.log('ℹ️ Tool already selected:', urlState.tool);
+        }
+      } else {
+        console.log('⏳ Waiting for tools to load for server:', selectedServerId);
+      }
     }
 
     if (urlState.search) {
@@ -100,7 +216,7 @@ function App() {
       // TODO: Scroll to and highlight specific execution
       console.log('Deep link to execution:', urlState.execution);
     }
-  }, [currentPath, readURL, setSelectedServer, setSelectedTool, setSearchQuery]);
+  }, [currentPath, readURL, selectedServerId, selectedToolName, setSelectedServer, setSelectedTool, setSearchQuery, servers, tools]);
 
   // Listen for navigation events (back/forward and programmatic navigation)
   useEffect(() => {
