@@ -51,6 +51,7 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
   const [detectedConfig, setDetectedConfig] = useState<Partial<ServerConfig> | null>(null);
 
   const addServer = useAppStore((state) => state.addServer);
+  const setSelectedServer = useAppStore((state) => state.setSelectedServer);
   const { connect } = useMCPConnection();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -178,6 +179,9 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
       };
 
       addServer(newServer);
+
+      // Auto-select the newly added server so tools show immediately
+      setSelectedServer(newServerId);
 
       if (config.auth?.type === 'oauth') {
         sessionStorage.setItem('oauth_server_id', newServerId);
