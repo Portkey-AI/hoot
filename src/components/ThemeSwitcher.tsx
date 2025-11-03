@@ -17,7 +17,7 @@ export function ThemeSwitcher() {
         if ((window as any).applyTheme) {
             (window as any).applyTheme(themeId);
         }
-        
+
         localStorage.setItem('hoot-theme', themeId);
 
         // Force re-render by updating the active state
