@@ -66,7 +66,7 @@ const getInitialMessages = (): Message[] => {
 
     // Return default welcome message
     return [{
-        role: 'assistant',
+        role: 'system',
         content: hasKey
             ? "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?"
             : "👋 Hi! Please configure your Portkey API key in settings to get started.",
@@ -115,7 +115,7 @@ export function HybridInterface() {
             setMessages((prev) => {
                 if (prev.length === 1 && prev[0].role === 'assistant' && prev[0].content.includes('Please configure your Portkey API key')) {
                     return [{
-                        role: 'assistant',
+                        role: 'system',
                         content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
                     }];
                 }
@@ -201,7 +201,7 @@ export function HybridInterface() {
 
     const handleClearChat = () => {
         const welcomeMessage: Message = {
-            role: 'assistant',
+            role: 'system',
             content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
         };
         setMessages([welcomeMessage]);
@@ -215,6 +215,9 @@ export function HybridInterface() {
      */
     const getFilteredTools = async (conversationContext: ChatMessage[]) => {
         const totalTools = Object.values(tools).flat().length;
+
+        // Filter out system messages, don't send them in the conversation context
+        conversationContext = conversationContext.filter((m) => m.role !== 'system');
 
         // Try to use semantic filtering if enabled and ready
         if (toolFilterEnabled && toolFilterReady && totalTools > 0) {
