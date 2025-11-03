@@ -5,6 +5,30 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-11-03
+
+### Added
+- **Three New Light Themes**: Nordic Snow, Ayu Light, and DuoTone Light for users who prefer light mode
+- **Smart Default Theme Selection**: Automatically detects system preference (dark/light mode) and defaults to Arctic Night (dark) or Nordic Snow (light)
+- **Visual Theme Indicators**: Theme switcher dropdown now visually distinguishes dark themes (darker background) from light themes (lighter background)
+- **New CSS Variable**: `--theme-text-on-accent` for proper text contrast on colored buttons and accent backgrounds across all themes
+
+### Changed
+- **Theme Rename**: "Arctic Ice" renamed to "Arctic Night" for better clarity and pairing with "Nordic Snow"
+- **Execute Button Styling**: Now uses primary accent color instead of green, making it consistent with other primary action buttons
+- **Theme Switcher Icon**: Updated to match behavior and styling of other header icons (keyboard shortcuts, docs, etc.)
+- **Emoji Updates**: Replaced square-rendering emojis with universally supported circular emojis (🌑 Arctic Night, 🌀 Ayu Mirage, ✨ DuoTone Light)
+- **Form Spacing**: Added consistent 20px bottom margins to Input and ToggleGroup components for better visual separation
+
+### Fixed
+- **Light Theme Text Contrast**: Fixed all instances of `--text-white` being used incorrectly, which caused invisible text on light themes
+  - Updated 15+ component CSS files to use appropriate semantic color variables
+  - Buttons, modals, forms, and other UI elements now display correctly on light themes
+- **Placeholder Text Colors**: Lightened placeholder colors in all three light themes for proper subtle appearance
+  - Nordic Snow: `#9199a1` (light cool gray)
+  - Ayu Light: `#b8bdc4` (light neutral gray)
+  - DuoTone Light: `#afa79a` (light warm gray)
+
 ## [0.8.3] - 2025-11-03
 
 ### Fixed
