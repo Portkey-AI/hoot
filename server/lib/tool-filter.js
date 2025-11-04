@@ -1,4 +1,7 @@
 import { MCPToolFilter } from '@portkey-ai/mcp-tool-filter';
+import { createLogger } from './logger.js';
+
+const log = createLogger('ToolFilter');
 
 /**
  * Backend tool filter manager
@@ -16,7 +19,7 @@ class BackendToolFilterManager {
      */
     async initialize(serversWithTools) {
         try {
-            console.log('[ToolFilter] Initializing with', serversWithTools.length, 'servers');
+            log.verbose('Initializing with', serversWithTools.length, 'servers');
 
             // Convert to MCP server format
             const mcpServers = serversWithTools.map(server => ({
@@ -44,7 +47,7 @@ class BackendToolFilterManager {
                         contextMessages: 3,
                         maxContextTokens: 500,
                     },
-                    debug: true,
+                    debug: false, // Disabled to reduce log noise
                 });
             }
 
@@ -53,13 +56,13 @@ class BackendToolFilterManager {
             this.initialized = true;
             this.currentServers = serversWithTools;
 
-            console.log('[ToolFilter] Initialization complete');
+            log.info('Initialization complete');
             return { success: true };
         } catch (error) {
-            console.error('[ToolFilter] Initialization failed with error:', error);
-            console.error('[ToolFilter] Error stack:', error.stack);
-            console.error('[ToolFilter] Error name:', error.name);
-            console.error('[ToolFilter] Error message:', error.message);
+            log.error('Initialization failed with error:', error);
+            log.debug('Error stack:', error.stack);
+            log.debug('Error name:', error.name);
+            log.debug('Error message:', error.message);
             this.initialized = false;
             return {
                 success: false,
@@ -82,8 +85,8 @@ class BackendToolFilterManager {
         try {
             const result = await this.filter.filter(messages, options);
 
-            console.log(
-                `[ToolFilter] Filtered to ${result.tools.length} tools in ${result.metrics.totalTime.toFixed(2)}ms`
+            log.verbose(
+                `Filtered to ${result.tools.length} tools in ${result.metrics.totalTime.toFixed(2)}ms`
             );
 
             return {
@@ -92,7 +95,7 @@ class BackendToolFilterManager {
                 metrics: result.metrics,
             };
         } catch (error) {
-            console.error('[ToolFilter] Filtering failed:', error);
+            log.error('Filtering failed:', error);
             return {
                 success: false,
                 error: error.message,
@@ -121,7 +124,7 @@ class BackendToolFilterManager {
     clearCache() {
         if (this.filter) {
             this.filter.clearCache();
-            console.log('[ToolFilter] Cache cleared');
+            log.info('Cache cleared');
         }
     }
 }

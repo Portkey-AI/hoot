@@ -13,9 +13,10 @@
   "scripts": {
     "start": "node bin/hoot.js",
     "dev": "vite",
-    "backend": "node mcp-backend-server.js",
-    "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
+    "server": "node server/server-node.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "tsc && vite build",
+    "deploy:cloudflare": "wrangler deploy",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "storybook": "storybook dev -p 6006",

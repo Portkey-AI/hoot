@@ -41,9 +41,9 @@ function cleanup() {
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 
-// Start backend server
-console.log('📡 Starting backend server on port 8008...');
-const backend = spawn('node', [join(rootDir, 'mcp-backend-server.js')], {
+// Start server
+console.log('📡 Starting server on port 8008...');
+const backend = spawn('node', [join(rootDir, 'server/server-node.js')], {
     cwd: rootDir,
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, NODE_ENV: 'production' }
@@ -62,19 +62,19 @@ backend.stderr.on('data', (data) => {
 });
 
 backend.on('error', (err) => {
-    console.error('❌ Failed to start backend server:', err.message);
+    console.error('❌ Failed to start server:', err.message);
     cleanup();
 });
 
 backend.on('exit', (code) => {
     if (code !== 0 && code !== null) {
-        console.error(`❌ Backend server exited with code ${code}`);
+        console.error(`❌ Server exited with code ${code}`);
         cleanup();
     }
 });
 
-// Helper function to wait for backend to be ready
-async function waitForBackend() {
+// Helper function to wait for server to be ready
+async function waitForServer() {
     const maxAttempts = 30; // 30 seconds max
     for (let i = 0; i < maxAttempts; i++) {
         try {
@@ -83,25 +83,25 @@ async function waitForBackend() {
                 return true;
             }
         } catch {
-            // Backend not ready yet, wait and retry
+            // Server not ready yet, wait and retry
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
     return false;
 }
 
-// Give backend time to start, then wait for health check
+// Give server time to start, then wait for health check
 setTimeout(async () => {
-    console.log('⏳ Waiting for backend to be ready...');
-    const backendReady = await waitForBackend();
+    console.log('⏳ Waiting for server to be ready...');
+    const serverReady = await waitForServer();
 
-    if (!backendReady) {
-        console.error('❌ Backend failed to start within 30 seconds');
+    if (!serverReady) {
+        console.error('❌ Server failed to start within 30 seconds');
         cleanup();
         return;
     }
 
-    console.log('✅ Backend is ready!');
+    console.log('✅ Server is ready!');
 
     // Check if we're in development (src/ exists) or production (using dist/)
     const srcExists = existsSync(join(rootDir, 'src'));
@@ -159,7 +159,7 @@ setTimeout(async () => {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Hoot is running!
    
-   Backend:  http://localhost:8008
+   Server:   http://localhost:8008
    Frontend: http://localhost:${frontendPort}
    
    Press Ctrl+C to stop

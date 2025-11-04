@@ -1,0 +1,37 @@
+name = "hoot-server"
+main = "server/server-worker.js"
+compatibility_date = "2024-11-04"
+
+# Durable Objects configuration
+[durable_objects]
+bindings = [
+  { name = "USER_DATA", class_name = "UserDataDO" },
+  { name = "FAVICON_CACHE", class_name = "FaviconCacheDO" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["UserDataDO", "FaviconCacheDO"]
+
+# Environment variables (non-secret)
+[vars]
+FRONTEND_URL = "http://localhost:8009"
+# PORTKEY_ORG_ID and PORTKEY_WORKSPACE_SLUG should be set as secrets
+
+# Secrets (set with: wrangler secret put SECRET_NAME)
+# Run these commands to set secrets:
+# wrangler secret put JWT_PRIVATE_KEY
+# wrangler secret put JWT_JWKS
+# wrangler secret put PORTKEY_ORG_ID
+# wrangler secret put PORTKEY_WORKSPACE_SLUG
+
+# Production configuration
+[env.production]
+name = "hoot-server-production"
+vars = { FRONTEND_URL = "https://hoot.yourdomain.com" }
+
+# Staging configuration
+[env.staging]
+name = "hoot-server-staging"
+vars = { FRONTEND_URL = "https://staging.hoot.yourdomain.com" }
+
