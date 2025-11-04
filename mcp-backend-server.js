@@ -6,17 +6,62 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import Database from 'better-sqlite3';
 import { homedir } from 'os';
 import { join } from 'path';
-import { mkdirSync, existsSync, appendFileSync } from 'fs';
+import { mkdirSync, existsSync, appendFileSync, readFileSync } from 'fs';
 import { randomBytes } from 'crypto';
 import { toolFilterManager } from './mcp-backend-tool-filter.js';
+import { SignJWT, importJWK } from 'jose';
+import jwt from 'jsonwebtoken';
+import jwkToPem from 'jwk-to-pem';
+
+// Logging configuration
+const DEBUG = process.env.DEBUG === 'true';
+const log = {
+    debug: (...args) => DEBUG && console.log('[DEBUG]', ...args),
+    info: (...args) => console.log(...args),
+    warn: (...args) => console.warn(...args),
+    error: (...args) => console.error(...args),
+};
 
 const app = express();
 const PORT = process.env.PORT || 8008;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8009';
 
-// Generate session token for authentication
+// Generate session token for authentication (fallback for non-JWT mode)
 // This provides protection against unauthorized localhost access
 const SESSION_TOKEN = process.env.HOOT_SESSION_TOKEN || randomBytes(32).toString('hex');
+
+// JWT configuration - load keys at startup
+let jwtPrivateKey = null;
+let jwtKid = null;
+let jwtPublicKeys = new Map();
+
+(async () => {
+    try {
+        const privateKeyPath = process.env.JWT_PRIVATE_KEY_PATH || join(process.cwd(), 'private-key.json');
+        const jwksPath = join(process.cwd(), 'jwks.json');
+
+        // Load private key for signing JWTs
+        const privateKeyJwk = JSON.parse(readFileSync(privateKeyPath, 'utf8'));
+        jwtPrivateKey = await importJWK(privateKeyJwk, 'RS256');
+
+        // Load JWKS for validation
+        const jwks = JSON.parse(readFileSync(jwksPath, 'utf8'));
+        jwtKid = jwks.keys[0].kid;
+
+        // Convert JWKs to PEM format for validation
+        jwks.keys.forEach(key => {
+            const pem = jwkToPem(key);
+            jwtPublicKeys.set(key.kid, pem);
+        });
+
+        console.log('✅ JWT keys loaded successfully');
+        console.log(`   - Key ID: ${jwtKid}`);
+        console.log(`   - Public keys loaded: ${jwtPublicKeys.size}`);
+    } catch (err) {
+        console.warn('⚠️  JWT keys not found - using fallback session token');
+        console.warn('   To enable JWT: ensure jwks.json and private-key.json exist in project root');
+    }
+})();
 
 // Enable CORS for browser app
 // In production, FRONTEND_URL should be set to your deployed frontend URL
@@ -49,21 +94,30 @@ const db = new Database(dbPath);
 // Use WAL mode for better concurrency
 db.pragma('journal_mode = WAL');
 
+// Create tables - multi-tenant schema with user_id
+// Note: SQLite doesn't support ALTER TABLE to change PRIMARY KEY,
+// so we handle migration separately below
 db.exec(`
     CREATE TABLE IF NOT EXISTS oauth_tokens (
-        server_id TEXT PRIMARY KEY,
-        tokens TEXT NOT NULL
+        user_id TEXT NOT NULL,
+        server_id TEXT NOT NULL,
+        tokens TEXT NOT NULL,
+        PRIMARY KEY (user_id, server_id)
     );
     
     CREATE TABLE IF NOT EXISTS oauth_client_info (
-        server_id TEXT PRIMARY KEY,
-        client_info TEXT NOT NULL
+        user_id TEXT NOT NULL,
+        server_id TEXT NOT NULL,
+        client_info TEXT NOT NULL,
+        PRIMARY KEY (user_id, server_id)
     );
     
     CREATE TABLE IF NOT EXISTS oauth_verifiers (
-        server_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        server_id TEXT NOT NULL,
         verifier TEXT NOT NULL,
-        created_at INTEGER DEFAULT (strftime('%s', 'now'))
+        created_at INTEGER DEFAULT (strftime('%s', 'now')),
+        PRIMARY KEY (user_id, server_id)
     );
     
     CREATE TABLE IF NOT EXISTS favicon_cache (
@@ -74,9 +128,98 @@ db.exec(`
     );
 `);
 
+// Migration: Handle existing single-user data
+// If tables exist with old schema (server_id as PRIMARY KEY), we need to migrate
+try {
+    // Check if we need migration by looking at table structure
+    const tableInfo = db.prepare("PRAGMA table_info(oauth_tokens)").all();
+    const hasUserIdColumn = tableInfo.some(col => col.name === 'user_id');
+    
+    if (!hasUserIdColumn) {
+        console.log('🔄 Migrating database to multi-tenant schema...');
+        
+        // Generate a legacy user ID for existing data
+        const legacyUserId = 'legacy-user-' + Date.now();
+        console.log(`   Assigning existing data to user: ${legacyUserId}`);
+        
+        // For each table, we need to:
+        // 1. Rename old table
+        // 2. Create new table with new schema
+        // 3. Copy data with legacy user ID
+        // 4. Drop old table
+        
+        // Migrate oauth_tokens
+        const oldTokens = db.prepare("SELECT * FROM oauth_tokens").all();
+        if (oldTokens.length > 0) {
+            db.exec(`
+                DROP TABLE oauth_tokens;
+                CREATE TABLE oauth_tokens (
+                    user_id TEXT NOT NULL,
+                    server_id TEXT NOT NULL,
+                    tokens TEXT NOT NULL,
+                    PRIMARY KEY (user_id, server_id)
+                );
+            `);
+            const insertToken = db.prepare("INSERT INTO oauth_tokens (user_id, server_id, tokens) VALUES (?, ?, ?)");
+            for (const row of oldTokens) {
+                insertToken.run(legacyUserId, row.server_id, row.tokens);
+            }
+            console.log(`   ✓ Migrated ${oldTokens.length} OAuth tokens`);
+        }
+        
+        // Migrate oauth_client_info
+        const oldClientInfo = db.prepare("SELECT * FROM oauth_client_info").all();
+        if (oldClientInfo.length > 0) {
+            db.exec(`
+                DROP TABLE oauth_client_info;
+                CREATE TABLE oauth_client_info (
+                    user_id TEXT NOT NULL,
+                    server_id TEXT NOT NULL,
+                    client_info TEXT NOT NULL,
+                    PRIMARY KEY (user_id, server_id)
+                );
+            `);
+            const insertClient = db.prepare("INSERT INTO oauth_client_info (user_id, server_id, client_info) VALUES (?, ?, ?)");
+            for (const row of oldClientInfo) {
+                insertClient.run(legacyUserId, row.server_id, row.client_info);
+            }
+            console.log(`   ✓ Migrated ${oldClientInfo.length} OAuth client configs`);
+        }
+        
+        // Migrate oauth_verifiers
+        const oldVerifiers = db.prepare("SELECT * FROM oauth_verifiers").all();
+        if (oldVerifiers.length > 0) {
+            db.exec(`
+                DROP TABLE oauth_verifiers;
+                CREATE TABLE oauth_verifiers (
+                    user_id TEXT NOT NULL,
+                    server_id TEXT NOT NULL,
+                    verifier TEXT NOT NULL,
+                    created_at INTEGER DEFAULT (strftime('%s', 'now')),
+                    PRIMARY KEY (user_id, server_id)
+                );
+            `);
+            const insertVerifier = db.prepare("INSERT INTO oauth_verifiers (user_id, server_id, verifier, created_at) VALUES (?, ?, ?, ?)");
+            for (const row of oldVerifiers) {
+                insertVerifier.run(legacyUserId, row.server_id, row.verifier, row.created_at);
+            }
+            console.log(`   ✓ Migrated ${oldVerifiers.length} OAuth verifiers`);
+        }
+        
+        console.log('✅ Database migration complete');
+    }
+} catch (migrationError) {
+    // If migration fails, it might be because tables are already in new format
+    console.log('Note: Database migration skipped (tables already in multi-tenant format)');
+}
+
 // Clean up old verifiers (older than 10 minutes)
-db.prepare('DELETE FROM oauth_verifiers WHERE created_at < ?')
-    .run(Math.floor(Date.now() / 1000) - 600);
+try {
+    db.prepare('DELETE FROM oauth_verifiers WHERE created_at < ?')
+        .run(Math.floor(Date.now() / 1000) - 600);
+} catch (err) {
+    // Ignore errors if table doesn't exist yet
+}
 
 // Checkpoint WAL to ensure data is written
 db.pragma('wal_checkpoint(TRUNCATE)');
@@ -137,11 +280,12 @@ function authenticateRequest(req, res, next) {
     }
 
     const token = req.headers['x-hoot-token'];
-    if (!token || token !== SESSION_TOKEN) {
+    if (!token) {
         logAuditEvent('auth_failed', {
             path: req.path,
             ip: req.ip,
-            origin: req.headers.origin
+            origin: req.headers.origin,
+            reason: 'missing_token'
         });
         return res.status(401).json({
             success: false,
@@ -150,7 +294,90 @@ function authenticateRequest(req, res, next) {
         });
     }
 
-    next();
+    try {
+        // Try JWT validation first (if JWT keys are loaded)
+        if (jwtPublicKeys.size > 0) {
+            try {
+                // Decode to get kid from header
+                const decoded = jwt.decode(token, { complete: true });
+
+                if (decoded && decoded.header.kid) {
+                    // It's a JWT with kid - validate it
+                    const publicKey = jwtPublicKeys.get(decoded.header.kid);
+
+                    if (publicKey) {
+                        const payload = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+
+                        // Extract user ID from JWT (should be UUID v4 from frontend)
+                        req.userId = payload.sub;
+
+                        // Validate userId is present and in UUID format
+                        if (!req.userId || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.userId)) {
+                            throw new Error('Invalid or missing user ID in token');
+                        }
+
+                        // Store Portkey context if present (for logging)
+                        req.portkeyContext = {
+                            orgId: payload.portkey_oid || payload.organisation_id,
+                            workspace: payload.portkey_workspace || payload.workspace_slug,
+                            scope: payload.scope || payload.scopes || [],
+                        };
+
+                        return next();
+                    }
+                }
+            } catch (jwtError) {
+                // JWT validation failed - check if it's expiry
+                if (jwtError.name === 'TokenExpiredError') {
+                    logAuditEvent('auth_failed', {
+                        path: req.path,
+                        reason: 'token_expired'
+                    });
+                    return res.status(401).json({
+                        success: false,
+                        error: 'TokenExpired',
+                        message: 'Token has expired',
+                        expired: true
+                    });
+                }
+
+                // Not a valid JWT or wrong format - try fallback
+                console.log('JWT validation failed, trying fallback session token');
+            }
+        }
+
+        // Fallback: check if it's the simple session token (backwards compatibility)
+        if (token === SESSION_TOKEN) {
+            req.userId = 'default-user';
+            return next();
+        }
+
+        // Token is neither valid JWT nor session token
+        logAuditEvent('auth_failed', {
+            path: req.path,
+            ip: req.ip,
+            origin: req.headers.origin,
+            reason: 'invalid_token'
+        });
+
+        return res.status(401).json({
+            success: false,
+            error: 'Unauthorized',
+            message: 'Invalid authentication token'
+        });
+    } catch (error) {
+        console.error('Authentication error:', error);
+        logAuditEvent('auth_error', {
+            path: req.path,
+            error: error.message
+        });
+
+        return res.status(401).json({
+            success: false,
+            error: 'Unauthorized',
+            message: 'Authentication failed'
+        });
+    }
 }
 
 // Apply authentication to all routes
@@ -159,9 +386,9 @@ app.use(authenticateRequest);
 /**
  * Get authentication token
  * GET /auth/token
- * This allows the frontend to retrieve the session token
+ * Returns a unified JWT that works for both Hoot backend and Portkey API
  */
-app.get('/auth/token', (req, res) => {
+app.post('/auth/token', async (req, res) => {
     // Only allow requests from configured CORS origins
     const origin = req.headers.origin;
     const allowedOriginsForToken = [
@@ -181,11 +408,68 @@ app.get('/auth/token', (req, res) => {
         });
     }
 
-    logAuditEvent('token_retrieved', { origin });
-    res.json({
-        success: true,
-        token: SESSION_TOKEN
-    });
+    // Get userId from request body
+    const { userId } = req.body;
+
+    // Validate userId format (UUID v4)
+    if (!userId || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) {
+        logAuditEvent('invalid_user_id', { userId, origin });
+        return res.status(400).json({
+            success: false,
+            error: 'Invalid user ID format. Must be a valid UUID v4.'
+        });
+    }
+
+    try {
+        // If JWT keys are loaded, generate a JWT
+        if (jwtPrivateKey && jwtKid) {
+            const now = Math.floor(Date.now() / 1000);
+
+            const token = await new SignJWT({
+                // Hoot backend claims (for MCP operations)
+                sub: userId, // Use frontend-provided persistent UUID
+
+                // Portkey claims (for AI completions)
+                portkey_oid: process.env.PORTKEY_ORG_ID || 'test-org-id',
+                portkey_workspace: process.env.PORTKEY_WORKSPACE_SLUG || 'test-workspace',
+                scope: ['completions.write', 'virtual_keys.list', 'logs.view'],
+            })
+                .setProtectedHeader({ alg: 'RS256', kid: jwtKid, typ: 'JWT' })
+                .setIssuedAt(now)
+                .setExpirationTime(now + 3600) // 1 hour
+                .sign(jwtPrivateKey);
+
+            logAuditEvent('jwt_token_issued', { origin, userId });
+
+            return res.json({
+                success: true,
+                token,
+                tokenType: 'jwt'
+            });
+        } else {
+            // Fallback to simple session token if JWT not configured
+            // In non-JWT mode, we'll use userId in the request headers for other endpoints
+            logAuditEvent('session_token_issued', { origin, userId });
+
+            return res.json({
+                success: true,
+                token: SESSION_TOKEN,
+                tokenType: 'session'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Token generation error:', error);
+        logAuditEvent('token_generation_error', {
+            error: error.message
+        });
+
+        // Fallback to session token on error
+        return res.json({
+            success: true,
+            token: SESSION_TOKEN,
+            tokenType: 'session'
+        });
+    }
 });
 
 /**
@@ -579,7 +863,7 @@ app.post('/mcp/connect', async (req, res) => {
         // Disconnect existing connection if any
         if (clients.has(serverId)) {
             console.log(`♻️ Disconnecting existing connection for ${serverId}`);
-            await disconnectServer(serverId);
+            await disconnectServer(serverId, req.userId);
         }
 
         // Create transport options with authentication
@@ -596,12 +880,12 @@ app.post('/mcp/connect', async (req, res) => {
 
             // Load existing client info if available to reuse client_id
             const existingClientInfo = (() => {
-                const row = db.prepare('SELECT client_info FROM oauth_client_info WHERE server_id = ?').get(serverId);
+                const row = db.prepare('SELECT client_info FROM oauth_client_info WHERE user_id = ? AND server_id = ?').get(req.userId, serverId);
                 return row ? JSON.parse(row.client_info) : undefined;
             })();
 
             if (existingClientInfo) {
-                console.log(`🔐 Reusing existing OAuth client for ${serverId}`);
+                log.debug(`🔐 Reusing existing OAuth client for ${serverId}`);
             }
 
             transportOptions.authProvider = {
@@ -631,38 +915,25 @@ app.post('/mcp/connect', async (req, res) => {
                         return existingClientInfo;
                     }
                     // Otherwise check database
-                    const row = db.prepare('SELECT client_info FROM oauth_client_info WHERE server_id = ?').get(serverId);
+                    const row = db.prepare('SELECT client_info FROM oauth_client_info WHERE user_id = ? AND server_id = ?').get(req.userId, serverId);
                     return row ? JSON.parse(row.client_info) : undefined;
                 },
 
                 saveClientInformation: async (clientInfo) => {
-                    console.log(`🔐 Saving client info for ${serverId}`);
-                    db.prepare('INSERT OR REPLACE INTO oauth_client_info (server_id, client_info) VALUES (?, ?)')
-                        .run(serverId, JSON.stringify(clientInfo));
+                    log.info(`✅ OAuth client registered for ${serverId}`);
+                    db.prepare('INSERT OR REPLACE INTO oauth_client_info (user_id, server_id, client_info) VALUES (?, ?, ?)')
+                        .run(req.userId, serverId, JSON.stringify(clientInfo));
                 },
 
                 tokens: async () => {
-                    const row = db.prepare('SELECT tokens FROM oauth_tokens WHERE server_id = ?').get(serverId);
-                    const tokens = row ? JSON.parse(row.tokens) : undefined;
-
-                    if (tokens) {
-                        // Log token status for debugging
-                        const hasRefresh = !!tokens.refresh_token;
-                        const expiresIn = tokens.expires_in || 'unknown';
-                        console.log(`🔐 Loading tokens for ${serverId}: expires_in=${expiresIn}s, has_refresh=${hasRefresh}`);
-                    } else {
-                        console.log(`🔐 No stored tokens found for ${serverId}`);
-                    }
-
-                    return tokens;
+                    const row = db.prepare('SELECT tokens FROM oauth_tokens WHERE user_id = ? AND server_id = ?').get(req.userId, serverId);
+                    return row ? JSON.parse(row.tokens) : undefined;
                 },
 
                 saveTokens: async (tokens) => {
-                    const hasRefresh = !!tokens.refresh_token;
-                    const expiresIn = tokens.expires_in || 'unknown';
-                    console.log(`🔐 Saving tokens for ${serverId}: expires_in=${expiresIn}s, has_refresh=${hasRefresh}`);
-                    db.prepare('INSERT OR REPLACE INTO oauth_tokens (server_id, tokens) VALUES (?, ?)')
-                        .run(serverId, JSON.stringify(tokens));
+                    log.info(`✅ OAuth tokens saved for ${serverId}`);
+                    db.prepare('INSERT OR REPLACE INTO oauth_tokens (user_id, server_id, tokens) VALUES (?, ?, ?)')
+                        .run(req.userId, serverId, JSON.stringify(tokens));
                     // Force write to disk
                     db.pragma('wal_checkpoint(PASSIVE)');
                 },
@@ -677,43 +948,40 @@ app.post('/mcp/connect', async (req, res) => {
                 },
 
                 saveCodeVerifier: async (verifier) => {
-                    console.log(`🔐 Saving code verifier for ${serverId} (length: ${verifier.length})`);
-                    db.prepare('INSERT OR REPLACE INTO oauth_verifiers (server_id, verifier, created_at) VALUES (?, ?, ?)')
-                        .run(serverId, verifier, Math.floor(Date.now() / 1000));
+                    log.debug(`Saving OAuth code verifier for ${serverId}`);
+                    db.prepare('INSERT OR REPLACE INTO oauth_verifiers (user_id, server_id, verifier, created_at) VALUES (?, ?, ?, ?)')
+                        .run(req.userId, serverId, verifier, Math.floor(Date.now() / 1000));
                     // Force write to disk immediately
                     db.pragma('wal_checkpoint(PASSIVE)');
-                    console.log(`✅ Code verifier saved successfully for ${serverId}`);
                 },
 
                 codeVerifier: async () => {
-                    const row = db.prepare('SELECT verifier FROM oauth_verifiers WHERE server_id = ?').get(serverId);
+                    const row = db.prepare('SELECT verifier FROM oauth_verifiers WHERE user_id = ? AND server_id = ?').get(req.userId, serverId);
                     if (!row) {
-                        console.error(`❌ Code verifier not found for ${serverId}`);
-                        console.error(`   This may indicate:
-   1. The OAuth session was not initiated from this backend instance
-   2. The verifier was cleaned up (older than 10 minutes)
-   3. Database write failed during initial OAuth flow`);
+                        log.error(`❌ Code verifier not found for ${serverId}`);
+                        log.error(`   OAuth flow interrupted - please reconnect`);
 
                         // Log all verifiers for debugging
-                        const allVerifiers = db.prepare('SELECT server_id, created_at FROM oauth_verifiers').all();
-                        console.error(`   Current verifiers in DB:`, allVerifiers);
+                        if (DEBUG) {
+                            const allVerifiers = db.prepare('SELECT user_id, server_id, created_at FROM oauth_verifiers').all();
+                            log.error(`   Current verifiers in DB:`, allVerifiers);
+                        }
 
                         throw new Error('Code verifier not found for this OAuth session. Please try reconnecting.');
                     }
-                    console.log(`🔐 Retrieved code verifier for ${serverId}`);
                     return row.verifier;
                 },
 
                 invalidateCredentials: async (scope) => {
-                    console.log(`🔐 Invalidating ${scope} for ${serverId}`);
+                    log.info(`🔐 Invalidating ${scope} credentials for ${serverId}`);
                     if (scope === 'all' || scope === 'client') {
-                        db.prepare('DELETE FROM oauth_client_info WHERE server_id = ?').run(serverId);
+                        db.prepare('DELETE FROM oauth_client_info WHERE user_id = ? AND server_id = ?').run(req.userId, serverId);
                     }
                     if (scope === 'all' || scope === 'tokens') {
-                        db.prepare('DELETE FROM oauth_tokens WHERE server_id = ?').run(serverId);
+                        db.prepare('DELETE FROM oauth_tokens WHERE user_id = ? AND server_id = ?').run(req.userId, serverId);
                     }
                     if (scope === 'all' || scope === 'verifier') {
-                        db.prepare('DELETE FROM oauth_verifiers WHERE server_id = ?').run(serverId);
+                        db.prepare('DELETE FROM oauth_verifiers WHERE user_id = ? AND server_id = ?').run(req.userId, serverId);
                     }
                 },
             };
@@ -1261,12 +1529,12 @@ app.post('/mcp/discover-oauth', async (req, res) => {
  * POST /mcp/disconnect
  * Body: { serverId: string }
  */
-app.post('/mcp/disconnect', async (req, res) => {
+app.post('/mcp/disconnect', authenticateRequest, async (req, res) => {
     try {
         const { serverId } = req.body;
         console.log(`🔌 Disconnecting from server: ${serverId}`);
 
-        await disconnectServer(serverId);
+        await disconnectServer(serverId, req.userId);
 
         res.json({
             success: true,
@@ -1297,12 +1565,12 @@ app.post('/mcp/clear-oauth-tokens', authenticateRequest, async (req, res) => {
             });
         }
 
-        console.log(`🔐 Clearing OAuth tokens for server: ${serverId}`);
+        log.info(`🔐 Clearing OAuth tokens for server: ${serverId}`);
 
         // Clear tokens, client info, and verifier from database
-        db.prepare('DELETE FROM oauth_tokens WHERE server_id = ?').run(serverId);
-        db.prepare('DELETE FROM oauth_client_info WHERE server_id = ?').run(serverId);
-        db.prepare('DELETE FROM oauth_verifiers WHERE server_id = ?').run(serverId);
+        db.prepare('DELETE FROM oauth_tokens WHERE user_id = ? AND server_id = ?').run(req.userId, serverId);
+        db.prepare('DELETE FROM oauth_client_info WHERE user_id = ? AND server_id = ?').run(req.userId, serverId);
+        db.prepare('DELETE FROM oauth_verifiers WHERE user_id = ? AND server_id = ?').run(req.userId, serverId);
 
         // Force write to disk
         db.pragma('wal_checkpoint(PASSIVE)');
@@ -1570,7 +1838,7 @@ app.post('/mcp/tool-filter/clear-cache', (req, res) => {
 /**
  * Helper function to disconnect a server
  */
-async function disconnectServer(serverId) {
+async function disconnectServer(serverId, userId) {
     const client = clients.get(serverId);
     if (client) {
         await client.close();
@@ -1581,9 +1849,10 @@ async function disconnectServer(serverId) {
 
     // Keep OAuth credentials (tokens, client_info) for reconnection
     // Only clean up temporary verifiers (they expire anyway)
-    db.prepare('DELETE FROM oauth_verifiers WHERE server_id = ?').run(serverId);
-
-    console.log(`🔐 OAuth credentials preserved for ${serverId} (for future reconnection)`);
+    if (userId) {
+        db.prepare('DELETE FROM oauth_verifiers WHERE user_id = ? AND server_id = ?').run(userId, serverId);
+        log.debug(`🔐 OAuth credentials preserved for ${serverId} (for future reconnection)`);
+    }
 }
 
 /**

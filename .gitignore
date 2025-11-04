@@ -33,3 +33,11 @@ npm-debug.log*
 storybook-static
 
 dist/
+
+private-key.pem
+private-key.json
+
+public-jwk.json
+jwks.json
+public-key.pem
+public-key.json

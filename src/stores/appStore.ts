@@ -96,7 +96,7 @@ export const useAppStore = create<AppStore>()(
             // Tool filter state
             toolFilterEnabled: true, // Enabled by default (now backend-based)
             toolFilterConfig: {
-                topK: 22,
+                topK: 20, // Changed from 22 to match "Moderate" option
                 minScore: 0.30,
                 contextMessages: 3,
                 maxContextTokens: 500,

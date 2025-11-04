@@ -6,7 +6,7 @@ import { LLMSettingsModal } from './LLMSettingsModal';
 import { JsonViewer } from './JsonViewer';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { MentionInput, type Mention } from './MentionInput';
-import { getPortkeyClient, type ChatMessage } from '../lib/portkeyClient';
+import { getPortkeyClient, getDisplayModelName, type ChatMessage } from '../lib/portkeyClient';
 import { convertAllMCPToolsToOpenAI, convertFilteredToolsToOpenAI, convertMCPToolToOpenAI, findServerForTool } from '../lib/toolConverter';
 import { mcpClient } from '../lib/mcpClient';
 import { filterToolsForContext } from '../lib/toolFilter';
@@ -46,14 +46,11 @@ interface Message {
     apiResponse?: any;
 }
 
-const PORTKEY_API_KEY_STORAGE_KEY = 'hoot-portkey-api-key';
 const CHAT_MESSAGES_STORAGE_KEY = 'hoot-chat-messages';
 const CHAT_MENTIONS_STORAGE_KEY = 'hoot-chat-mentions';
 
 // Helper to get initial messages from localStorage or default
 const getInitialMessages = (): Message[] => {
-    const hasKey = !!localStorage.getItem(PORTKEY_API_KEY_STORAGE_KEY);
-
     // Try to load saved messages
     const savedMessages = localStorage.getItem(CHAT_MESSAGES_STORAGE_KEY);
     if (savedMessages) {
@@ -67,12 +64,14 @@ const getInitialMessages = (): Message[] => {
         }
     }
 
+    // Get current model name for welcome message
+    const currentModel = localStorage.getItem('hoot-selected-model') || '@openai/gpt-4o-mini';
+    const modelName = getDisplayModelName(currentModel);
+
     // Return default welcome message
     return [{
         role: 'system',
-        content: hasKey
-            ? "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?"
-            : "👋 Hi! Please configure your Portkey API key in settings to get started.",
+        content: `👋 Hi! I'm connected to ${modelName} and can use your MCP tools. What would you like to do?`,
     }];
 };
 
@@ -101,9 +100,6 @@ export function HybridInterface() {
     const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
-    const [apiKey, setApiKey] = useState<string>(
-        () => localStorage.getItem(PORTKEY_API_KEY_STORAGE_KEY) || ''
-    );
     const [filterMetrics, setFilterMetrics] = useState<{
         toolsUsed: number;
         toolsTotal: number;
@@ -125,24 +121,35 @@ export function HybridInterface() {
 
     const connectedServers = servers.filter((s) => s.connected);
     const availableTools = Object.values(tools).flat();
-    const hasApiKey = !!apiKey;
 
-    // Initialize Portkey client if we have an API key
+    // Initialize Portkey client (JWT-based authentication)
     useEffect(() => {
-        if (apiKey) {
-            getPortkeyClient({ apiKey });
-            // Update welcome message if this is the first load with an existing API key
-            setMessages((prev) => {
-                if (prev.length === 1 && prev[0].role === 'assistant' && prev[0].content.includes('Please configure your Portkey API key')) {
-                    return [{
-                        role: 'system',
-                        content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
-                    }];
-                }
-                return prev;
-            });
-        }
-    }, [apiKey]);
+        // Portkey client will fetch JWT automatically on first use
+        getPortkeyClient();
+    }, []);
+
+    // Update welcome message when model changes
+    useEffect(() => {
+        const handleModelChange = () => {
+            // Only update if we're showing just the welcome message
+            if (messages.length === 1 && messages[0].role === 'system') {
+                const currentModel = localStorage.getItem('hoot-selected-model') || '@openai/gpt-4o-mini';
+                const modelName = getDisplayModelName(currentModel);
+
+                setMessages([{
+                    role: 'system',
+                    content: `👋 Hi! I'm connected to ${modelName} and can use your MCP tools. What would you like to do?`,
+                }]);
+            }
+        };
+
+        // Listen for custom model change event
+        window.addEventListener('model-changed' as any, handleModelChange);
+
+        return () => {
+            window.removeEventListener('model-changed' as any, handleModelChange);
+        };
+    }, [messages]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -210,24 +217,13 @@ export function HybridInterface() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [messages.length]);
 
-    const handleSaveApiKey = (newApiKey: string) => {
-        setApiKey(newApiKey);
-        localStorage.setItem(PORTKEY_API_KEY_STORAGE_KEY, newApiKey);
-        getPortkeyClient({ apiKey: newApiKey });
-
-        // Update welcome message
-        setMessages([
-            {
-                role: 'assistant',
-                content: "👋 Great! I'm now connected to GPT-4o. I can use your MCP tools. What would you like to do?",
-            },
-        ]);
-    };
-
     const handleClearChat = () => {
+        const currentModel = localStorage.getItem('hoot-selected-model') || '@openai/gpt-4o-mini';
+        const modelName = getDisplayModelName(currentModel);
+
         const welcomeMessage: Message = {
             role: 'system',
-            content: "👋 Hi! I'm connected to GPT-4o and can use your MCP tools. What would you like to do?",
+            content: `👋 Hi! I'm connected to ${modelName} and can use your MCP tools. What would you like to do?`,
         };
         setMessages([welcomeMessage]);
         setSelectedMessage(null);
@@ -431,12 +427,6 @@ export function HybridInterface() {
 
     const handleSend = async () => {
         if (!input.trim() || isProcessing) return;
-
-        if (!hasApiKey) {
-            alert('Please configure your Portkey API key in settings first.');
-            setShowSettings(true);
-            return;
-        }
 
         if (connectedServers.length === 0) {
             alert('Please connect to at least one MCP server in the Test Tools tab first.');
@@ -825,12 +815,11 @@ export function HybridInterface() {
                     )}
                 </div>
                 <button
-                    className={`info-settings-button ${!hasApiKey ? 'needs-setup' : ''}`}
+                    className="info-settings-button"
                     onClick={() => setShowSettings(true)}
-                    title={hasApiKey ? 'API Settings' : 'Configure API Key'}
+                    title="Settings"
                 >
                     <Settings size={14} />
-                    {!hasApiKey && <span className="setup-indicator">Setup Required</span>}
                 </button>
                 {messages.length > 1 && (
                     <button
@@ -964,6 +953,41 @@ export function HybridInterface() {
                                                     content={message.content}
                                                     isStreaming={index === streamingMessageIndex}
                                                 />
+                                            ) : message.role === 'system' ? (
+                                                // System message with clickable model name
+                                                <div className="message-text-hybrid">
+                                                    {(() => {
+                                                        const currentModel = localStorage.getItem('hoot-selected-model') || '@openai/gpt-4o-mini';
+                                                        const modelName = getDisplayModelName(currentModel);
+                                                        const parts = message.content.split(modelName);
+
+                                                        if (parts.length > 1) {
+                                                            return (
+                                                                <>
+                                                                    {parts[0]}
+                                                                    <span
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setShowSettings(true);
+                                                                        }}
+                                                                        style={{
+                                                                            cursor: 'pointer',
+                                                                            fontWeight: 600,
+                                                                            color: 'var(--theme-accent-primary)',
+                                                                            textDecoration: 'underline',
+                                                                            textDecorationStyle: 'dotted',
+                                                                            textUnderlineOffset: '2px'
+                                                                        }}
+                                                                    >
+                                                                        {modelName}
+                                                                    </span>
+                                                                    {parts.slice(1).join(modelName)}
+                                                                </>
+                                                            );
+                                                        }
+                                                        return message.content;
+                                                    })()}
+                                                </div>
                                             ) : (
                                                 <div className="message-text-hybrid">{message.content}</div>
                                             )}
@@ -1003,12 +1027,8 @@ export function HybridInterface() {
                                 onMentionsChange={setMentions}
                                 servers={servers}
                                 tools={tools}
-                                placeholder={
-                                    hasApiKey
-                                        ? 'Let\'s chat with your MCP servers... (type @ to filter tools)'
-                                        : 'Configure API key in settings first...'
-                                }
-                                disabled={isProcessing || !hasApiKey}
+                                placeholder="Let's chat with your MCP servers... (type @ to filter tools)"
+                                disabled={isProcessing}
                                 inputRef={textareaRef}
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1028,7 +1048,7 @@ export function HybridInterface() {
                             <button
                                 className="chat-send-button-hybrid"
                                 onClick={handleSend}
-                                disabled={!input.trim() || isProcessing || !hasApiKey}
+                                disabled={!input.trim() || isProcessing}
                             >
                                 <Send size={16} />
                             </button>
@@ -1155,8 +1175,6 @@ export function HybridInterface() {
             {showSettings && (
                 <LLMSettingsModal
                     onClose={() => setShowSettings(false)}
-                    onSave={handleSaveApiKey}
-                    currentApiKey={apiKey}
                 />
             )}
         </div>

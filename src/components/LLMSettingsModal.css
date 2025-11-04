@@ -51,6 +51,8 @@
     font-weight: 600;
     color: var(--theme-accent-primary);
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
 }
 
 .info-box p {
@@ -104,4 +106,14 @@
 .warning-box {
     background: color-mix(in srgb, var(--theme-warning) 8%, transparent);
     border-color: color-mix(in srgb, var(--theme-warning) 30%, transparent);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }

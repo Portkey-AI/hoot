@@ -4,6 +4,7 @@
  */
 
 import type { ServerConfig, ToolSchema } from '../types';
+import { getUserId } from './sessionManager';
 
 // Support both local development and production deployment
 // In production, VITE_BACKEND_URL should be set to the Railway backend URL
@@ -15,9 +16,10 @@ let tokenInitPromise: Promise<string> | null = null;
 
 /**
  * Retrieve and cache the session token from backend
+ * This token is used for both Hoot backend and Portkey authentication
  * This happens automatically on first request - completely transparent to users
  */
-async function getSessionToken(): Promise<string> {
+export async function getSessionToken(): Promise<string> {
     if (sessionToken) {
         return sessionToken;
     }
@@ -29,9 +31,16 @@ async function getSessionToken(): Promise<string> {
 
     tokenInitPromise = (async () => {
         try {
+            // Get persistent user ID from localStorage
+            const userId = getUserId();
+            
             const response = await fetch(`${BACKEND_URL}/auth/token`, {
-                method: 'GET',
+                method: 'POST',
                 credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId }),
             });
 
             if (!response.ok) {

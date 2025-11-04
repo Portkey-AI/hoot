@@ -1,33 +1,9 @@
 import type { ServerConfig, ToolSchema } from '../types';
 import type { ChatMessage } from './portkeyClient';
+import { getSessionToken } from './backendClient';
 
 // Backend URL for tool filtering
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8008';
-
-// Session token management (reuse from backendClient.ts logic)
-let sessionToken: string | null = null;
-
-async function getSessionToken(): Promise<string> {
-    if (sessionToken) return sessionToken;
-
-    const response = await fetch(`${BACKEND_URL}/auth/token`, {
-        method: 'GET',
-        credentials: 'include',
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to retrieve session token');
-    }
-
-    const data = await response.json();
-    sessionToken = data.token;
-
-    if (!sessionToken) {
-        throw new Error('Session token is null');
-    }
-
-    return sessionToken;
-}
 
 async function backendFetch(url: string, options: RequestInit = {}) {
     const token = await getSessionToken();
