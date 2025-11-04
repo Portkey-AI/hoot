@@ -5,12 +5,14 @@ import { Send, Sparkles, Code2, Settings, Copy, Check, Filter, Trash2, ChevronRi
 import { LLMSettingsModal } from './LLMSettingsModal';
 import { JsonViewer } from './JsonViewer';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { MentionInput, type Mention } from './MentionInput';
 import { getPortkeyClient, type ChatMessage } from '../lib/portkeyClient';
-import { convertAllMCPToolsToOpenAI, convertFilteredToolsToOpenAI, findServerForTool } from '../lib/toolConverter';
+import { convertAllMCPToolsToOpenAI, convertFilteredToolsToOpenAI, convertMCPToolToOpenAI, findServerForTool } from '../lib/toolConverter';
 import { mcpClient } from '../lib/mcpClient';
 import { filterToolsForContext } from '../lib/toolFilter';
 import { useToolFilter } from '../hooks/useToolFilter';
 import * as backendClient from '../lib/backendClient';
+import type { ToolSchema } from '../types';
 import './HybridInterface.css';
 
 interface Message {
@@ -46,6 +48,7 @@ interface Message {
 
 const PORTKEY_API_KEY_STORAGE_KEY = 'hoot-portkey-api-key';
 const CHAT_MESSAGES_STORAGE_KEY = 'hoot-chat-messages';
+const CHAT_MENTIONS_STORAGE_KEY = 'hoot-chat-mentions';
 
 // Helper to get initial messages from localStorage or default
 const getInitialMessages = (): Message[] => {
@@ -73,9 +76,26 @@ const getInitialMessages = (): Message[] => {
     }];
 };
 
+// Helper to get initial mentions from localStorage
+const getInitialMentions = (): Mention[] => {
+    const savedMentions = localStorage.getItem(CHAT_MENTIONS_STORAGE_KEY);
+    if (savedMentions) {
+        try {
+            const parsed = JSON.parse(savedMentions);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+        } catch (e) {
+            console.warn('Failed to parse saved mentions:', e);
+        }
+    }
+    return [];
+};
+
 export function HybridInterface() {
     const [messages, setMessages] = useState<Message[]>(getInitialMessages());
     const [input, setInput] = useState('');
+    const [mentions, setMentions] = useState<Mention[]>(getInitialMentions());
     const [isProcessing, setIsProcessing] = useState(false);
     const [streamingMessageIndex, setStreamingMessageIndex] = useState<number>(-1);
     const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
@@ -163,6 +183,11 @@ export function HybridInterface() {
         localStorage.setItem(CHAT_MESSAGES_STORAGE_KEY, JSON.stringify(messages));
     }, [messages]);
 
+    // Save mentions to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem(CHAT_MENTIONS_STORAGE_KEY, JSON.stringify(mentions));
+    }, [mentions]);
+
     // Global keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -206,18 +231,92 @@ export function HybridInterface() {
         };
         setMessages([welcomeMessage]);
         setSelectedMessage(null);
+        setMentions([]);
         localStorage.removeItem(CHAT_MESSAGES_STORAGE_KEY);
+        localStorage.removeItem(CHAT_MENTIONS_STORAGE_KEY);
     };
 
     /**
      * Helper function to get filtered tools based on conversation context
      * Filters tools dynamically before each LLM call
+     * Now includes pinned tools from @mentions
      */
     const getFilteredTools = async (conversationContext: ChatMessage[]) => {
         const totalTools = Object.values(tools).flat().length;
 
         // Filter out system messages, don't send them in the conversation context
         conversationContext = conversationContext.filter((m) => m.role !== 'system');
+
+        // If there are mentions, always include those tools (bypass semantic filtering)
+        if (mentions.length > 0) {
+            console.log('[Chat] Using pinned tools from mentions, bypassing semantic filtering');
+
+            // Collect all pinned tools with their schemas
+            const pinnedToolSchemas: ToolSchema[] = [];
+
+            for (const mention of mentions) {
+                if (mention.type === 'server') {
+                    // Add all tools from this server
+                    const serverTools = tools[mention.id] || [];
+                    pinnedToolSchemas.push(...serverTools);
+                } else if (mention.type === 'tool') {
+                    // Add this specific tool
+                    for (const serverTools of Object.values(tools)) {
+                        const tool = serverTools.find(t => t.name === mention.name);
+                        if (tool) {
+                            pinnedToolSchemas.push(tool);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Convert pinned tools to OpenAI format
+            const openaiTools = pinnedToolSchemas.map(tool => convertMCPToolToOpenAI(tool));
+
+            // Collect tool details with server information for display
+            const toolDetails = await Promise.all(pinnedToolSchemas.map(async (tool) => {
+                // Find the server that has this tool
+                let serverName = 'Unknown';
+                let serverIcon: string | undefined;
+
+                for (const [serverId, serverTools] of Object.entries(tools)) {
+                    if (serverTools.some(t => t.name === tool.name)) {
+                        const server = servers.find(s => s.id === serverId);
+                        if (server) {
+                            serverName = server.name;
+                            serverIcon = await getServerFavicon(serverId) || undefined;
+                        }
+                        break;
+                    }
+                }
+
+                return {
+                    toolName: tool.name,
+                    serverName,
+                    serverIcon,
+                };
+            }));
+
+            // Update filter metrics for display
+            setFilterMetrics({
+                toolsUsed: pinnedToolSchemas.length,
+                toolsTotal: totalTools,
+                lastFilterTime: 0, // No filtering time for pinned tools
+            });
+
+            console.log(`[Chat] Using ${pinnedToolSchemas.length} pinned tools (bypassing semantic filtering)`);
+
+            return {
+                tools: openaiTools,
+                metrics: {
+                    toolsUsed: pinnedToolSchemas.length,
+                    toolsTotal: totalTools,
+                    filterTime: 0,
+                    toolDetails,
+                },
+            };
+        }
 
         // Try to use semantic filtering if enabled and ready
         if (toolFilterEnabled && toolFilterReady && totalTools > 0) {
@@ -686,9 +785,9 @@ export function HybridInterface() {
                     <span className="info-item">
                         <Code2 size={14} />
                         {filterMetrics ? (
-                            <span title={`Semantic filtering ${toolFilterEnabled && toolFilterReady ? 'active' : 'disabled'}`}>
+                            <span title={`${mentions.length > 0 ? 'Pinned tools' : 'Semantic filtering'} ${toolFilterEnabled && toolFilterReady && mentions.length === 0 ? 'active' : 'bypassed'}`}>
                                 {filterMetrics.toolsUsed}/{filterMetrics.toolsTotal} tools
-                                {toolFilterEnabled && toolFilterReady && filterMetrics.lastFilterTime > 0 && (
+                                {mentions.length === 0 && toolFilterEnabled && toolFilterReady && filterMetrics.lastFilterTime > 0 && (
                                     <span style={{ opacity: 0.7, fontSize: '0.85em' }}>
                                         {' '}({filterMetrics.lastFilterTime.toFixed(0)}ms)
                                     </span>
@@ -698,7 +797,15 @@ export function HybridInterface() {
                             <span>{availableTools.length} tool{availableTools.length !== 1 ? 's' : ''}</span>
                         )}
                     </span>
-                    {toolFilterEnabled && toolFilterReady && filterMetrics && (
+                    {mentions.length > 0 ? (
+                        <>
+                            <span className="info-divider">•</span>
+                            <span className="info-item" title={`${mentions.length} pinned ${mentions.length === 1 ? 'item' : 'items'} - semantic filtering bypassed`}>
+                                <Filter size={14} style={{ color: '#f59e0b' }} />
+                                <span style={{ color: '#f59e0b' }}>{mentions.length} Pinned</span>
+                            </span>
+                        </>
+                    ) : toolFilterEnabled && toolFilterReady && filterMetrics ? (
                         <>
                             <span className="info-divider">•</span>
                             <span className="info-item" title="Semantic filtering is active">
@@ -706,8 +813,8 @@ export function HybridInterface() {
                                 <span style={{ color: '#10b981' }}>Filtered</span>
                             </span>
                         </>
-                    )}
-                    {toolFilterEnabled && !toolFilterReady && availableTools.length > 0 && (
+                    ) : null}
+                    {toolFilterEnabled && !toolFilterReady && availableTools.length > 0 && mentions.length === 0 && (
                         <>
                             <span className="info-divider">•</span>
                             <span className="info-item" title="Filter is initializing...">
@@ -889,30 +996,31 @@ export function HybridInterface() {
 
                     <div className="chat-input-container-hybrid">
                         <div className="chat-input-wrapper-hybrid">
-                            <textarea
-                                ref={textareaRef}
-                                className="chat-input-hybrid"
+                            <MentionInput
                                 value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Escape') {
-                                        e.currentTarget.blur();
-                                    }
-                                }}
+                                onChange={setInput}
+                                mentions={mentions}
+                                onMentionsChange={setMentions}
+                                servers={servers}
+                                tools={tools}
+                                placeholder={
+                                    hasApiKey
+                                        ? 'Let\'s chat with your MCP servers... (type @ to filter tools)'
+                                        : 'Configure API key in settings first...'
+                                }
+                                disabled={isProcessing || !hasApiKey}
+                                inputRef={textareaRef}
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
                                         handleSend();
                                     }
                                 }}
-                                placeholder={
-                                    hasApiKey
-                                        ? 'Ask me anything about your MCP tools...'
-                                        : 'Configure API key in settings first...'
-                                }
-                                rows={1}
-                                disabled={isProcessing || !hasApiKey}
-                                title={getShortcutHint('Focus message input', { key: '/' })}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        e.currentTarget.blur();
+                                    }
+                                }}
                             />
                             {!input && !isProcessing && (
                                 <kbd className="input-shortcut-hint">/</kbd>

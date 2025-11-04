@@ -263,7 +263,7 @@
 .chat-input-wrapper-hybrid {
     display: flex;
     gap: 0.625rem;
-    align-items: center;
+    align-items: flex-end;
     max-width: 48rem;
     margin: 0 auto;
     width: 100%;
@@ -274,8 +274,7 @@
 .input-shortcut-hint {
     position: absolute;
     right: 4.5rem;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 0.75rem;
     font-family: var(--font-mono);
     font-size: 0.875rem;
     font-weight: 700;
