@@ -5,6 +5,17 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2025-11-05
+
+### Added
+- **Welcome Modal**: New user onboarding experience with welcome modal on first launch
+
+### Changed
+- **Package Security**: Excluded sensitive JWT key files (private-key.json, public-jwk.json, jwks.json) from npm package distribution
+
+### Fixed
+- Server URL now properly displays in browser URL bar when navigating between servers
+
 ## [0.10.0] - 2025-11-05
 
 ### Added
@@ -575,6 +586,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.10.1** - Welcome modal, package security improvements, and server URL display fixes
 - **0.10.0** - JWT authentication, Cloudflare Workers deployment, pinning feature, enhanced logging, and backend architecture refactor
 - **0.9.0** - Three new light themes, smart theme selection, visual theme indicators, and comprehensive theme system improvements
 - **0.8.3** - Fixed message roles and added dist/ to .gitignore
