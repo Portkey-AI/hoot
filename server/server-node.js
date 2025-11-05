@@ -17,10 +17,12 @@ import { logger } from './lib/logger.js';
 // Database adapter
 import { SQLiteAdapter } from './adapters/sqlite.js';
 
+// Connection pool
+import { NodeConnectionPool } from './adapters/connection-pool-node.js';
+
 // Utilities
 import { JWTManager } from './lib/jwt.js';
 import { AuditLogger, RateLimiter } from './lib/utils.js';
-import { MCPClientManager } from './lib/client-manager.js';
 import { toolFilterManager } from './lib/tool-filter.js';
 
 // Route handlers
@@ -61,8 +63,38 @@ logger.success('SQLite database initialized');
 const auditLogger = new AuditLogger({ logPath: auditLogPath, isNode: true });
 const rateLimiter = new RateLimiter();
 
-// Initialize MCP client manager
-const clientManager = new MCPClientManager();
+// Initialize connection pool (shared across all requests in Node.js)
+const connectionPool = new NodeConnectionPool();
+
+/**
+ * Ensure a server is connected, auto-reconnecting if needed
+ */
+async function ensureConnected(options) {
+  const { serverId, userId, db, connectionPool, frontendUrl } = options;
+
+  // Check if already connected
+  const isConnected = connectionPool.has(serverId);
+
+  if (isConnected) {
+    return { reconnected: false };
+  }
+
+  // Try to get server config and auto-reconnect
+  const config = await db.getServerConfig(userId, serverId);
+
+  if (!config) {
+    throw new Error('Server not connected and no config found for auto-reconnection');
+  }
+
+  // Reconnect using saved config
+  await connectionPool.connect(serverId, config, {
+    userId,
+    db,
+    frontendUrl
+  });
+
+  return { reconnected: true };
+}
 
 // Load JWT keys at startup
 (async () => {
@@ -309,7 +341,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     message: 'MCP Backend Server is running',
     port: PORT,
-    activeConnections: clientManager.size(),
+    activeConnections: connectionPool.size(),
   });
 });
 
@@ -365,8 +397,18 @@ app.post('/mcp/connect', async (req, res) => {
       userId: req.userId,
       db,
       frontendUrl: FRONTEND_URL,
-      clientManager
+      clientManager: connectionPool // Use connection pool
     });
+
+    // Save server config for auto-reconnection
+    if (result.success) {
+      await db.saveServerConfig(req.userId, serverId, {
+        serverName,
+        url,
+        transport,
+        auth
+      });
+    }
 
     await auditLogger.log('mcp_connect_success', {
       serverId,
@@ -409,7 +451,10 @@ app.post('/mcp/disconnect', async (req, res) => {
     const { serverId } = req.body;
     logger.info(`🔌 Disconnecting from server: ${serverId}`);
 
-    await clientManager.disconnect(serverId);
+    await connectionPool.disconnect(serverId);
+
+    // Delete server config
+    await db.deleteServerConfig(req.userId, serverId);
 
     // Keep OAuth credentials for reconnection
     // Only clean up temporary verifiers
@@ -470,7 +515,7 @@ app.get('/mcp/server-info/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params;
 
-    const client = clientManager.getClient(serverId);
+    const client = await connectionPool.getClient(serverId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -516,7 +561,7 @@ app.get('/mcp/oauth-metadata/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params;
 
-    const transport = clientManager.getTransport(serverId);
+    const transport = await connectionPool.getTransport?.(serverId);
     if (!transport) {
       return res.status(404).json({
         success: false,
@@ -623,7 +668,11 @@ app.get('/mcp/favicon-proxy', async (req, res) => {
 app.get('/mcp/tools/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params;
-    const result = await listTools({ serverId, clientManager });
+    
+    // Auto-reconnect if needed
+    await ensureConnected({ serverId, userId: req.userId, db, connectionPool, frontendUrl: FRONTEND_URL });
+    
+    const result = await listTools({ serverId, connectionPool });
     res.json(result);
   } catch (error) {
     logger.error('List tools error:', error);
@@ -664,7 +713,10 @@ app.post('/mcp/execute', async (req, res) => {
       argsPreview: JSON.stringify(args).substring(0, 200)
     });
 
-    const result = await executeTool({ serverId, toolName, arguments: args, clientManager });
+    // Auto-reconnect if needed
+    await ensureConnected({ serverId, userId: req.userId, db, connectionPool, frontendUrl: FRONTEND_URL });
+
+    const result = await executeTool({ serverId, toolName, arguments: args, connectionPool });
 
     await auditLogger.log('tool_execution_success', {
       serverId,
@@ -687,7 +739,7 @@ app.post('/mcp/execute', async (req, res) => {
  */
 app.get('/mcp/status/:serverId', (req, res) => {
   const { serverId } = req.params;
-  const isConnected = clientManager.has(serverId);
+  const isConnected = connectionPool.has(serverId);
 
   res.json({
     success: true,
@@ -701,7 +753,7 @@ app.get('/mcp/status/:serverId', (req, res) => {
  * GET /mcp/connections
  */
 app.get('/mcp/connections', (req, res) => {
-  const connections = clientManager.getConnections();
+  const connections = connectionPool.getConnections();
 
   res.json({
     success: true,
@@ -896,7 +948,10 @@ server.on('error', (err) => {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('\n🦉 Shutting down MCP backend server...');
-  await clientManager.disconnectAll();
+  const connections = connectionPool.getConnections();
+  for (const serverId of connections) {
+    await connectionPool.disconnect(serverId);
+  }
   db.close();
   server.close(() => {
     logger.success('MCP backend server stopped');
@@ -906,7 +961,10 @@ process.on('SIGTERM', async () => {
 
 process.on('SIGINT', async () => {
   logger.info('\n🦉 Shutting down MCP backend server...');
-  await clientManager.disconnectAll();
+  const connections = connectionPool.getConnections();
+  for (const serverId of connections) {
+    await connectionPool.disconnect(serverId);
+  }
   db.close();
   server.close(() => {
     logger.success('MCP backend server stopped');

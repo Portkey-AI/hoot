@@ -44,6 +44,14 @@ export class SQLiteAdapter extends DatabaseAdapter {
         PRIMARY KEY (user_id, server_id)
       );
       
+      CREATE TABLE IF NOT EXISTS server_configs (
+        user_id TEXT NOT NULL,
+        server_id TEXT NOT NULL,
+        config TEXT NOT NULL,
+        created_at INTEGER DEFAULT (strftime('%s', 'now')),
+        PRIMARY KEY (user_id, server_id)
+      );
+      
       CREATE TABLE IF NOT EXISTS favicon_cache (
         server_url TEXT PRIMARY KEY,
         favicon_url TEXT,
@@ -229,6 +237,31 @@ export class SQLiteAdapter extends DatabaseAdapter {
             ).run(userId, serverId);
         }
 
+        this.db.pragma('wal_checkpoint(PASSIVE)');
+    }
+
+    // Server Config (for auto-reconnection)
+    async saveServerConfig(userId, serverId, config) {
+        this.db.prepare(`
+      INSERT OR REPLACE INTO server_configs (user_id, server_id, config, created_at)
+      VALUES (?, ?, ?, ?)
+    `).run(userId, serverId, JSON.stringify(config), Math.floor(Date.now() / 1000));
+        this.db.pragma('wal_checkpoint(PASSIVE)');
+    }
+
+    async getServerConfig(userId, serverId) {
+        const row = this.db.prepare(`
+      SELECT config FROM server_configs
+      WHERE user_id = ? AND server_id = ?
+    `).get(userId, serverId);
+
+        return row ? JSON.parse(row.config) : null;
+    }
+
+    async deleteServerConfig(userId, serverId) {
+        this.db.prepare(
+            'DELETE FROM server_configs WHERE user_id = ? AND server_id = ?'
+        ).run(userId, serverId);
         this.db.pragma('wal_checkpoint(PASSIVE)');
     }
 

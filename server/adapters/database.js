@@ -48,6 +48,19 @@ export class DatabaseAdapter {
         throw new Error('Not implemented: clearOAuthCredentials');
     }
 
+    // Server Config (for auto-reconnection)
+    async saveServerConfig(userId, serverId, config) {
+        throw new Error('Not implemented: saveServerConfig');
+    }
+
+    async getServerConfig(userId, serverId) {
+        throw new Error('Not implemented: getServerConfig');
+    }
+
+    async deleteServerConfig(userId, serverId) {
+        throw new Error('Not implemented: deleteServerConfig');
+    }
+
     // Favicon Cache (global, not user-specific)
     async saveFaviconCache(serverUrl, faviconUrl, oauthLogoUri) {
         throw new Error('Not implemented: saveFaviconCache');

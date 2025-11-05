@@ -41,3 +41,5 @@ public-jwk.json
 jwks.json
 public-key.pem
 public-key.json
+
+.wrangler/

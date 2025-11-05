@@ -133,6 +133,43 @@ export class DurableObjectsAdapter extends DatabaseAdapter {
     }
   }
   
+  // Server Configuration (for auto-reconnection in Workers)
+  async saveServerConfig(userId, serverId, config) {
+    const stub = this.getUserStub(userId);
+    const response = await stub.fetch('https://do/server/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ serverId, config })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to save server config: ${await response.text()}`);
+    }
+  }
+  
+  async getServerConfig(userId, serverId) {
+    const stub = this.getUserStub(userId);
+    const response = await stub.fetch(`https://do/server/config?serverId=${serverId}`);
+    
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(`Failed to get server config: ${await response.text()}`);
+    }
+    
+    return await response.json();
+  }
+  
+  async deleteServerConfig(userId, serverId) {
+    const stub = this.getUserStub(userId);
+    const response = await stub.fetch(`https://do/server/config?serverId=${serverId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok && response.status !== 404) {
+      throw new Error(`Failed to delete server config: ${await response.text()}`);
+    }
+  }
+  
   // Favicon Cache
   async saveFaviconCache(serverUrl, faviconUrl, oauthLogoUri = null) {
     const stub = this.getFaviconStub();

@@ -41,9 +41,10 @@ export function createOAuthProvider(options) {
     },
 
     state: async () => {
-      const crypto = globalThis.crypto || (await import('crypto'));
-      const bytes = crypto.randomBytes ? crypto.randomBytes(32) : crypto.getRandomValues(new Uint8Array(32));
-      return Buffer.from(bytes).toString('hex');
+      // Use Web Crypto API (available in both Workers and Node.js 18+)
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
     },
 
     clientInformation: async () => {
@@ -449,8 +450,17 @@ export async function connectToServer(options) {
 /**
  * List tools from a connected server
  */
-export async function listTools({ serverId, clientManager }) {
-  const client = clientManager.getClient(serverId);
+export async function listTools({ serverId, clientManager, connectionPool }) {
+  // Support both old clientManager and new connectionPool
+  const pool = connectionPool || clientManager;
+
+  // For Workers (DO-based), use direct method
+  if (pool.listTools) {
+    return await pool.listTools(serverId);
+  }
+
+  // For Node.js (in-memory), get client
+  const client = await pool.getClient(serverId);
 
   if (!client) {
     throw new Error('Server not connected');
@@ -474,8 +484,17 @@ export async function listTools({ serverId, clientManager }) {
 /**
  * Execute a tool on a connected server
  */
-export async function executeTool({ serverId, toolName, arguments: args, clientManager }) {
-  const client = clientManager.getClient(serverId);
+export async function executeTool({ serverId, toolName, arguments: args, clientManager, connectionPool }) {
+  // Support both old clientManager and new connectionPool
+  const pool = connectionPool || clientManager;
+
+  // For Workers (DO-based), use direct method
+  if (pool.executeTool) {
+    return await pool.executeTool(serverId, toolName, args);
+  }
+
+  // For Node.js (in-memory), get client
+  const client = await pool.getClient(serverId);
 
   if (!client) {
     throw new Error('Server not connected');
@@ -534,6 +553,61 @@ export async function fetchFavicon({ serverUrl, oauthLogoUri, db }) {
     }
   };
 
+  // Helper to parse HTML for favicon link tags
+  const parseHtmlForFavicon = async (htmlUrl) => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch(htmlUrl, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Hoot-MCP-Client/1.0'
+        }
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) return null;
+
+      const html = await response.text();
+
+      // Match <link> tags with rel="icon" or rel="shortcut icon"
+      // This regex looks for link tags with href attribute and icon in rel
+      const linkRegex = /<link[^>]*rel=["']([^"']*icon[^"']*)["'][^>]*>/gi;
+      const hrefRegex = /href=["']([^"']+)["']/i;
+
+      let match;
+      while ((match = linkRegex.exec(html)) !== null) {
+        const linkTag = match[0];
+        const hrefMatch = hrefRegex.exec(linkTag);
+
+        if (hrefMatch && hrefMatch[1]) {
+          let faviconUrl = hrefMatch[1];
+
+          // Convert relative URLs to absolute
+          if (faviconUrl.startsWith('/')) {
+            const urlObj = new URL(htmlUrl);
+            faviconUrl = `${urlObj.origin}${faviconUrl}`;
+          } else if (!faviconUrl.startsWith('http')) {
+            const urlObj = new URL(htmlUrl);
+            faviconUrl = `${urlObj.origin}/${faviconUrl}`;
+          }
+
+          // Verify the favicon URL works
+          if (await checkUrl(faviconUrl)) {
+            return faviconUrl;
+          }
+        }
+      }
+
+      return null;
+    } catch (error) {
+      logger.verbose(`Failed to parse HTML for favicon: ${error.message}`);
+      return null;
+    }
+  };
+
   let foundFaviconUrl = null;
 
   // 1. Try OAuth logo_uri first
@@ -584,6 +658,22 @@ export async function fetchFavicon({ serverUrl, oauthLogoUri, db }) {
             }
           }
         }
+      }
+    }
+
+    // 4. If still not found, parse HTML for <link rel="icon"> tags
+    if (!foundFaviconUrl) {
+      // Try the primary domain's HTML first
+      const parts = urlObj.hostname.split('.');
+      if (parts.length > 2) {
+        const primaryDomain = parts.slice(-2).join('.');
+        const primaryOrigin = `${urlObj.protocol}//${primaryDomain}`;
+        foundFaviconUrl = await parseHtmlForFavicon(primaryOrigin);
+      }
+
+      // If still not found, try the original domain
+      if (!foundFaviconUrl) {
+        foundFaviconUrl = await parseHtmlForFavicon(domain);
       }
     }
   }
