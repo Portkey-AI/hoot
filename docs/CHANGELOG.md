@@ -5,6 +5,74 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-11-05
+
+### Added
+- **JWT-Based Authentication System**: Comprehensive JWT authentication with secure token management
+  - New JWT authentication library (`server/lib/jwt.js`) with token generation and verification
+  - RSA key pair generation and management for secure signing
+  - JWKS endpoint for public key distribution
+  - Token expiration (24 hours) and validation
+  - Integration with backend authentication flows
+  
+- **Cloudflare Workers Deployment**: Full support for deploying to Cloudflare's edge network
+  - New Cloudflare Workers server implementation (`server/server-worker.js`)
+  - Durable Objects for stateful backend operations
+    - `MCPConnectionPoolDO` for connection management on the edge
+    - `UserDataDO` for user data persistence
+    - `FaviconCacheDO` for favicon caching
+  - Cloudflare Workers adapter (`server/adapters/connection-pool-workers.js`)
+  - Database adapter for Cloudflare D1 (`server/adapters/database.js`)
+  - SQLite adapter with Cloudflare-specific optimizations
+  - Wrangler configuration (`wrangler.toml`) for deployment
+  - Complete deployment documentation (`CLOUDFLARE_DEPLOYMENT.md`)
+  - New npm scripts: `dev:worker` and `deploy:cloudflare`
+
+- **Pinning Feature**: Pin important servers and tools for quick access
+  - Pin/unpin servers in the sidebar for persistent top placement
+  - Pin/unpin tools in chat interface for easy access
+  - Visual pin indicators in UI
+  - Pinned state persists across sessions
+  - Tools show immediately when adding a new server
+
+- **Enhanced Logging System**: Comprehensive backend logging for debugging and monitoring
+  - New logging library (`server/lib/logger.js`) with configurable levels
+  - Structured logging with timestamps and categories
+  - File-based logging (`backend.log`) with automatic rotation
+  - Console output for development
+  - Detailed logging documentation (`LOGGING.md`)
+
+- **Automatic Theme Switching**: Smart theme selection based on system preferences
+  - Detects system light/dark mode preference on first load
+  - Automatically selects Arctic Night (dark) or Nordic Snow (light)
+  - Seamless transition between system preference and manual selection
+
+### Changed
+- **Backend Architecture**: Major refactor to support multiple deployment targets
+  - Unified connection pool architecture (`server/lib/connection-pool.js`)
+  - Adapter pattern for Node.js and Cloudflare Workers environments
+  - Node.js connection pool adapter (`server/adapters/connection-pool-node.js`)
+  - Shared handlers library (`server/lib/handlers.js`) for request processing
+  - Client manager (`server/lib/client-manager.js`) for MCP client lifecycle
+  - Environment-agnostic database and storage abstractions
+  - Better separation of concerns and modularity
+
+- **Server Organization**: Improved multi-server management
+  - Pinned servers appear at the top of the sidebar
+  - Better visual hierarchy for server list
+  - Enhanced server metadata and state management
+
+### Fixed
+- Try in Hoot modal now respects current theme selection
+- Server tools now appear immediately after adding a server (no refresh needed)
+
+### Documentation
+- Added `CLOUDFLARE_DEPLOYMENT.md` - Complete guide for deploying to Cloudflare Workers
+- Added `JWT_AUTHENTICATION.md` - JWT authentication implementation details
+- Added `LOGGING.md` - Backend logging system documentation
+- Updated `BACKEND_ARCHITECTURE.md` - Documented new adapter pattern and multi-environment support
+- Updated `README.md` - Added Cloudflare deployment information
+
 ## [0.9.0] - 2025-11-03
 
 ### Added
@@ -507,6 +575,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.10.0** - JWT authentication, Cloudflare Workers deployment, pinning feature, enhanced logging, and backend architecture refactor
+- **0.9.0** - Three new light themes, smart theme selection, visual theme indicators, and comprehensive theme system improvements
 - **0.8.3** - Fixed message roles and added dist/ to .gitignore
 - **0.8.2** - Fixed theme loading in production builds with inline CSS bundling
 - **0.8.1** - Fixed npm/npx installation error with mcp-tool-filter dependency
