@@ -4,6 +4,7 @@ import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import { autoDetectServer } from '../lib/backendClient';
 import { toast } from '../stores/toastStore';
+import { hasSeenWelcome } from './WelcomeModal';
 import type { TransportType, AuthConfig } from '../types';
 import { Button } from './ui';
 import './Modal.css';
@@ -162,9 +163,10 @@ interface ConfirmAddServerProps {
     onConfirm: () => void;
     onCancel: () => void;
     isConnecting: boolean;
+    isFirstTime: boolean;
 }
 
-function ConfirmAddServer({ config, onConfirm, onCancel, isConnecting }: ConfirmAddServerProps) {
+function ConfirmAddServer({ config, onConfirm, onCancel, isConnecting, isFirstTime }: ConfirmAddServerProps) {
     return createPortal(
         <div className="modal-overlay">
             <div className="modal" style={{ maxWidth: '520px' }}>
@@ -180,17 +182,23 @@ function ConfirmAddServer({ config, onConfirm, onCancel, isConnecting }: Confirm
                             fontSize: '28px',
                             filter: 'drop-shadow(0 2px 8px rgba(92, 207, 230, 0.3))'
                         }}>🦉</span>
-                        <h2 style={{ margin: 0 }}>Add MCP Server</h2>
+                        <h2 style={{ margin: 0 }}>
+                            {isFirstTime ? 'Welcome to Hoot!' : 'Add MCP Server'}
+                        </h2>
                     </div>
                     <p style={{
                         textAlign: 'center',
-                        color: 'var(--text-secondary)',
+                        color: 'var(--theme-text-secondary)',
                         fontSize: '14px',
                         fontWeight: 400,
                         marginTop: '4px',
-                        marginBottom: '24px'
+                        marginBottom: isFirstTime ? '12px' : '24px',
+                        lineHeight: '1.5'
                     }}>
-                        Connect to this server to use its tools
+                        {isFirstTime 
+                            ? 'Hoot lets you test and explore MCP servers. Let\'s add your first one!'
+                            : 'Connect to this server to use its tools'
+                        }
                     </p>
                 </div>
 
@@ -272,7 +280,7 @@ function ConfirmAddServer({ config, onConfirm, onCancel, isConnecting }: Confirm
                         </Button>
                     ) : (
                         <Button variant="primary" onClick={onConfirm}>
-                            Add & Connect
+                            {isFirstTime ? 'Get Started →' : 'Add & Connect'}
                         </Button>
                     )}
                 </div>
@@ -342,7 +350,11 @@ export function TryInHootHandler() {
     const [isConnecting, setIsConnecting] = useState(false);
     const addServer = useAppStore((state) => state.addServer);
     const setSelectedServer = useAppStore((state) => state.setSelectedServer);
+    const servers = useAppStore((state) => state.servers);
     const { connect } = useMCPConnection();
+
+    // Check if this is a first-time user
+    const isFirstTime = !hasSeenWelcome() && servers.length === 0;
 
     useEffect(() => {
         // Check if URL contains "try" parameter or server reference
@@ -413,6 +425,11 @@ export function TryInHootHandler() {
             const success = await connect(newServer);
 
             if (success) {
+                // Mark as welcomed if this was their first time
+                if (isFirstTime) {
+                    localStorage.setItem('hoot-has-seen-welcome', 'true');
+                }
+                
                 toast.success('Server Added', `Successfully connected to ${configToAdd.name}`);
                 setPendingConfig(null);
             } else {
@@ -446,12 +463,15 @@ export function TryInHootHandler() {
     }
 
     return (
-        <ConfirmAddServer
-            config={pendingConfig}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-            isConnecting={isConnecting}
-        />
+        pendingConfig ? (
+            <ConfirmAddServer
+                config={pendingConfig}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+                isConnecting={isConnecting}
+                isFirstTime={isFirstTime}
+            />
+        ) : null
     );
 }
 

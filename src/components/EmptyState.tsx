@@ -40,15 +40,41 @@ export const NoServersState = memo(function NoServersState({
     onAddServer: () => void;
 }) {
     return (
-        <EmptyState
-            icon={<Server size={48} />}
-            title="No servers yet"
-            description="Add your first MCP server to get started testing tools and capabilities."
-            action={{
-                label: 'Add Server',
-                onClick: onAddServer,
-            }}
-        />
+        <div className="no-servers-container">
+            <EmptyState
+                icon={<Server size={48} />}
+                title="No servers yet"
+                description="Add your first MCP server to get started testing tools and capabilities."
+                action={{
+                    label: 'Add Server',
+                    onClick: onAddServer,
+                }}
+            />
+
+            <div className="quick-servers-section">
+                <p className="quick-servers-text">
+                    Try these popular servers (no auth needed)
+                </p>
+                <div className="quick-servers-list">
+                    <a href="/?s=Cloudflare%20Docs:https://docs.mcp.cloudflare.com/mcp" className="quick-server-pill" title="Add Cloudflare Docs">
+                        <span className="quick-server-icon-fallback">📘</span>
+                        Cloudflare Docs
+                    </a>
+                    <a href="/?s=Exa:https://mcp.exa.ai/mcp" className="quick-server-pill" title="Add Exa">
+                        <span className="quick-server-icon-fallback">🔍</span>
+                        Exa
+                    </a>
+                    <a href="/?s=DeepWiki:https://mcp.deepwiki.com/mcp" className="quick-server-pill" title="Add DeepWiki">
+                        <span className="quick-server-icon-fallback">📚</span>
+                        DeepWiki
+                    </a>
+                    <a href="/?s=CoinGecko:https://mcp.api.coingecko.com/mcp" className="quick-server-pill" title="Add CoinGecko">
+                        <span className="quick-server-icon-fallback">🪙</span>
+                        CoinGecko
+                    </a>
+                </div>
+            </div>
+        </div>
     );
 });
 

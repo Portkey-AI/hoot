@@ -11,6 +11,7 @@ import { ToastContainer } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+import { WelcomeModal, useWelcomeModal } from './components/WelcomeModal';
 import type { ShortcutCategory } from './components/KeyboardShortcutsModal';
 import { useAutoReconnect } from './hooks/useAutoReconnect';
 import { useURLState, createServerReference } from './hooks/useURLState';
@@ -74,6 +75,14 @@ function App() {
   const setSelectedServer = useAppStore((state) => state.setSelectedServer);
   const setSelectedTool = useAppStore((state) => state.setSelectedTool);
   const setSearchQuery = useAppStore((state) => state.setSearchQuery);
+
+  // Welcome modal for first-time users
+  const { showWelcome, setShowWelcome } = useWelcomeModal();
+  
+  // Don't show welcome modal if coming from a server link (Try in Hoot)
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasServerParam = urlParams.has('s') || urlParams.has('server') || urlParams.has('try');
+  const shouldShowWelcome = showWelcome && servers.length === 0 && !hasServerParam;
 
   // Initialize backend client (fetch session token) on app start
   useEffect(() => {
@@ -505,6 +514,25 @@ function App() {
         </div>
 
         {/* Modals and other components */}
+        {shouldShowWelcome && (
+          <WelcomeModal
+            onClose={() => setShowWelcome(false)}
+            onGetStarted={() => {
+              setShowWelcome(false);
+              // Scroll to and highlight the Add Server button
+              setTimeout(() => {
+                const addButton = document.querySelector('.add-server-btn') as HTMLButtonElement;
+                if (addButton) {
+                  addButton.focus();
+                  addButton.style.animation = 'none';
+                  setTimeout(() => {
+                    addButton.style.animation = 'highlightPulse 1s ease-in-out';
+                  }, 10);
+                }
+              }, 100);
+            }}
+          />
+        )}
         {showAddModal && <AddServerModal onClose={() => setShowAddModal(false)} />}
         {editingServer && <EditServerModal server={editingServer} onClose={() => setEditingServer(null)} />}
         {showShortcutsModal && (
