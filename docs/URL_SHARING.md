@@ -37,23 +37,25 @@ https://hoot.app/chat?s=weather:https://api.weather.com/mcp&view=hybrid
 
 ## How It Works
 
-1. **Auto-sync:** URL updates when you select servers/tools or change views
-2. **Server matching:** Matches by URL first, then by name + normalized URL
-3. **Missing servers:** Shows "Add Server" modal if referenced server doesn't exist
-4. **Auto-detection:** Automatically detects transport and auth when adding from URL
+1. **Auto-sync:** URL updates automatically when you select servers or tools
+2. **Server references:** When you select a server, App.tsx creates a `name:url` reference and syncs it to the URL
+3. **Server matching:** When loading a URL, matches by URL first, then by name + normalized URL
+4. **Missing servers:** Shows "Add Server" modal if referenced server doesn't exist
+5. **Auto-detection:** Automatically detects transport and auth when adding from URL
 
 ## Implementation
 
-Uses existing `TryInHootHandler` component to handle all URL formats:
-- Legacy: `?try=<base64>`
-- Legacy ID: `?server=abc-123`
-- **New: Server reference:** `?s=name:url`
+The URL sync happens in two phases:
+
+1. **State → URL:** When you select a server in the UI, `App.tsx` effect detects the change and creates a server reference (`createServerReference(name, url)`) which is written to the URL
+2. **URL → State:** On page load or URL changes, `App.tsx` parses the server reference and selects the matching server
 
 ### Key Files
 
-- `src/hooks/useURLState.ts` - URL read/write utilities
-- `src/components/TryInHootHandler.tsx` - Handles server references from URLs
-- `src/App.tsx` - Bidirectional state ↔ URL sync
+- `src/hooks/useURLState.ts` - URL read/write utilities and reference encoding/decoding
+- `src/components/TryInHootHandler.tsx` - Handles server references from URLs for new servers
+- `src/App.tsx` - Bidirectional state ↔ URL sync (handles both directions)
+- `src/components/ServerSidebar.tsx` - Server selection (only updates state, not URL directly)
 
 ### Security
 

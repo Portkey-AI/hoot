@@ -2,7 +2,6 @@ import { memo, useState, useRef, useEffect } from 'react';
 import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
-import { useURLState } from '../hooks/useURLState';
 import { NoServersState } from './EmptyState';
 import { ConfirmDialog } from './ConfirmDialog';
 import { toast } from '../stores/toastStore';
@@ -46,12 +45,10 @@ function ServersList({ onAddServer, onEditServer }: { onAddServer: () => void; o
     const servers = useAppStore((state) => state.servers);
     const selectedServerId = useAppStore((state) => state.selectedServerId);
     const setSelectedServer = useAppStore((state) => state.setSelectedServer);
-    const { updateURL } = useURLState();
 
     const handleServerSelect = (serverId: string) => {
         setSelectedServer(serverId);
-        // Update URL with selected server
-        updateURL({ server: serverId, tool: null }); // Clear tool when switching servers
+        // Note: URL sync is handled by App.tsx effect which converts server IDs to name:url references
     };
 
     if (servers.length === 0) {
