@@ -1,37 +1,62 @@
-# Screech v0.1 - Browser Version
+# Hoot Quick Start Guide
+
+Get up and running with Hoot quickly!
 
 ## 🚀 Getting Started
 
-The application should now be running at: **http://localhost:3000**
+The application runs at: **http://localhost:8009**
 
-## ⚠️ Important: Transport Limitations
+## Installation
 
-### Browser Version (Current)
-The browser version currently supports:
-- ✅ **SSE (Server-Sent Events)** - Recommended
-- ✅ **HTTP** - Standard REST endpoints
+```bash
+npx -y @portkey-ai/hoot
+```
+
+Or install globally:
+```bash
+npm install -g @portkey-ai/hoot
+hoot
+```
+
+## Transport Support
+
+Hoot supports multiple MCP transports:
+
+- ✅ **HTTP** - Standard REST endpoints (recommended)
+- ✅ **SSE (Server-Sent Events)** - Real-time streaming
 - ❌ **stdio** - Requires desktop app (not available in browser)
 
-### Why stdio doesn't work in browser?
-The `stdio` transport needs Node.js APIs like `child_process` to spawn local processes. Browsers can't do this for security reasons.
+> **Note:** The `stdio` transport needs Node.js APIs like `child_process` to spawn local processes. Browsers can't do this for security reasons. Use HTTP or SSE for browser-based connections.
 
-## 🛠️ Testing the App
+## 🛠️ Adding Your First Server
 
-### Option 1: Use SSE/HTTP MCP Server
-If you have an MCP server running on SSE or HTTP, you can test immediately:
+### Option 1: Auto-Detection (Recommended)
+
+If you have an MCP server URL, Hoot can auto-detect everything:
+
+1. Click **"+ Add Server"**
+2. Enter server URL: `https://mcp.example.com`
+3. Click **"Detect & Connect"**
+4. Hoot will automatically:
+   - Detect transport type (HTTP or SSE)
+   - Get server name and version
+   - Detect authentication requirements
+5. Click **"Add & Connect"**
+
+### Option 2: Manual Configuration
 
 1. Click **"+ Add Server"**
 2. Enter server details:
-   - Name: `My Test Server`
-   - Transport: **SSE** or **HTTP**
-   - URL: `http://localhost:8080/sse` (your server URL)
-3. Click **Connect**
+   - Name: `My Server`
+   - Transport: **HTTP** or **SSE**
+   - URL: `https://mcp.example.com`
+3. Configure authentication if needed
+4. Click **"Connect"**
 
-### Option 2: Create a Simple SSE MCP Server
+## Testing with a Sample Server
 
-Create a test server:
+Here's how to create a simple test server:
 
-```javascript
 // test-server.js
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
@@ -94,31 +119,20 @@ Run:
 node test-server.js
 ```
 
-Then in Screech:
-- Add Server
-- Transport: SSE
-- URL: `http://localhost:8080/sse`
+Then in Hoot:
+- Enter URL: `http://localhost:8080/sse`
+- Click "Detect & Connect"
+- Start testing!
 
-## 🎯 Next Steps
+## 🎯 Running from Source
 
-### For Full stdio Support:
-We'll need to build a **desktop version** using:
-- **Electron** (like Postman)
-- **Tauri** (lightweight Rust-based)
+```bash
+git clone <repo>
+npm install
+npm run dev:full
+```
 
-This would give us:
-- Full stdio support
-- Local file system access
-- Native OS integration
-- Better performance
-
-### Quick Workaround: Backend Proxy
-We have created a Node.js backend that:
-1. Accepts connections from the browser
-2. Proxies to stdio MCP servers
-3. Returns results via HTTP
-
-You should use `npm run dev:full` to run both the backend and frontend together.
+Backend runs on 8008, frontend on 8009.
 
 ## 🐛 Troubleshooting
 
@@ -133,6 +147,13 @@ You should use `npm run dev:full` to run both the backend and frontend together.
 
 **Blank screen?**
 - Check browser console for errors
-- Ensure dev server is running on http://localhost:3000
+- Ensure dev server is running on http://localhost:8009
 - Try hard refresh (Cmd+Shift+R / Ctrl+Shift+F5)
+
+## Next Steps
+
+- Read the [Architecture Overview](ARCHITECTURE.md)
+- Learn about [Authentication](AUTHENTICATION.md)
+- Explore [Try in Hoot](TRY_IN_HOOT.md) links
+- Check [Troubleshooting](TROUBLESHOOTING.md) for common issues
 

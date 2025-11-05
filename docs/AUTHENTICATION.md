@@ -2,6 +2,8 @@
 
 Hoot supports multiple authentication methods for connecting to MCP servers, as specified in the MCP protocol.
 
+> **For Developers:** See [JWT Authentication](JWT_AUTHENTICATION.md) for the backend authentication architecture.
+
 ## Supported Authentication Types
 
 ### 1. **None** (Default)

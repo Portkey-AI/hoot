@@ -30,12 +30,14 @@ hoot
 ## what works
 
 - connect to MCP servers (http/sse)
+- **auto-detection** - just paste a URL, we figure out the rest
 - see what tools they have
 - execute tools with params
 - view responses
 - oauth 2.1 if your server needs it
 - copy stuff to clipboard
-- **🦉 "try in hoot" links** - share servers with just a URL, auto-detection magic! ([docs](./docs/TRY_IN_HOOT.md))
+- **🦉 "try in hoot" links** - share servers with just a URL ([docs](./docs/TRY_IN_HOOT.md))
+- **8 beautiful themes** - light & dark modes ([docs](./docs/THEMES.md))
 
 ## how it works
 
@@ -80,14 +82,13 @@ hoot includes built-in security features for safe local development:
 - ✅ audit logging
 - ✅ localhost-only access
 
-runs securely on your local machine. [read more](./SECURITY.md)
+runs securely on your local machine. [read more](./docs/SECURITY.md)
 
 ## what's missing
 
 - resources (coming)
 - prompts (coming)
-- keyboard shortcuts (maybe)
-- tests (oops)
+- more tests (working on it)
 
 ## tech
 

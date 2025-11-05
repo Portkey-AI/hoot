@@ -4,6 +4,8 @@
 
 Hoot supports multiple authentication methods for MCP servers. This document explains what can be auto-detected, what requires manual configuration, and how to handle advanced scenarios.
 
+> **Note:** See also [Auto-Detection](AUTO_DETECTION.md) for the complete server detection system.
+
 ## Supported Auth Methods
 
 ### 1. **OAuth 2.1 with PKCE** ✅ Auto-Detected

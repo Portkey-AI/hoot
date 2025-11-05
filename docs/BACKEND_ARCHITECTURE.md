@@ -63,10 +63,10 @@ The Hoot MCP client has been redesigned to eliminate CORS issues by using a **No
 
 ## Key Components
 
-### 1. Backend Server (`mcp-backend-server.js`)
+### Backend Server (`server/server-node.js`)
 
-**Location**: Root directory  
-**Port**: 3002  
+**Location**: `server/server-node.js`  
+**Port**: 8008 (configurable via `PORT` env var)  
 **Purpose**: Acts as the actual MCP client, managing connections to MCP servers
 
 **Features**:
@@ -80,11 +80,13 @@ The Hoot MCP client has been redesigned to eliminate CORS issues by using a **No
 **API Endpoints**:
 - `POST /mcp/connect` - Connect to an MCP server
 - `POST /mcp/disconnect` - Disconnect from a server
+- `POST /mcp/auto-detect` - Auto-detect server configuration
 - `GET /mcp/tools/:serverId` - List available tools
 - `POST /mcp/execute` - Execute a tool
 - `GET /mcp/status/:serverId` - Check connection status
 - `GET /mcp/connections` - List all active connections
 - `GET /health` - Health check
+- ...and more (18 endpoints total)
 
 ### 2. Backend API Client (`src/lib/backendClient.ts`)
 
@@ -121,19 +123,17 @@ The Hoot MCP client has been redesigned to eliminate CORS issues by using a **No
 ```
 1. User clicks "Connect" in UI
    ↓
-2. useMCPConnection.connect() called
+2. mcpClient.connect() relays to backendClient
    ↓
-3. mcpClient.connect() relays to backendClient
+3. HTTP POST to localhost:8008/mcp/connect
    ↓
-4. HTTP POST to localhost:3002/mcp/connect
+4. Backend creates MCP Client + Transport
    ↓
-5. Backend creates MCP Client + Transport
+5. Backend connects using MCP SDK
    ↓
-6. Backend connects using MCP SDK
+6. Response sent back to browser
    ↓
-7. Response sent back to browser
-   ↓
-8. UI updates connection status
+7. UI updates connection status
 ```
 
 ### Tool Execution Flow
@@ -141,19 +141,17 @@ The Hoot MCP client has been redesigned to eliminate CORS issues by using a **No
 ```
 1. User fills form and clicks "Execute"
    ↓
-2. useMCPExecution.execute() called
+2. mcpClient.executeTool() relays to backendClient
    ↓
-3. mcpClient.executeTool() relays to backendClient
+3. HTTP POST to localhost:8008/mcp/execute
    ↓
-4. HTTP POST to localhost:3002/mcp/execute
+4. Backend calls client.callTool()
    ↓
-5. Backend calls client.callTool()
+5. MCP SDK sends request to external server
    ↓
-6. MCP SDK sends request to external server
+6. Response received and returned to browser
    ↓
-7. Response received and returned to browser
-   ↓
-8. UI displays result
+7. UI displays result
 ```
 
 ### OAuth Flow
@@ -215,14 +213,14 @@ npm run dev:full
 ```
 
 This runs:
-- Backend server on `http://localhost:3002`
-- Vite dev server on `http://localhost:5173`
+- Backend server on `http://localhost:8008`
+- Vite dev server on `http://localhost:8009`
 
 ### Manual Start
 
 ```bash
 # Terminal 1: Start backend
-npm run backend
+npm run server
 
 # Terminal 2: Start frontend
 npm run dev
@@ -253,33 +251,33 @@ None! The API remains the same from the component perspective.
 
 ### Backend not running
 
-**Error**: "Backend server is not running. Please start it with: npm run backend"
+**Error**: "Backend server is not running. Please start it with: npm run server"
 
 **Solution**: 
 ```bash
-npm run backend
+npm run server
 ```
 
-### Port 3002 already in use
+### Port 8008 already in use
 
-**Error**: "Port 3002 is already in use!"
+**Error**: "Port 8008 is already in use!"
 
 **Solution**:
 ```bash
-# Find process using port 3002
-lsof -ti:3002
+# Find process using port 8008
+lsof -ti:8008
 
 # Kill the process
-lsof -ti:3002 | xargs kill -9
+lsof -ti:8008 | xargs kill -9
 
 # Restart backend
-npm run backend
+npm run server
 ```
 
 ### Connection fails even with backend running
 
 **Check**:
-1. Backend health: `curl http://localhost:3002/health`
+1. Backend health: `curl http://localhost:8008/health`
 2. Check backend logs for errors
 3. Verify MCP server URL is correct
 4. Check authentication configuration
@@ -310,15 +308,15 @@ npm run backend
 ### Test Backend Health
 
 ```bash
-curl http://localhost:3002/health
+curl http://localhost:8008/health
 ```
 
 Expected response:
 ```json
 {
   "status": "ok",
-  "message": "MCP Backend Server is running",
-  "port": 3002,
+  "message": "Hoot Backend Server is running",
+  "port": 8008,
   "activeConnections": 0
 }
 ```
@@ -326,7 +324,7 @@ Expected response:
 ### Test Connection
 
 ```bash
-curl -X POST http://localhost:3002/mcp/connect \
+curl -X POST http://localhost:8008/mcp/connect \
   -H "Content-Type: application/json" \
   -d '{
     "serverId": "test-server",
@@ -340,7 +338,7 @@ curl -X POST http://localhost:3002/mcp/connect \
 ### Test Tool Listing
 
 ```bash
-curl http://localhost:3002/mcp/tools/test-server
+curl http://localhost:8008/mcp/tools/test-server
 ```
 
 ## Architecture Decisions
@@ -359,10 +357,10 @@ curl http://localhost:3002/mcp/tools/test-server
 3. **Compatibility**: Works everywhere, no special configuration
 4. **Future upgrade path**: Can add WebSocket later for real-time features
 
-### Why Port 3002?
+### Why Port 8008?
 
-- Port 3002 is available and commonly used for backend services
-- Can be changed if needed (update `BACKEND_URL` in `backendClient.ts`)
+- Port 8008 is commonly used for backend services
+- Can be changed if needed (update `PORT` env var in backend)
 
 ## Conclusion
 

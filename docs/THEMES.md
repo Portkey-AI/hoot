@@ -1,6 +1,21 @@
 # Hoot Themes
 
-Hoot now supports multiple beautiful themes! Each theme includes carefully crafted color palettes and dynamically generated hills that adapt to the theme colors.
+Hoot supports multiple beautiful themes with carefully crafted color palettes and dynamically generated hills that adapt to theme colors.
+
+## Quick Start
+
+**For Users:** Click the palette icon (🎨) in the header to switch themes. Choose from 8 beautiful themes or let Hoot match your system preferences.
+
+**For Developers:** See the [Theme System Architecture](#theme-system-architecture) section for technical details.
+
+## System Theme Support
+
+By default, Hoot automatically follows your system's appearance preference:
+- **Dark mode:** Uses Arctic Night theme  
+- **Light mode:** Uses Nordic Snow theme  
+- **Automatic switching:** Updates when you change system appearance
+
+The app remembers your choice when you explicitly select a theme. To return to automatic system detection, click the 🌗 System Default option in the theme switcher.
 
 ## Available Themes
 
@@ -346,4 +361,140 @@ npm run dev
 
 **Current Theme System Version:** 1.0  
 **Hills Generator:** Dynamic, adapts to theme colors automatically 🏔️
+
+---
+
+## Theme System Architecture
+
+### Color Palette Layer
+
+The base layer defines the raw color palette. The default Arctic Night theme uses the [Nord](https://www.nordtheme.com/) arctic color scheme:
+
+```css
+/* Polar Night - Dark backgrounds */
+--nord0: #242933;  /* Deepest - primary backgrounds */
+--nord1: #2e3440;  /* Elevated surfaces */
+--nord2: #3b4252;  /* Selections, hover states */
+--nord3: #434c5e;  /* UI elements, borders */
+
+/* Snow Storm - Light text */
+--nord4: #d8dee9;  /* UI text */
+--nord5: #e5e9f0;  /* Subtle text */
+--nord6: #eceff4;  /* Primary text */
+
+/* Frost - Blue accents */
+--nord8: #88c0d0;  /* Pure ice - PRIMARY ACCENT */
+
+/* Aurora - Semantic colors */
+--nord11: #bf616a;  /* Red - errors */
+--nord13: #ebcb8b;  /* Yellow - warnings */
+--nord14: #a3be8c;  /* Green - success */
+```
+
+### Theme Semantic Layer
+
+The theme layer maps colors to their semantic purpose. All components should use these variables:
+
+#### Backgrounds
+```css
+--theme-bg-primary: var(--nord0);      /* Main app background */
+--theme-bg-secondary: var(--nord1);    /* Cards, panels */
+--theme-bg-tertiary: var(--nord2);     /* Inputs, buttons */
+--theme-bg-hover: var(--nord2);        /* Hover states */
+--theme-bg-active: var(--nord3);       /* Active/pressed states */
+```
+
+#### Text
+```css
+--theme-text-primary: var(--nord6-bright);    /* Headings, important text */
+--theme-text-secondary: var(--nord5);         /* Body text */
+--theme-text-tertiary: var(--nord4);          /* Subtle text */
+--theme-text-placeholder: var(--nord4-dark);  /* Placeholders */
+```
+
+#### Borders
+```css
+--theme-border-color: var(--nord3);     /* Default borders */
+--theme-border-bright: var(--nord8);    /* Highlighted borders */
+```
+
+#### Accent Colors (Frost - Primary UI)
+```css
+--theme-accent-primary: var(--nord8);           /* Primary actions, focus */
+--theme-accent-primary-hover: var(--nord8-bright);  /* Hover state */
+```
+
+#### Semantic Colors (Aurora - Status)
+```css
+--theme-success: var(--nord14);     /* Success states */
+--theme-error: var(--nord11);       /* Errors */
+--theme-warning: var(--nord13);     /* Warnings */
+```
+
+### Legacy Support Layer
+
+For backward compatibility, old variable names are aliased:
+
+```css
+--bg-primary: var(--theme-bg-primary);
+--text-primary: var(--theme-text-primary);
+--blue-500: var(--theme-accent-primary);
+/* etc... */
+```
+
+### Design System Constants
+
+#### Typography
+```css
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+--font-mono: 'JetBrains Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+```
+
+#### Spacing
+```css
+--spacing-xs: 4px;
+--spacing-sm: 8px;
+--spacing-md: 12px;
+--spacing-lg: 16px;
+--spacing-xl: 20px;
+--spacing-2xl: 24px;
+```
+
+#### Border Radius
+```css
+--radius-sm: 4px;
+--radius-md: 6px;
+--radius-lg: 8px;
+```
+
+### Best Practices
+
+#### ✅ DO:
+- Use theme semantic variables (`--theme-*`) in components
+- Use spacing/typography constants for consistency
+- Test your theme in all app states (empty, loading, error, success)
+- Ensure sufficient contrast (WCAG AA minimum: 4.5:1)
+- Use `--theme-accent-primary` for all primary actions
+
+#### ❌ DON'T:
+- Hardcode color values in components
+- Use palette variables (`--nord*`) directly in components
+- Skip testing accessibility
+- Use the same hill variant everywhere
+- Mix different visual metaphors (ice + desert)
+
+### Creating New Themes
+
+To create a new theme, follow the steps in the "Creating Custom Themes" section above. The key is to:
+1. Define your color palette
+2. Map to semantic variables (`--theme-*`)
+3. Set hill layer colors
+4. Register in `src/main.tsx`
+5. Add to `ThemeSwitcher.tsx`
+
+See existing themes for complete examples.
+
+---
+
+**Reference:** [Nord Theme](https://www.nordtheme.com/)
 

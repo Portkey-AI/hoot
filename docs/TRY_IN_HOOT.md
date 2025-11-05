@@ -2,6 +2,45 @@
 
 The "Try in Hoot" feature allows users to add MCP servers with a single click. Perfect for sharing servers, quick-start examples, or building galleries of available MCP servers.
 
+## Quick Start
+
+### For Users
+
+Click any "Try in Hoot" link to instantly add an MCP server:
+
+1. Click a "Try in Hoot" button/link
+2. See the friendly Hoot owl 🦉 and server details
+3. Watch auto-detection work its magic (if just a URL was provided)
+4. Click "Add & Connect" or "Authorize →" for OAuth servers
+5. Start using the server!
+
+**Example link to try:**
+```
+http://localhost:8009/?try=eyJ1cmwiOiJodHRwczovL21jcC5kZWVwd2lraS5jb20vc3NlIn0=
+```
+
+### For MCP Server Authors
+
+**The Easiest Way: Just Share Your URL**
+
+The simplest "Try in Hoot" link:
+
+```bash
+# Just your server URL
+config='{"url":"https://mcp.yourserver.com"}'
+
+# Base64 encode
+encoded=$(echo -n "$config" | base64)
+
+# Create URL
+echo "https://hoot.app/?try=$encoded"
+```
+
+Hoot will auto-detect:
+- ✅ Transport type (HTTP or SSE)
+- ✅ Server name and version
+- ✅ OAuth requirements
+
 ## How It Works
 
 When a user clicks a "Try in Hoot" link:
@@ -11,14 +50,10 @@ When a user clicks a "Try in Hoot" link:
 3. User confirms and Hoot adds and connects to the server automatically
 4. If OAuth is required, the user is redirected to authorize
 
-## Quick Start
-
-Users can also provide just a URL and Hoot will auto-detect everything:
+You can also provide just a URL and Hoot will auto-detect everything:
 - Transport type (HTTP or SSE)
 - Server name and version
 - OAuth requirements
-
-This makes sharing servers even easier!
 
 ## URL Format
 
@@ -32,7 +67,7 @@ https://hoot.app/?try=<base64-encoded-config>
 
 The JSON configuration can be **simple** (just a URL) or **detailed**:
 
-#### Simple Mode (Auto-Detection)
+#### Simple Mode (Auto-Detection) - Recommended
 
 ```json
 {
@@ -75,84 +110,77 @@ Hoot will automatically detect:
 
 ## Generating Links
 
-### Programmatically (TypeScript/JavaScript)
+### Option A: Interactive Generator (Easiest)
 
-Hoot provides utilities for generating "Try in Hoot" links:
+```bash
+open examples/try-in-hoot-generator.html
+```
 
-```typescript
-import { generateTryInHootLink } from './lib/tryInHootLinks';
+Fill in your server details and copy the generated link.
+
+### Option B: Use Code
+
+```javascript
+import { generateTryInHootLink } from '@portkey-ai/hoot/lib/tryInHootLinks';
 
 const link = generateTryInHootLink({
-  name: "Weather MCP Server",
+  name: "My MCP Server",
   transport: "http",
-  url: "https://weather-mcp.example.com"
+  url: "https://my-server.com/mcp"
 });
 
 console.log(link);
-// Output: https://hoot.app/?try=eyJuYW1lIjoiV2VhdGhlciBNQ1A...
 ```
 
-### Manually
-
-1. Create your configuration JSON
-2. Base64 encode it
-3. Append as `?try=` parameter to Hoot URL
-
-**Example (using command line):**
+### Option C: Manual Bash
 
 ```bash
-# Create config
-echo '{"name":"Weather Server","transport":"http","url":"http://localhost:3000"}' | base64
+# Create config JSON
+config='{"name":"My Server","transport":"http","url":"http://localhost:3000"}'
 
-# Use the output in URL:
-# https://hoot.app/?try=eyJuYW1lIjoiV2VhdGhlciBTZXJ2ZXIiLCJ0cmFuc3BvcnQiOiJodHRwIiwidXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIn0=
+# Base64 encode
+encoded=$(echo -n "$config" | base64)
+
+# Create URL
+echo "https://hoot.app/?try=$encoded"
 ```
 
 ## Adding Buttons to Your Documentation
 
-### HTML Button
+### Markdown (Recommended)
+
+```markdown
+[![Try in Hoot](https://img.shields.io/badge/Try%20in-Hoot-6366f1)](YOUR_GENERATED_LINK)
+```
+
+### HTML
 
 ```html
-<a href="https://hoot.app/?try=eyJuYW1lIjoiV2VhdGhlciBTZXJ2ZXIi..." 
-   style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">
+<a href="YOUR_GENERATED_LINK" 
+   style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; 
+          background: #6366f1; color: white; text-decoration: none; border-radius: 6px; 
+          font-weight: 600;">
   <span>🚀</span>
   <span>Try in Hoot</span>
 </a>
 ```
 
-Or use the generator:
-
-```typescript
-import { generateTryInHootButton } from './lib/tryInHootLinks';
-
-const html = generateTryInHootButton({
-  name: "Weather MCP Server",
-  transport: "http",
-  url: "https://weather-mcp.example.com"
-});
-```
-
-### Markdown Badge
+### Example README Integration
 
 ```markdown
-[![Try in Hoot](https://img.shields.io/badge/Try%20in-Hoot-6366f1)](https://hoot.app/?try=eyJuYW1lIjoiV2VhdGhlciBTZXJ2ZXIi...)
+# My MCP Server
+
+A powerful MCP server for doing X, Y, and Z.
+
+[![Try in Hoot](https://img.shields.io/badge/Try%20in-Hoot-6366f1)](YOUR_LINK_HERE)
+
+## Features
+...
 ```
 
-Or use the generator:
+## Configuration Examples
 
-```typescript
-import { generateTryInHootMarkdown } from './lib/tryInHootLinks';
-
-const markdown = generateTryInHootMarkdown({
-  name: "Weather MCP Server",
-  transport: "http",
-  url: "https://weather-mcp.example.com"
-});
-```
-
-## Examples
-
-### Simplest: Just a URL (Recommended!)
+### Simplest: Just URL (Recommended!)
 
 ```json
 {
@@ -160,24 +188,17 @@ const markdown = generateTryInHootMarkdown({
 }
 ```
 
-**Link:** [Try DeepWiki](https://hoot.app/?try=eyJ1cmwiOiJodHRwczovL21jcC5kZWVwd2lraS5jb20vc3NlIn0=)
+Let Hoot handle the rest with auto-detection!
 
-Hoot will automatically:
-- Detect it uses SSE transport
-- Get the server name "DeepWiki"
-- Connect seamlessly
-
-### Simple HTTP Server
+### Full Config: HTTP Server
 
 ```json
 {
-  "name": "Weather MCP Server",
+  "name": "Weather Server",
   "transport": "http",
-  "url": "https://weather-mcp.example.com"
+  "url": "http://localhost:3000"
 }
 ```
-
-**Link:** [Try Weather Server](https://hoot.app/?try=eyJuYW1lIjoiV2VhdGhlciBNQ1AgU2VydmVyIiwidHJhbnNwb3J0IjoiaHR0cCIsInVybCI6Imh0dHBzOi8vd2VhdGhlci1tY3AuZXhhbXBsZS5jb20ifQ==)
 
 ### Server with API Key Authentication
 
@@ -195,7 +216,7 @@ Hoot will automatically:
 }
 ```
 
-### Server with OAuth
+### OAuth Server (Can Be Simple Too!)
 
 ```json
 {
@@ -203,11 +224,13 @@ Hoot will automatically:
 }
 ```
 
-or with explicit config:
+Hoot auto-detects OAuth and shows "Authorize →" button!
+
+Or with explicit config:
 
 ```json
 {
-  "name": "Notion MCP",
+  "name": "Notion",
   "transport": "http",
   "url": "https://mcp.notion.com",
   "auth": {
@@ -215,8 +238,6 @@ or with explicit config:
   }
 }
 ```
-
-**Note:** Hoot auto-detects OAuth! Users will see "Authorize →" button and be redirected through the OAuth flow.
 
 ### SSE Server
 
@@ -265,20 +286,33 @@ Always review this information carefully before confirming.
 
 When creating "Try in Hoot" links:
 
-1. **Never include sensitive credentials** in the URL
-   - ❌ Don't: Include API keys or tokens in `auth.headers`
-   - ✅ Do: Use OAuth or prompt users to add their own keys
+#### ✅ DO:
+- Keep it simple: just share the URL and let Hoot auto-detect
+- Use descriptive server names (if providing full config)
+- Test links before sharing
+- Use OAuth for production servers
+- Document what your server does
+- Provide setup instructions for API keys
 
-2. **Use HTTPS for production servers**
-   - Ensure your MCP server uses TLS/SSL
+#### ❌ DON'T:
+- Include real API keys or secrets in links
+- Share production credentials
+- Use unencrypted HTTP for sensitive data
+- Link to untrusted servers
 
-3. **Document what your server does**
-   - Be transparent about capabilities and data access
-   - Link to source code and documentation
+## What Users Will See
 
-4. **Consider rate limiting**
-   - Protect your server from abuse
-   - Implement proper authentication
+When someone clicks your "Try in Hoot" link:
+
+1. **Friendly Welcome**: Hoot owl 🦉 greets them with "Try in Hoot - Add this server to get started"
+2. **Auto-Detection Magic** (if URL-only):
+   - Finding your server ✓
+   - Checking how to connect ✓
+   - Getting server details ✓
+   - Checking if login is needed ✓
+3. **Clean Display**: Modern card with cyan accents showing all detected info
+4. **Clear Action**: "Add & Connect" button (or "Authorize →" for OAuth)
+5. **Security Note**: Gentle reminder "Only add servers from trusted sources"
 
 ## API Reference
 
@@ -331,7 +365,7 @@ console.log(config.name); // "My Server"
 ## Testing Your Links
 
 1. Generate your link using one of the methods above
-2. Test it locally: `http://localhost:5173/?try=<encoded-config>`
+2. Test it locally: `http://localhost:8009/?try=<encoded-config>`
 3. Open in browser and verify the configuration appears correctly
 4. Confirm and test the connection
 
@@ -355,45 +389,6 @@ console.log(config.name); // "My Server"
 - Check that the OAuth endpoints are accessible
 - Ensure callback URL is configured properly
 
-## Integration Examples
-
-### GitHub README
-
-```markdown
-# My MCP Server
-
-A powerful MCP server for X, Y, and Z.
-
-[![Try in Hoot](https://img.shields.io/badge/Try%20in-Hoot-6366f1)](https://hoot.app/?try=YOUR_ENCODED_CONFIG)
-
-## Installation
-
-Or add manually:
-...
-```
-
-### Documentation Site
-
-```html
-<div class="quickstart">
-  <h2>Quick Start</h2>
-  <p>Try our MCP server instantly:</p>
-  <a href="https://hoot.app/?try=YOUR_ENCODED_CONFIG" class="try-button">
-    🚀 Try in Hoot
-  </a>
-</div>
-```
-
-### MCP Server Gallery
-
-```html
-<div class="server-card">
-  <h3>Weather Server</h3>
-  <p>Get weather data for any location</p>
-  <a href="https://hoot.app/?try=...">Try in Hoot</a>
-</div>
-```
-
 ## Best Practices
 
 1. **Keep it simple**: Just provide the URL and let Hoot auto-detect the rest
@@ -403,30 +398,18 @@ Or add manually:
 5. **Keep links updated** if your server configuration changes
 6. **Consider hosting a landing page** with server information and the "Try in Hoot" button
 
-## User Experience
+## Try the Demo
 
-When users click a "Try in Hoot" link, they'll see:
+Open the demo gallery to see the feature in action:
+```bash
+open examples/try-in-hoot-demo.html
+```
 
-1. **Welcome Modal**: Hoot's friendly owl 🦉 greets them with "Try in Hoot"
-2. **Auto-Detection**: If only URL provided, Hoot shows detection progress:
-   - Finding your server
-   - Checking how to connect
-   - Getting server details
-   - Checking if login is needed
-3. **Server Info Display**: Clean, modern card showing detected info
-4. **Simple Actions**: Clear "Add & Connect" or "Authorize →" button
-5. **Smooth Connection**: Automatic connection with OAuth redirect if needed
+## Need Help?
 
-## Future Enhancements
+- Open an [issue](https://github.com/Portkey-AI/hoot/issues)
+- See [examples](../examples/)
 
-Planned features:
-- Deep linking for specific tools within a server
-- QR codes for easy mobile access
-- Server configuration templates
-- Link expiration and versioning
-- Analytics for link usage (opt-in)
+---
 
-## Contributing
-
-Have ideas for improving "Try in Hoot"? See [CONTRIBUTING.md](../CONTRIBUTING.md).
-
+**Made with 🦉 by Hoot**
