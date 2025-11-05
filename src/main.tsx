@@ -53,10 +53,20 @@ const savedTheme = localStorage.getItem('hoot-theme');
 const themeToApply = savedTheme || getDefaultTheme();
 applyTheme(themeToApply);
 
-// If no saved theme, save the detected default
-if (!savedTheme) {
-  localStorage.setItem('hoot-theme', themeToApply);
-}
+// Listen for system theme changes (only if user hasn't explicitly selected a theme)
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+mediaQuery.addEventListener('change', (e) => {
+  // Only auto-switch if user hasn't explicitly selected a theme
+  if (!localStorage.getItem('hoot-theme')) {
+    const newTheme = e.matches ? 'arctic-night' : 'nordic-snow';
+    applyTheme(newTheme);
+    
+    // Regenerate hills with new theme colors
+    if ((window as any).initializeHills) {
+      (window as any).initializeHills();
+    }
+  }
+});
 
 // Expose theme functions globally
 if (typeof window !== 'undefined') {

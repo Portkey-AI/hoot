@@ -88,6 +88,22 @@
     border-color: color-mix(in srgb, var(--border-color) 85%, white);
 }
 
+/* System default option - mixed colors */
+.theme-option-system {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--bg-tertiary) 85%, black) 50%, 
+        color-mix(in srgb, var(--bg-tertiary) 85%, white) 50%);
+    border-color: var(--border-bright);
+}
+
+/* Theme divider */
+.theme-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--border-color);
+    margin: 0 4px;
+}
+
 .theme-option:hover {
     background: var(--bg-hover);
     border-color: var(--border-bright);

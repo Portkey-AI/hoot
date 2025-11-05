@@ -1,5 +1,6 @@
 import { Palette } from 'lucide-react';
 import './ThemeSwitcher.css';
+import { useState, useEffect } from 'react';
 
 const THEMES = [
     // Dark Themes
@@ -20,7 +21,13 @@ export function ThemeSwitcher() {
         return prefersDark ? 'arctic-night' : 'nordic-snow';
     };
 
-    const currentTheme = localStorage.getItem('hoot-theme') || getDefaultTheme();
+    const [currentTheme, setCurrentTheme] = useState(() => {
+        return localStorage.getItem('hoot-theme') || getDefaultTheme();
+    });
+
+    const [isSystemDefault, setIsSystemDefault] = useState(() => {
+        return !localStorage.getItem('hoot-theme');
+    });
 
     const switchTheme = (themeId: string) => {
         // Use the globally exposed applyTheme function
@@ -29,11 +36,8 @@ export function ThemeSwitcher() {
         }
 
         localStorage.setItem('hoot-theme', themeId);
-
-        // Force re-render by updating the active state
-        document.querySelectorAll('.theme-option').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-theme') === themeId);
-        });
+        setCurrentTheme(themeId);
+        setIsSystemDefault(false);
 
         // Regenerate hills with new theme colors
         setTimeout(() => {
@@ -43,6 +47,47 @@ export function ThemeSwitcher() {
         }, 100);
     };
 
+    const resetToSystemDefault = () => {
+        // Remove the saved theme preference
+        localStorage.removeItem('hoot-theme');
+        
+        // Apply the system default theme
+        const systemTheme = getDefaultTheme();
+        if ((window as any).applyTheme) {
+            (window as any).applyTheme(systemTheme);
+        }
+
+        setCurrentTheme(systemTheme);
+        setIsSystemDefault(true);
+
+        // Regenerate hills with new theme colors
+        setTimeout(() => {
+            if ((window as any).initializeHills) {
+                (window as any).initializeHills();
+            }
+        }, 100);
+    };
+
+    // Listen for system theme changes when in system default mode
+    useEffect(() => {
+        if (!isSystemDefault) return;
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            const newTheme = e.matches ? 'arctic-night' : 'nordic-snow';
+            setCurrentTheme(newTheme);
+            if ((window as any).applyTheme) {
+                (window as any).applyTheme(newTheme);
+            }
+            if ((window as any).initializeHills) {
+                (window as any).initializeHills();
+            }
+        };
+
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, [isSystemDefault]);
+
     return (
         <div className="theme-switcher-header">
             <button className="theme-trigger" title="Change theme">
@@ -50,13 +95,26 @@ export function ThemeSwitcher() {
             </button>
 
             <div className="theme-dropdown">
+                {/* System Default Option */}
+                <button
+                    data-theme="system"
+                    data-tooltip="System Default"
+                    className={`theme-option ${isSystemDefault ? 'active' : ''} theme-option-system`}
+                    onClick={resetToSystemDefault}
+                >
+                    <span className="theme-emoji">🌗</span>
+                </button>
+                
+                {/* Divider */}
+                <div className="theme-divider"></div>
+                
                 {THEMES.map((theme) => (
                     <button
                         key={theme.id}
                         data-theme={theme.id}
                         data-theme-type={theme.type}
                         data-tooltip={theme.name}
-                        className={`theme-option ${currentTheme === theme.id ? 'active' : ''} theme-option-${theme.type}`}
+                        className={`theme-option ${!isSystemDefault && currentTheme === theme.id ? 'active' : ''} theme-option-${theme.type}`}
                         onClick={() => switchTheme(theme.id)}
                     >
                         <span className="theme-emoji">{theme.emoji}</span>
