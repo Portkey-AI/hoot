@@ -119,7 +119,7 @@ export function useToolFilter() {
                 .finally(() => {
                     isInitializing.current = false;
                 });
-        }, 500); // Wait 500ms after last change
+        }, 2000); // Wait 2000ms (2 seconds) after last change to allow all servers to connect
 
         // No cleanup needed - timer should complete
     }, [currentServersKey, currentToolsKey, toolFilterEnabled, setToolFilterReady]);

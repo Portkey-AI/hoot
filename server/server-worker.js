@@ -19,7 +19,7 @@ import { MCPConnectionPoolDO } from './durable-objects/mcp-connection-pool-do.js
 import { JWTManager } from './lib/jwt.js';
 import { AuditLogger, RateLimiter } from './lib/utils.js';
 import { MCPClientManager } from './lib/client-manager.js';
-import { toolFilterManager } from './lib/tool-filter.js';
+import { getToolFilterManager } from './lib/tool-filter.js';
 
 // Route handlers
 import {
@@ -681,6 +681,8 @@ async function handleRequest(request, env) {
         }, 400, headers);
       }
 
+      // Get tool filter manager with Workers AI support
+      const toolFilterManager = getToolFilterManager(env);
       const result = await toolFilterManager.initialize(serversWithTools);
 
       if (result.success) {
@@ -707,6 +709,8 @@ async function handleRequest(request, env) {
         }, 400, headers);
       }
 
+      // Get tool filter manager with Workers AI support
+      const toolFilterManager = getToolFilterManager(env);
       const result = await toolFilterManager.filterTools(messages, options);
 
       if (result.success) {
@@ -725,12 +729,14 @@ async function handleRequest(request, env) {
 
     // Tool filter: Stats
     if (pathname === '/mcp/tool-filter/stats' && method === 'GET') {
+      const toolFilterManager = getToolFilterManager(env);
       const stats = toolFilterManager.getStats();
       return jsonResponse({ success: true, stats }, 200, headers);
     }
 
     // Tool filter: Clear cache
     if (pathname === '/mcp/tool-filter/clear-cache' && method === 'POST') {
+      const toolFilterManager = getToolFilterManager(env);
       toolFilterManager.clearCache();
       return jsonResponse({ success: true, message: 'Cache cleared' }, 200, headers);
     }

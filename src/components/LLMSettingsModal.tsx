@@ -185,6 +185,24 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
         { value: '0.50', label: 'Very Strict' },
     ];
 
+    // Handle Enter key to save
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                // Don't trigger if user is in an input field (let them type normally)
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                e.preventDefault();
+                handleSave();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [localFilterEnabled, localTopK, localMinScore]); // Dependencies for handleSave
+
     return (
         <Modal onClose={onClose}>
             <div className="llm-settings-modal">

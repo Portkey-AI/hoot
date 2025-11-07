@@ -352,6 +352,17 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     // Register keyboard shortcuts for tool execution
     useKeyboardShortcuts([
         {
+            key: 'Enter',
+            ctrl: true,
+            description: 'Execute tool',
+            handler: () => {
+                if (!executionState.isExecuting) {
+                    handleExecute();
+                }
+            },
+            preventDefault: true,
+        },
+        {
             key: 'm',
             description: 'Toggle Form/JSON input mode',
             handler: () => {

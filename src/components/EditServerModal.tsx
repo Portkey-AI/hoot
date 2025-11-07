@@ -81,20 +81,28 @@ export const EditServerModal = memo(function EditServerModal({
         }
     }, [authType, headers.length]);
 
-    // Handle Escape key to close modal
+    // Handle Escape key to close modal and Enter key to submit
     useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 onClose();
+            } else if (e.key === 'Enter' && !e.shiftKey && !isConnecting) {
+                // Don't trigger if user is in an input field (let them type normally)
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                e.preventDefault();
+                handleSubmit();
             }
         };
 
-        document.addEventListener('keydown', handleEscape);
+        document.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [onClose]);
+    }, [onClose, isConnecting, name, transport, command, url, authType, headers, clientId, clientSecret, tokenUrl, additionalHeaders, customAuthEndpoint, customTokenEndpoint, customClientId]); // Dependencies for handleSubmit
 
     // Auto-detect OAuth based on URL using MCP SDK discovery
     const handleUrlBlur = async () => {

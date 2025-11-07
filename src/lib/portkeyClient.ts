@@ -81,14 +81,26 @@ export class PortkeyClient {
             const model = options.model || getSelectedModel();
             console.log(`🤖 Using model: ${getDisplayModelName(model)}`);
 
-            const response = await this.client!.chat.completions.create({
+            // GPT-5 models require max_completion_tokens instead of max_tokens
+            const modelName = getDisplayModelName(model).toLowerCase();
+            const isGPT5Model = modelName.includes('gpt-5');
+            
+            const requestParams: any = {
                 model,
                 messages: options.messages as any,
                 tools: options.tools as any,
                 temperature: options.temperature ?? 0.7,
-                max_tokens: options.max_tokens ?? 2000,
                 stream: options.stream ?? false,
-            });
+            };
+
+            // Use the correct token parameter based on model
+            if (isGPT5Model) {
+                requestParams.max_completion_tokens = options.max_tokens ?? 2000;
+            } else {
+                requestParams.max_tokens = options.max_tokens ?? 2000;
+            }
+
+            const response = await this.client!.chat.completions.create(requestParams);
 
             return response;
         } catch (error) {
@@ -114,14 +126,26 @@ export class PortkeyClient {
             const model = options.model || getSelectedModel();
             console.log(`🤖 Using model (streaming): ${getDisplayModelName(model)}`);
 
-            const stream = await this.client!.chat.completions.create({
+            // GPT-5 models require max_completion_tokens instead of max_tokens
+            const modelName = getDisplayModelName(model).toLowerCase();
+            const isGPT5Model = modelName.includes('gpt-5');
+            
+            const requestParams: any = {
                 model,
                 messages: options.messages as any,
                 tools: options.tools as any,
                 temperature: options.temperature ?? 0.7,
-                max_tokens: options.max_tokens ?? 2000,
                 stream: true,
-            });
+            };
+
+            // Use the correct token parameter based on model
+            if (isGPT5Model) {
+                requestParams.max_completion_tokens = options.max_tokens ?? 2000;
+            } else {
+                requestParams.max_tokens = options.max_tokens ?? 2000;
+            }
+
+            const stream = await this.client!.chat.completions.create(requestParams);
 
             for await (const chunk of stream as any) {
                 yield chunk;

@@ -107,24 +107,33 @@ npm run deploy:cloudflare
 
 ## Step 2: Deploy the Frontend (Pages)
 
-### 2.1 Create `.env.production`
+### 2.1 Build Frontend
 
+The build script is pre-configured to use the production backend URL (`https://hoot-server-production.portkey-ai.workers.dev`).
+
+To use a custom backend URL, you can either:
+
+**Option A: Override with environment variable**
 ```bash
-# Create .env.production file
+VITE_BACKEND_URL=https://hoot-server.your-subdomain.workers.dev npm run build
+```
+
+**Option B: Create `.env.production` file (optional)**
+```bash
+# Create .env.production file to permanently override
 cat > .env.production << EOF
 VITE_BACKEND_URL=https://hoot-server.your-subdomain.workers.dev
 EOF
 ```
 
-### 2.2 Build Frontend
-
+**Option C: Use default (Portkey production)**
 ```bash
 npm run build
 ```
 
 This creates a `dist/` folder with static files.
 
-### 2.3 Deploy to Cloudflare Pages
+### 2.2 Deploy to Cloudflare Pages
 
 #### Option A: Via Wrangler
 
@@ -285,6 +294,129 @@ compatibility_flags = ["nodejs_compat"]
 - ✅ OAuth tokens are cached in Durable Objects
 
 **Future Enhancement**: Move MCP client management to Durable Objects for persistent connections.
+
+### Semantic Tool Filtering with Workers AI ✨
+
+**Good news!** Hoot now supports semantic tool filtering on Cloudflare using Workers AI with OpenAI-compatible endpoints!
+
+**How it works:**
+- Automatically detects if Workers AI is available (`env.AI` binding)
+- Uses the OpenAI provider from `@portkey-ai/mcp-tool-filter` with Workers AI's OpenAI-compatible endpoint
+- Provides fast, edge-based semantic filtering with no custom code needed
+
+**Benefits:**
+- ✅ Semantic filtering works on Cloudflare (no more falling back to all tools)
+- ⚡ Fast & low-latency (runs on Cloudflare's edge network)
+- 💰 Cost-effective (~$0.011 per 1,000 filtering requests)
+- 🌍 Multiple model options (including multilingual support)
+- 🔌 Uses standard OpenAI-compatible API (no custom provider needed)
+
+**Available Models:**
+- `@cf/baai/bge-base-en-v1.5` (default) - Good balance, 768-dim
+- `@cf/baai/bge-small-en-v1.5` - Faster, 384-dim
+- `@cf/baai/bge-large-en-v1.5` - More accurate, 1024-dim
+- `@cf/google/embeddinggemma-300m` - Multilingual (100+ languages)
+- `@cf/baai/bge-m3` - Multi-functional, multi-lingual, multi-granularity
+
+**Setup:**
+
+1. **Add Workers AI binding** in `wrangler.toml` (already included):
+```toml
+[ai]
+binding = "AI"
+```
+
+2. **Set your Cloudflare Account ID**:
+```toml
+[vars]
+CLOUDFLARE_ACCOUNT_ID = "your-account-id-here"
+```
+
+3. **Set Cloudflare API Token** (secret):
+```bash
+wrangler secret put CLOUDFLARE_API_TOKEN
+# Paste your API token (from Cloudflare Dashboard → API Tokens)
+```
+
+4. **Optional: Choose a different embedding model**:
+```toml
+[vars]
+WORKERS_AI_EMBEDDING_MODEL = "@cf/google/embeddinggemma-300m"
+```
+
+**How it uses OpenAI-compatible API:**
+Workers AI provides OpenAI-compatible endpoints at:
+```
+https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1
+```
+
+Hoot's tool filter uses the existing OpenAI provider with this base URL, making it work seamlessly with Workers AI models!
+
+**Fallback behavior:**
+- If Workers AI is not configured, falls back to Node.js behavior (Transformers.js on Node, all tools on Workers)
+- The feature gracefully degrades, ensuring Hoot works in all environments
+
+### Local Development with Workers AI
+
+**Good news:** Workers AI works with `wrangler dev` for local development!
+
+**Setup:**
+
+1. **Enable remote mode** in `wrangler.toml` (already configured):
+```toml
+[ai]
+binding = "AI"
+remote = true  # Connects to Cloudflare's Workers AI service
+```
+
+2. **Add your credentials to `.dev.vars`** (create this file in project root):
+```bash
+# .dev.vars (for local development only - never commit this!)
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_API_TOKEN=your-api-token
+```
+
+3. **Start local development**:
+```bash
+npm run server:worker  # or: wrangler dev
+```
+
+**Important notes:**
+- ⚠️ **Not truly local**: `wrangler dev` makes real API calls to Cloudflare's Workers AI service
+- 💰 **May incur costs**: Usage during development counts toward your Workers AI usage
+- ✅ **Fast testing**: Great for testing semantic filtering without deploying
+- 🔒 **Keep .dev.vars private**: Add it to `.gitignore` (already included)
+
+**Alternative for local development:**
+If you don't want to use Workers AI credits during development, run the Node.js server instead:
+```bash
+npm run server  # Uses local Transformers.js embeddings (free)
+```
+
+The Node.js server uses free local embeddings with Transformers.js, perfect for development!
+
+### Legacy: Semantic Tool Filtering Without Workers AI (Old Behavior)
+
+### Legacy: Semantic Tool Filtering Without Workers AI (Old Behavior)
+
+**Note:** This section describes the old behavior before Workers AI support was added. With Workers AI enabled (default), semantic filtering now works on Cloudflare!
+
+**Issue (without Workers AI)**: Semantic tool filtering does not work on Cloudflare Workers without Workers AI.
+
+**Explanation**: The `@portkey-ai/mcp-tool-filter` package uses Transformers.js and ONNX Runtime for local embeddings. These dependencies require Node.js APIs that are not available in Cloudflare Workers' V8 isolate environment.
+
+**Old Behavior (if Workers AI disabled)**: 
+- ⚠️ The feature is automatically disabled on Workers
+- ⚠️ All available tools are sent to the LLM (limited to first 120 if more than 128)
+- ✅ You can still use the `@` mention feature to manually pin specific tools/servers
+
+**Alternative (if you don't want to use Workers AI)**:
+1. **Use mention feature**: Type `@` in the chat to manually pin specific servers or tools
+2. **Deploy to Node.js**: For Transformers.js filtering, deploy the backend using `npm run server`
+3. **Hybrid setup**: Run frontend on Cloudflare Pages, backend on a Node.js server
+
+**To disable Workers AI** (not recommended):
+Remove the `[ai]` binding from `wrangler.toml` and semantic filtering will fall back to the old behavior.
 
 ## Cost Estimate
 

@@ -22,37 +22,61 @@ export function convertMCPToolToOpenAI(mcpTool: ToolSchema): ToolDefinition {
 
 /**
  * Converts filtered/scored tools from semantic filter to OpenAI format
+ * Deduplicates tools by name to prevent sending duplicates
  */
 export function convertFilteredToolsToOpenAI(scoredTools: ScoredTool[]): ToolDefinition[] {
-    return scoredTools.map((scoredTool) => ({
-        type: 'function',
-        function: {
-            name: scoredTool.toolName,
-            description: scoredTool.tool.description || `Call the ${scoredTool.toolName} tool`,
-            parameters: {
-                type: 'object',
-                properties: (scoredTool.tool.inputSchema as any)?.properties || {},
-                required: (scoredTool.tool.inputSchema as any)?.required || [],
+    const seenTools = new Set<string>();
+    const uniqueTools: ToolDefinition[] = [];
+
+    for (const scoredTool of scoredTools) {
+        // Skip if we've already seen this tool name
+        if (seenTools.has(scoredTool.toolName)) {
+            console.warn(`[ToolConverter] Skipping duplicate tool: ${scoredTool.toolName}`);
+            continue;
+        }
+
+        seenTools.add(scoredTool.toolName);
+        uniqueTools.push({
+            type: 'function',
+            function: {
+                name: scoredTool.toolName,
+                description: scoredTool.tool.description || `Call the ${scoredTool.toolName} tool`,
+                parameters: {
+                    type: 'object',
+                    properties: (scoredTool.tool.inputSchema as any)?.properties || {},
+                    required: (scoredTool.tool.inputSchema as any)?.required || [],
+                },
             },
-        },
-    }));
+        });
+    }
+
+    return uniqueTools;
 }
 
 /**
  * Converts all MCP tools from multiple servers to OpenAI format
+ * Deduplicates tools by name to prevent sending duplicates
  */
 export function convertAllMCPToolsToOpenAI(
     toolsByServer: Record<string, ToolSchema[]>
 ): ToolDefinition[] {
-    const allTools: ToolDefinition[] = [];
+    const seenTools = new Set<string>();
+    const uniqueTools: ToolDefinition[] = [];
 
     for (const tools of Object.values(toolsByServer)) {
         for (const tool of tools) {
-            allTools.push(convertMCPToolToOpenAI(tool));
+            // Skip if we've already seen this tool name
+            if (seenTools.has(tool.name)) {
+                console.warn(`[ToolConverter] Skipping duplicate tool: ${tool.name}`);
+                continue;
+            }
+
+            seenTools.add(tool.name);
+            uniqueTools.push(convertMCPToolToOpenAI(tool));
         }
     }
 
-    return allTools;
+    return uniqueTools;
 }
 
 /**

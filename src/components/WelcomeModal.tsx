@@ -33,6 +33,19 @@ export function WelcomeModal({ onClose, onGetStarted }: WelcomeModalProps) {
         onClose();
     };
 
+    // Handle Enter key to get started
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleGetStarted();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [dontShowAgain, onGetStarted, onClose]); // Dependencies for handleGetStarted
+
     return (
         <Modal onClose={handleClose}>
             <div className="welcome-modal">

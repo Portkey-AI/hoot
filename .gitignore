@@ -10,8 +10,12 @@ node_modules/
 .env
 .env.local
 .env.*.local
-# But keep the example file
+# But keep the example files
 !.env.example
+!.env.production.example
+
+# Wrangler local dev vars (contains secrets)
+.dev.vars
 
 # OS files
 .DS_Store

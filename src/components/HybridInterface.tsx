@@ -249,29 +249,44 @@ export function HybridInterface() {
 
             // Collect all pinned tools with their schemas
             const pinnedToolSchemas: ToolSchema[] = [];
+            const seenTools = new Set<string>();
 
             for (const mention of mentions) {
                 if (mention.type === 'server') {
-                    // Add all tools from this server
+                    // Add all tools from this server (deduplicated)
                     const serverTools = tools[mention.id] || [];
-                    pinnedToolSchemas.push(...serverTools);
-                } else if (mention.type === 'tool') {
-                    // Add this specific tool
-                    for (const serverTools of Object.values(tools)) {
-                        const tool = serverTools.find(t => t.name === mention.name);
-                        if (tool) {
+                    for (const tool of serverTools) {
+                        if (!seenTools.has(tool.name)) {
+                            seenTools.add(tool.name);
                             pinnedToolSchemas.push(tool);
-                            break;
+                        }
+                    }
+                } else if (mention.type === 'tool') {
+                    // Add this specific tool (if not duplicate)
+                    if (!seenTools.has(mention.name)) {
+                        for (const serverTools of Object.values(tools)) {
+                            const tool = serverTools.find(t => t.name === mention.name);
+                            if (tool) {
+                                seenTools.add(mention.name);
+                                pinnedToolSchemas.push(tool);
+                                break;
+                            }
                         }
                     }
                 }
             }
 
+            // Respect OpenAI's 128 tool limit
+            const limitedPinnedTools = pinnedToolSchemas.slice(0, 120);
+            if (pinnedToolSchemas.length > 120) {
+                console.warn(`[Chat] Pinned tool count (${pinnedToolSchemas.length}) exceeds OpenAI limit (128), truncated to first 120 tools`);
+            }
+
             // Convert pinned tools to OpenAI format
-            const openaiTools = pinnedToolSchemas.map(tool => convertMCPToolToOpenAI(tool));
+            const openaiTools = limitedPinnedTools.map(tool => convertMCPToolToOpenAI(tool));
 
             // Collect tool details with server information for display
-            const toolDetails = await Promise.all(pinnedToolSchemas.map(async (tool) => {
+            const toolDetails = await Promise.all(limitedPinnedTools.map(async (tool) => {
                 // Find the server that has this tool
                 let serverName = 'Unknown';
                 let serverIcon: string | undefined;
@@ -296,17 +311,17 @@ export function HybridInterface() {
 
             // Update filter metrics for display
             setFilterMetrics({
-                toolsUsed: pinnedToolSchemas.length,
+                toolsUsed: limitedPinnedTools.length,
                 toolsTotal: totalTools,
                 lastFilterTime: 0, // No filtering time for pinned tools
             });
 
-            console.log(`[Chat] Using ${pinnedToolSchemas.length} pinned tools (bypassing semantic filtering)`);
+            console.log(`[Chat] Using ${limitedPinnedTools.length} pinned tools (bypassing semantic filtering)`);
 
             return {
                 tools: openaiTools,
                 metrics: {
-                    toolsUsed: pinnedToolSchemas.length,
+                    toolsUsed: limitedPinnedTools.length,
                     toolsTotal: totalTools,
                     filterTime: 0,
                     toolDetails,
@@ -406,9 +421,10 @@ export function HybridInterface() {
             }
         }
 
-        // Fallback to all tools (with safety limit for OpenAI's 128 tool max)
+        // Fallback to all tools (with deduplication and safety limit for OpenAI's 128 tool max)
         const allTools = convertAllMCPToolsToOpenAI(tools);
         const limitedTools = allTools.slice(0, 120); // OpenAI max is 128, leave some margin
+
         setFilterMetrics({
             toolsUsed: limitedTools.length,
             toolsTotal: totalTools,
@@ -416,8 +432,10 @@ export function HybridInterface() {
         });
 
         if (allTools.length > 120) {
-            console.warn(`[Chat] Tool count (${allTools.length}) exceeds OpenAI limit (128), using first 120 tools`);
+            console.warn(`[Chat] Tool count (${allTools.length}) exceeds OpenAI limit (128), truncated to first 120 tools`);
         }
+
+        console.log(`[Chat] Using all ${limitedTools.length} tools (filtering disabled or unavailable)`);
 
         return {
             tools: limitedTools,
@@ -512,6 +530,13 @@ export function HybridInterface() {
                             content: '',
                             filterMetrics: filterMetrics,
                         };
+                        return newMessages;
+                    });
+                } else if (filteringMessageIndex !== -1 && !filterMetrics) {
+                    // Remove filtering message if filtering failed/not available
+                    setMessages((prev) => {
+                        const newMessages = [...prev];
+                        newMessages.splice(filteringMessageIndex, 1);
                         return newMessages;
                     });
                 } else if (iteration > 1 && filterMetrics) {

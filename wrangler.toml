@@ -8,6 +8,13 @@ compatibility_flags = ["nodejs_compat"]
 port = 8008
 local_protocol = "http"
 
+# Workers AI binding for semantic tool filtering
+# Set remote = true to use Workers AI in local development (wrangler dev)
+# Note: This will make actual API calls to Cloudflare and may incur usage charges
+[ai]
+binding = "AI"
+remote = true
+
 # Durable Objects configuration
 [durable_objects]
 bindings = [
@@ -16,29 +23,24 @@ bindings = [
   { name = "MCP_CONNECTION_POOL", class_name = "MCPConnectionPoolDO" }
 ]
 
-# Migration history acknowledgment
-# Note: DOs already exist in production, so we acknowledge v1 and v2 without changes
+# Migrations for fresh local development
+# For production with existing DOs, migrations are handled separately
 [[migrations]]
 tag = "v1"
-# DOs created in initial deployment - acknowledged for history
-
-[[migrations]]
-tag = "v2"
-# Code updates only - no schema changes
-
-[[migrations]]
-tag = "v3"
-deleted_classes = ["MCPConnectionDO"]
-# Removed MCPConnectionDO - using per-request connections instead
-
-[[migrations]]
-tag = "v4"
-new_classes = ["MCPConnectionPoolDO"]
-# Added MCPConnectionPoolDO for persistent MCP connections
+new_classes = ["UserDataDO", "FaviconCacheDO", "MCPConnectionPoolDO"]
 
 # Environment variables (non-secret)
 [vars]
 FRONTEND_URL = "http://localhost:8009"
+# Add your Cloudflare Account ID (required for Workers AI)
+# CLOUDFLARE_ACCOUNT_ID = "your-account-id-here"
+# Optional: Choose Workers AI embedding model (default: @cf/baai/bge-base-en-v1.5)
+# WORKERS_AI_EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5"
+# Other options:
+#   @cf/baai/bge-small-en-v1.5 (faster, 384-dim)
+#   @cf/baai/bge-large-en-v1.5 (more accurate, 1024-dim)
+#   @cf/google/embeddinggemma-300m (multilingual, 100+ languages)
+#   @cf/baai/bge-m3 (multi-lingual, multi-granularity)
 # PORTKEY_ORG_ID and PORTKEY_WORKSPACE_SLUG should be set as secrets
 
 # Secrets (set with: wrangler secret put SECRET_NAME)
@@ -47,6 +49,7 @@ FRONTEND_URL = "http://localhost:8009"
 # wrangler secret put JWT_JWKS
 # wrangler secret put PORTKEY_ORG_ID
 # wrangler secret put PORTKEY_WORKSPACE_SLUG
+# wrangler secret put CLOUDFLARE_API_TOKEN  # Required for Workers AI embeddings
 
 # Production configuration
 # Note: Set CLOUDFLARE_ACCOUNT_ID environment variable instead of hardcoding account_id
@@ -55,6 +58,9 @@ FRONTEND_URL = "http://localhost:8009"
 name = "hoot-server-production"
 vars = { FRONTEND_URL = "https://hoot.run" }
 
+[env.production.ai]
+binding = "AI"
+
 [[env.production.durable_objects.bindings]]
 name = "USER_DATA"
 class_name = "UserDataDO"
@@ -66,15 +72,15 @@ class_name = "FaviconCacheDO"
 [[env.production.durable_objects.bindings]]
 name = "MCP_CONNECTION_POOL"
 class_name = "MCPConnectionPoolDO"
-
-# Note: Migrations removed - DOs already exist in production
-# The base [[migrations]] at the top is sufficient for new deployments
 
 # Staging configuration
 [env.staging]
 name = "hoot-server-staging"
 vars = { FRONTEND_URL = "https://staging.hoot.yourdomain.com" }
 
+[env.staging.ai]
+binding = "AI"
+
 [[env.staging.durable_objects.bindings]]
 name = "USER_DATA"
 class_name = "UserDataDO"
@@ -86,7 +92,4 @@ class_name = "FaviconCacheDO"
 [[env.staging.durable_objects.bindings]]
 name = "MCP_CONNECTION_POOL"
 class_name = "MCPConnectionPoolDO"
-
-# Note: Migrations removed - DOs already exist
-# Use base [[migrations]] for fresh deployments only
 
