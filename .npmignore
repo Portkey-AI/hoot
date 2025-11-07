@@ -11,6 +11,7 @@ yarn-error.log*
 .vscode
 .idea
 .cursor
+.wrangler
 docs/
 tests/
 examples/
