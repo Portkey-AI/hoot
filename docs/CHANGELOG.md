@@ -5,6 +5,21 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2025-11-07
+
+### Added
+- **Workers AI Support**: Semantic tool filtering powered by Cloudflare Workers AI
+  - Integrated Workers AI for intelligent tool filtering when deployed on Cloudflare
+  - Local development support with automatic fallback to non-semantic filtering
+  - Enhanced tool filtering capabilities with natural language understanding
+  - Improved tool selection accuracy for LLM interactions
+
+### Fixed
+- **OAuth Detection**: Improved OAuth endpoint detection reliability
+  - Better handling of OAuth metadata responses
+  - Enhanced error recovery during OAuth discovery
+  - More robust authentication flow initialization
+
 ## [0.10.1] - 2025-11-05
 
 ### Added
@@ -586,6 +601,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.11.0** - Workers AI support for semantic tool filtering and improved OAuth detection
 - **0.10.1** - Welcome modal, package security improvements, and server URL display fixes
 - **0.10.0** - JWT authentication, Cloudflare Workers deployment, pinning feature, enhanced logging, and backend architecture refactor
 - **0.9.0** - Three new light themes, smart theme selection, visual theme indicators, and comprehensive theme system improvements
