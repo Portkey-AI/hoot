@@ -74,6 +74,11 @@ export const EditServerModal = memo(function EditServerModal({
     // OAuth discovery state
     const [isDiscovering, setIsDiscovering] = useState(false);
 
+    // Hooks for server management
+    const updateServer = useAppStore((state) => state.updateServer);
+    const addServer = useAppStore((state) => state.addServer);
+    const { connect, disconnect, isConnecting } = useMCPConnection();
+
     // Ensure headers always has at least one empty entry when auth type is 'headers'
     useEffect(() => {
         if (authType === 'headers' && headers.length === 0) {
@@ -138,10 +143,6 @@ export const EditServerModal = memo(function EditServerModal({
             setIsDiscovering(false);
         }
     };
-
-    const updateServer = useAppStore((state) => state.updateServer);
-    const addServer = useAppStore((state) => state.addServer);
-    const { connect, disconnect, isConnecting } = useMCPConnection();
 
     const handleSubmit = async () => {
         setError('');
