@@ -238,6 +238,64 @@ export async function autoDetectServer({ url }) {
         break;
       }
 
+      // Step 3: Try RFC 9728 OAuth Protected Resource Metadata discovery
+      // If we got a 401/403 but no WWW-Authenticate header, probe for OAuth metadata
+      if (is401or403 && !isOAuthError && !requiresOAuthFromHeader) {
+        logger.info(`🔍 Probing for OAuth metadata at well-known endpoint...`);
+        try {
+          // Manually fetch the metadata to handle servers that return arrays for resource field
+          // (GitLab returns resource as array, but SDK schema expects string)
+          const wellKnownUrl = new URL(url);
+          wellKnownUrl.pathname = '/.well-known/oauth-protected-resource';
+          
+          const metadataRes = await fetch(wellKnownUrl.toString());
+          if (metadataRes.ok) {
+            const metadata = await metadataRes.json();
+            logger.info(`📋 OAuth metadata retrieved:`, JSON.stringify(metadata));
+            
+            // Check for authorization_servers (required field in RFC 9728)
+            const authServers = metadata.authorization_servers || metadata.authorization_server;
+            if (authServers && (Array.isArray(authServers) ? authServers.length > 0 : authServers)) {
+              logger.info(`🔐 OAuth detected for ${transport.toUpperCase()} (RFC 9728 discovery)`);
+              logger.info(`   Authorization server: ${Array.isArray(authServers) ? authServers[0] : authServers}`);
+              detectedTransport = transport;
+              requiresOAuth = true;
+              
+              // Extract server name from URL
+              try {
+                const urlObj = new URL(url);
+                const hostname = urlObj.hostname;
+                const parts = hostname.split('.');
+                let extractedName = 'MCP Server';
+
+                if (parts.length >= 2) {
+                  const namePart = parts[parts.length - 2];
+                  extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+                }
+
+                serverInfo = {
+                  name: extractedName,
+                  version: '1.0.0',
+                };
+              } catch (urlError) {
+                serverInfo = { name: 'MCP Server', version: '1.0.0' };
+              }
+
+              break;
+            } else {
+              logger.info(`⚠️ OAuth metadata found but no authorization servers listed`);
+            }
+          } else if (metadataRes.status === 404) {
+            logger.verbose(`No OAuth metadata endpoint found (404)`);
+          } else {
+            logger.info(`⚠️ OAuth metadata endpoint returned ${metadataRes.status}`);
+          }
+        } catch (metadataError) {
+          logger.info(`❌ OAuth metadata discovery failed: ${metadataError.message}`);
+          // Fall through to header auth detection
+        }
+      }
+
       if (isHeaderAuthError) {
         logger.info(`🔑 Custom auth detected for ${transport.toUpperCase()} (401/403 without OAuth)`);
         detectedTransport = transport;

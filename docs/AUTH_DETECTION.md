@@ -11,22 +11,30 @@ Hoot supports multiple authentication methods for MCP servers. This document exp
 ### 1. **OAuth 2.1 with PKCE** ✅ Auto-Detected
 
 **How it works:**
-- Server returns HTTP 401 with OAuth authorization URL
+- Server returns HTTP 401 with OAuth authorization URL, OR
+- Server provides RFC 9728 OAuth Protected Resource Metadata at `/.well-known/oauth-protected-resource`, OR  
+- Server returns `WWW-Authenticate: Bearer` header with resource metadata
 - Hoot auto-detects and shows "Authorize →" button
 - User is redirected through OAuth flow
 - Tokens are securely stored and automatically refreshed
 
+**Auto-detection methods (in order):**
+1. Check `WWW-Authenticate` header for Bearer realm and resource_metadata
+2. MCP SDK throws `UnauthorizedError` with authorization URL
+3. **NEW:** Probe `/.well-known/oauth-protected-resource` endpoint (RFC 9728)
+
+**Example servers:**
+- Notion MCP (SDK UnauthorizedError)
+- Linear MCP (SDK UnauthorizedError)
+- Portkey MCP Gateway (SDK UnauthorizedError)
+- **GitLab MCP** (RFC 9728 discovery) ✨
+
 **User Experience:**
 1. User provides server URL
-2. Hoot detects OAuth requirement
+2. Hoot detects OAuth requirement automatically
 3. Modal shows "🔐 Login needed" 
 4. Button changes to "Authorize →"
 5. Smooth OAuth redirect and callback
-
-**Example servers:**
-- Notion MCP
-- Linear MCP
-- Portkey MCP Gateway
 
 ### 2. **Client Credentials OAuth** ⚠️ Partially Auto-Detected
 

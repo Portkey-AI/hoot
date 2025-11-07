@@ -8,6 +8,7 @@ const TESTS = [
     { url: 'https://mcp.deepwiki.com/mcp', expected: 'DeepWiki', oauth: false },
     { url: 'https://mcp.notion.com/mcp', expected: 'Notion', oauth: true },
     { url: 'https://mcp.portkey.ai/ws----dem-299bc9/zapier-rohit/mcp', expected: 'Portkey', oauth: true },
+    { url: 'https://gitlab.com/api/v4/mcp', expected: 'Gitlab', oauth: true },
 ];
 
 async function getSessionToken() {
