@@ -29,6 +29,33 @@ bindings = [
 tag = "v1"
 new_classes = ["UserDataDO", "FaviconCacheDO", "MCPConnectionPoolDO"]
 
+# Production migrations - DO NOT modify existing classes
+# Only add new migration entries when introducing new DO classes
+[[env.production.migrations]]
+tag = "v1"
+new_classes = ["UserDataDO", "FaviconCacheDO", "MCPConnectionPoolDO"]
+
+[[env.production.migrations]]
+tag = "v2"
+renamed_classes = []
+deleted_classes = []
+
+[[env.production.migrations]]
+tag = "v3"
+renamed_classes = []
+deleted_classes = []
+
+[[env.production.migrations]]
+tag = "v4"
+renamed_classes = []
+deleted_classes = []
+
+[[env.production.migrations]]
+tag = "v5"
+# Migration for v0.11.0 - no changes to Durable Object classes
+renamed_classes = []
+deleted_classes = []
+
 # Environment variables (non-secret)
 [vars]
 FRONTEND_URL = "http://localhost:8009"
