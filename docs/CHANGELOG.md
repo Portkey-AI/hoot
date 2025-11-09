@@ -5,6 +5,22 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2025-11-09
+
+### Changed
+- **Configuration Format Migration**: Migrated from `wrangler.toml` to `wrangler.jsonc`
+  - Updated to use JSON with Comments format (recommended by Cloudflare)
+  - Migrated using official `wrangler-cfg` tool
+  - Preserved all configuration settings and comments
+  - Updated documentation to reference `wrangler.jsonc`
+
+### Fixed
+- **JWT Expiration Handling**: Improved JWT token expiration detection and error handling
+  - Workers backend now properly detects expired tokens and returns specific `TokenExpired` error
+  - Enhanced JWT verification to distinguish between expired vs invalid tokens
+  - Consistent error handling across Node.js and Workers backends
+  - Frontend auto-refresh logic now works more reliably with expired tokens
+
 ## [0.11.0] - 2025-11-07
 
 ### Added
@@ -601,6 +617,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.11.1** - Configuration migration to wrangler.jsonc and improved JWT expiration handling
 - **0.11.0** - Workers AI support for semantic tool filtering and improved OAuth detection
 - **0.10.1** - Welcome modal, package security improvements, and server URL display fixes
 - **0.10.0** - JWT authentication, Cloudflare Workers deployment, pinning feature, enhanced logging, and backend architecture refactor

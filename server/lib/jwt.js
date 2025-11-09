@@ -114,16 +114,16 @@ export class JWTManager {
     } catch (error) {
       // JWT verification failed (invalid/expired/malformed)
       console.error('JWT verification failed:', error.message);
-      
+
       // Check if token is expired by examining the error
       const isExpired = error.message && (
         error.message.includes('"exp" claim timestamp check failed') ||
         error.message.includes('expired') ||
         error.code === 'ERR_JWT_EXPIRED'
       );
-      
-      return { 
-        valid: false, 
+
+      return {
+        valid: false,
         error: error.message,
         expired: isExpired
       };

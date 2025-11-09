@@ -671,10 +671,10 @@ app.get('/mcp/favicon-proxy', async (req, res) => {
 app.get('/mcp/tools/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params;
-    
+
     // Auto-reconnect if needed
     await ensureConnected({ serverId, userId: req.userId, db, connectionPool, frontendUrl: FRONTEND_URL });
-    
+
     const result = await listTools({ serverId, connectionPool });
     res.json(result);
   } catch (error) {
