@@ -160,11 +160,11 @@ async function authenticateRequest(req, res, next) {
     // Try JWT validation first (if JWT keys are loaded)
     if (jwtManager.isInitialized()) {
       try {
-        const payload = await jwtManager.verifyToken(token);
+        const result = await jwtManager.verifyToken(token);
 
-        if (payload) {
+        if (result.valid && result.payload) {
           // Extract user ID from JWT
-          req.userId = payload.sub;
+          req.userId = result.payload.sub;
 
           // Validate userId is present and in UUID format
           if (!req.userId || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.userId)) {
@@ -173,16 +173,16 @@ async function authenticateRequest(req, res, next) {
 
           // Store Portkey context if present
           req.portkeyContext = {
-            orgId: payload.portkey_oid,
-            workspace: payload.portkey_workspace,
-            scope: payload.scope || [],
+            orgId: result.payload.portkey_oid,
+            workspace: result.payload.portkey_workspace,
+            scope: result.payload.scope || [],
           };
 
           return next();
         }
-      } catch (jwtError) {
-        // Check if it's expiry
-        if (jwtError.message && jwtError.message.includes('expired')) {
+
+        // JWT validation failed - check if expired
+        if (result.expired) {
           await auditLogger.log('auth_failed', {
             path: req.path,
             reason: 'token_expired'
@@ -197,6 +197,9 @@ async function authenticateRequest(req, res, next) {
 
         // Not a valid JWT - try fallback
         logger.debug('JWT validation failed, trying fallback session token');
+      } catch (jwtError) {
+        // Unexpected error during JWT processing
+        logger.debug('JWT validation error:', jwtError.message);
       }
     }
 

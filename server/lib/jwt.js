@@ -76,7 +76,7 @@ export class JWTManager {
   /**
    * Verify and decode a JWT token
    * @param {string} token - JWT token
-   * @returns {Object} - Decoded payload or null
+   * @returns {Object} - { valid: boolean, payload?: Object, error?: string, expired?: boolean }
    */
   async verifyToken(token) {
     if (this.publicKeys.size === 0) {
@@ -88,13 +88,19 @@ export class JWTManager {
 
       // Decode to get kid from header
       const parts = token.split('.');
-      if (parts.length !== 3) return null;
+      if (parts.length !== 3) {
+        return { valid: false, error: 'Malformed token' };
+      }
 
       const header = JSON.parse(atob(parts[0]));
-      if (!header.kid) return null;
+      if (!header.kid) {
+        return { valid: false, error: 'Missing key ID' };
+      }
 
       const jwk = this.publicKeys.get(header.kid);
-      if (!jwk) return null;
+      if (!jwk) {
+        return { valid: false, error: 'Unknown key ID' };
+      }
 
       // Import the JWK as a public key
       const publicKey = await importJWK(jwk, 'RS256');
@@ -104,11 +110,23 @@ export class JWTManager {
         algorithms: ['RS256']
       });
 
-      return payload;
+      return { valid: true, payload };
     } catch (error) {
       // JWT verification failed (invalid/expired/malformed)
       console.error('JWT verification failed:', error.message);
-      return null;
+      
+      // Check if token is expired by examining the error
+      const isExpired = error.message && (
+        error.message.includes('"exp" claim timestamp check failed') ||
+        error.message.includes('expired') ||
+        error.code === 'ERR_JWT_EXPIRED'
+      );
+      
+      return { 
+        valid: false, 
+        error: error.message,
+        expired: isExpired
+      };
     }
   }
 

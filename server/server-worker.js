@@ -180,11 +180,11 @@ async function authenticateRequest(request, auditLogger) {
   try {
     // Try JWT validation
     if (jwtManager.isInitialized()) {
-      const payload = await jwtManager.verifyToken(token);
+      const result = await jwtManager.verifyToken(token);
 
-      if (payload) {
+      if (result.valid && result.payload) {
         // Extract user ID from JWT
-        const userId = payload.sub;
+        const userId = result.payload.sub;
 
         // Validate userId
         if (!userId || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) {
@@ -195,15 +195,33 @@ async function authenticateRequest(request, auditLogger) {
           success: true,
           userId,
           portkeyContext: {
-            orgId: payload.portkey_oid,
-            workspace: payload.portkey_workspace,
-            scope: payload.scope || [],
+            orgId: result.payload.portkey_oid,
+            workspace: result.payload.portkey_workspace,
+            scope: result.payload.scope || [],
           }
+        };
+      }
+
+      // Token validation failed - check if expired
+      if (result.expired) {
+        await auditLogger.log('auth_failed', {
+          path: pathname,
+          reason: 'token_expired'
+        });
+
+        return {
+          success: false,
+          response: jsonResponse({
+            success: false,
+            error: 'TokenExpired',
+            message: 'Token has expired',
+            expired: true
+          }, 401)
         };
       }
     }
 
-    // Token validation failed
+    // Token validation failed (invalid/malformed)
     await auditLogger.log('auth_failed', {
       path: pathname,
       reason: 'invalid_token'
