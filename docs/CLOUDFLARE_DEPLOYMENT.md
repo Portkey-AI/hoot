@@ -69,33 +69,65 @@ wrangler secret put JWT_JWKS
 # Set Portkey credentials
 wrangler secret put PORTKEY_ORG_ID
 wrangler secret put PORTKEY_WORKSPACE_SLUG
+
+# Optional: Set Cloudflare API Token (only needed for wrangler dev with remote = true)
+# For production deployments, the Workers AI binding handles auth automatically
+# wrangler secret put CLOUDFLARE_API_TOKEN
 ```
 
-### 1.4 Update wrangler.toml
+### 1.4 Update wrangler.jsonc
 
-```toml
-name = "hoot-server"
-main = "server/server-worker.js"
-compatibility_date = "2024-11-04"
-compatibility_flags = ["nodejs_compat"]
+**Important:** Set your Cloudflare Account ID for Workers AI support:
 
-[durable_objects]
-bindings = [
-  { name = "USER_DATA", class_name = "UserDataDO" },
-  { name = "FAVICON_CACHE", class_name = "FaviconCacheDO" }
-]
-
-[[migrations]]
-tag = "v1"
-new_classes = ["UserDataDO", "FaviconCacheDO"]
-
-[vars]
-FRONTEND_URL = "https://hoot.pages.dev"  # Update with your Pages URL
-
-[env.production]
-name = "hoot-server-production"
-vars = { FRONTEND_URL = "https://hoot.yourdomain.com" }
+```jsonc
+{
+  "name": "hoot-server",
+  "main": "server/server-worker.js",
+  "compatibility_date": "2024-11-04",
+  "compatibility_flags": ["nodejs_compat"],
+  
+  // Workers AI binding for semantic tool filtering
+  "ai": {
+    "binding": "AI"
+  },
+  
+  "durable_objects": {
+    "bindings": [
+      { "name": "USER_DATA", "class_name": "UserDataDO" },
+      { "name": "FAVICON_CACHE", "class_name": "FaviconCacheDO" }
+    ]
+  },
+  
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["UserDataDO", "FaviconCacheDO"]
+    }
+  ],
+  
+  "vars": {
+    "FRONTEND_URL": "https://hoot.pages.dev",  // Update with your Pages URL
+    "CLOUDFLARE_ACCOUNT_ID": "your-account-id-here"  // REQUIRED: Replace with your account ID
+  },
+  
+  "env": {
+    "production": {
+      "name": "hoot-server-production",
+      "vars": { 
+        "FRONTEND_URL": "https://hoot.yourdomain.com",
+        "CLOUDFLARE_ACCOUNT_ID": "your-account-id-here"  // REQUIRED: Replace with your account ID
+      },
+      "ai": {
+        "binding": "AI"
+      }
+    }
+  }
+}
 ```
+
+**Find your Account ID:**
+- Cloudflare Dashboard → Overview → Account ID (right sidebar)
+- Or run: `wrangler whoami`
 
 ### 1.5 Deploy Workers
 
@@ -165,11 +197,14 @@ npx wrangler pages deploy dist --project-name=hoot
 
 ## Step 3: Configure CORS
 
-Update `wrangler.toml` to allow your Pages domain:
+Update `wrangler.jsonc` to allow your Pages domain:
 
-```toml
-[vars]
-FRONTEND_URL = "https://hoot.pages.dev"
+```jsonc
+{
+  "vars": {
+    "FRONTEND_URL": "https://hoot.pages.dev"
+  }
+}
 ```
 
 Or set it as a secret:
@@ -216,26 +251,33 @@ Visit `https://hoot.pages.dev` and:
 VITE_BACKEND_URL=https://hoot-server.your-subdomain.workers.dev
 ```
 
-### Workers (wrangler.toml or secrets)
-```toml
-[vars]
-FRONTEND_URL = "https://hoot.pages.dev"
-
-# Secrets (set via wrangler secret put):
-# - JWT_PRIVATE_KEY
-# - JWT_JWKS
-# - PORTKEY_ORG_ID
-# - PORTKEY_WORKSPACE_SLUG
+### Workers (wrangler.jsonc or secrets)
+```jsonc
+{
+  "vars": {
+    "FRONTEND_URL": "https://hoot.pages.dev"
+  }
+  // Secrets (set via wrangler secret put):
+  // - JWT_PRIVATE_KEY
+  // - JWT_JWKS
+  // - PORTKEY_ORG_ID
+  // - PORTKEY_WORKSPACE_SLUG
+}
 ```
 
 ## Custom Domain (Optional)
 
 ### For Workers
 
-```toml
-[[routes]]
-pattern = "api.yourdomain.com/*"
-zone_name = "yourdomain.com"
+```jsonc
+{
+  "routes": [
+    {
+      "pattern": "api.yourdomain.com/*",
+      "zone_name": "yourdomain.com"
+    }
+  ]
+}
 ```
 
 Then update frontend env:
@@ -277,9 +319,11 @@ Should show:
 
 **Error**: `Could not resolve "crypto"`
 
-**Fix**: Ensure `wrangler.toml` has:
-```toml
-compatibility_flags = ["nodejs_compat"]
+**Fix**: Ensure `wrangler.jsonc` has:
+```jsonc
+{
+  "compatibility_flags": ["nodejs_compat"]
+}
 ```
 
 ### I/O Refcounted Canceler Error
@@ -320,16 +364,22 @@ compatibility_flags = ["nodejs_compat"]
 
 **Setup:**
 
-1. **Add Workers AI binding** in `wrangler.toml` (already included):
-```toml
-[ai]
-binding = "AI"
+1. **Add Workers AI binding** in `wrangler.jsonc` (already included):
+```jsonc
+{
+  "ai": {
+    "binding": "AI"
+  }
+}
 ```
 
 2. **Set your Cloudflare Account ID**:
-```toml
-[vars]
-CLOUDFLARE_ACCOUNT_ID = "your-account-id-here"
+```jsonc
+{
+  "vars": {
+    "CLOUDFLARE_ACCOUNT_ID": "your-account-id-here"
+  }
+}
 ```
 
 3. **Set Cloudflare API Token** (secret):
@@ -339,9 +389,12 @@ wrangler secret put CLOUDFLARE_API_TOKEN
 ```
 
 4. **Optional: Choose a different embedding model**:
-```toml
-[vars]
-WORKERS_AI_EMBEDDING_MODEL = "@cf/google/embeddinggemma-300m"
+```jsonc
+{
+  "vars": {
+    "WORKERS_AI_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m"
+  }
+}
 ```
 
 **How it uses OpenAI-compatible API:**
@@ -362,11 +415,14 @@ Hoot's tool filter uses the existing OpenAI provider with this base URL, making 
 
 **Setup:**
 
-1. **Enable remote mode** in `wrangler.toml` (already configured):
-```toml
-[ai]
-binding = "AI"
-remote = true  # Connects to Cloudflare's Workers AI service
+1. **Enable remote mode** in `wrangler.jsonc` (already configured):
+```jsonc
+{
+  "ai": {
+    "binding": "AI",
+    "remote": true  // Connects to Cloudflare's Workers AI service
+  }
+}
 ```
 
 2. **Add your credentials to `.dev.vars`** (create this file in project root):
@@ -416,7 +472,7 @@ The Node.js server uses free local embeddings with Transformers.js, perfect for 
 3. **Hybrid setup**: Run frontend on Cloudflare Pages, backend on a Node.js server
 
 **To disable Workers AI** (not recommended):
-Remove the `[ai]` binding from `wrangler.toml` and semantic filtering will fall back to the old behavior.
+Remove the `ai` binding from `wrangler.jsonc` and semantic filtering will fall back to the old behavior.
 
 ## Cost Estimate
 

@@ -114,6 +114,7 @@ export function HybridInterface() {
     const servers = useAppStore((state) => state.servers);
     const tools = useAppStore((state) => state.tools);
     const toolFilterEnabled = useAppStore((state) => state.toolFilterEnabled);
+    const setToolFilterEnabled = useAppStore((state) => state.setToolFilterEnabled);
     const toolFilterConfig = useAppStore((state) => state.toolFilterConfig);
 
     // Initialize tool filter when servers/tools change
@@ -152,7 +153,7 @@ export function HybridInterface() {
     }, [messages]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     };
 
     // Helper to get server favicon with caching
@@ -839,6 +840,16 @@ export function HybridInterface() {
                         </>
                     )}
                 </div>
+                {availableTools.length > 0 && mentions.length === 0 && (
+                    <button
+                        className={`info-settings-button filter-toggle-button ${toolFilterEnabled ? 'filter-active' : 'filter-inactive'}`}
+                        onClick={() => setToolFilterEnabled(!toolFilterEnabled)}
+                        title={toolFilterEnabled ? 'Disable semantic filtering (show all tools)' : 'Enable semantic filtering (show relevant tools)'}
+                    >
+                        <Filter size={14} />
+                        <span>{toolFilterEnabled ? 'Filtering On' : 'Filtering Off'}</span>
+                    </button>
+                )}
                 <button
                     className="info-settings-button"
                     onClick={() => setShowSettings(true)}
@@ -861,186 +872,188 @@ export function HybridInterface() {
 
             <div className="hybrid-content">
                 <div className="chat-pane full-width">
-                    <div className="chat-messages-hybrid">
-                        {messages.map((message, index) => (
-                            <div
-                                key={index}
-                                className={`chat-message-hybrid chat-message-${message.role} ${index === selectedMessage ? 'selected' : ''
-                                    } ${message.apiRequest || message.apiResponse ? 'has-api-data' : ''}`}
-                                onClick={() =>
-                                    message.apiRequest || message.apiResponse ? setSelectedMessage(index) : null
-                                }
-                            >
-                                {message.role === 'system' && message.filterMetrics ? (
-                                    // Compact filter metrics card with hover details
-                                    <div className="filter-metrics-card">
-                                        <div className="filter-metrics-main">
-                                            <Filter size={12} />
-                                            <span className="filter-metrics-text">
-                                                Used <strong>{message.filterMetrics.toolsUsed}</strong> of {message.filterMetrics.toolsTotal} tools
-                                            </span>
-                                            {message.filterMetrics.filterTime > 0 && (
-                                                <span className="filter-metrics-time">
-                                                    {message.filterMetrics.filterTime.toFixed(0)}ms
+                    <div className="chat-messages-scroll-wrapper">
+                        <div className="chat-messages-hybrid">
+                            {messages.map((message, index) => (
+                                <div
+                                    key={index}
+                                    className={`chat-message-hybrid chat-message-${message.role} ${index === selectedMessage ? 'selected' : ''
+                                        } ${message.apiRequest || message.apiResponse ? 'has-api-data' : ''}`}
+                                    onClick={() =>
+                                        message.apiRequest || message.apiResponse ? setSelectedMessage(index) : null
+                                    }
+                                >
+                                    {message.role === 'system' && message.filterMetrics ? (
+                                        // Compact filter metrics card with hover details
+                                        <div className="filter-metrics-card">
+                                            <div className="filter-metrics-main">
+                                                <Filter size={12} style={{ color: 'var(--theme-accent-primary)' }} />
+                                                <span className="filter-metrics-text">
+                                                    <strong style={{ color: 'var(--theme-accent-primary)' }}>Semantic Filtering:</strong> Selected <strong>{message.filterMetrics.toolsUsed}</strong> of {message.filterMetrics.toolsTotal} tools
                                                 </span>
-                                            )}
-                                        </div>
-                                        {message.filterMetrics.toolDetails && message.filterMetrics.toolDetails.length > 0 && (() => {
-                                            // Group tools by server
-                                            const toolsByServer = message.filterMetrics.toolDetails.reduce((acc, tool) => {
-                                                if (!acc[tool.serverName]) {
-                                                    acc[tool.serverName] = {
-                                                        serverName: tool.serverName,
-                                                        serverIcon: tool.serverIcon,
-                                                        tools: [],
-                                                    };
-                                                }
-                                                acc[tool.serverName].tools.push(tool.toolName);
-                                                return acc;
-                                            }, {} as Record<string, { serverName: string; serverIcon?: string; tools: string[] }>);
+                                                {message.filterMetrics.filterTime > 0 && (
+                                                    <span className="filter-metrics-time">
+                                                        {message.filterMetrics.filterTime.toFixed(0)}ms
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {message.filterMetrics.toolDetails && message.filterMetrics.toolDetails.length > 0 && (() => {
+                                                // Group tools by server
+                                                const toolsByServer = message.filterMetrics.toolDetails.reduce((acc, tool) => {
+                                                    if (!acc[tool.serverName]) {
+                                                        acc[tool.serverName] = {
+                                                            serverName: tool.serverName,
+                                                            serverIcon: tool.serverIcon,
+                                                            tools: [],
+                                                        };
+                                                    }
+                                                    acc[tool.serverName].tools.push(tool.toolName);
+                                                    return acc;
+                                                }, {} as Record<string, { serverName: string; serverIcon?: string; tools: string[] }>);
 
-                                            return (
-                                                <div className="filter-metrics-hover-card">
-                                                    {Object.values(toolsByServer).map((server, idx) => (
-                                                        <div key={idx} className="filter-hover-server">
-                                                            <div className="filter-hover-server-header">
-                                                                {server.serverIcon ? (
-                                                                    <img src={server.serverIcon} alt="" className="filter-hover-favicon" />
+                                                return (
+                                                    <div className="filter-metrics-hover-card">
+                                                        {Object.values(toolsByServer).map((server, idx) => (
+                                                            <div key={idx} className="filter-hover-server">
+                                                                <div className="filter-hover-server-header">
+                                                                    {server.serverIcon ? (
+                                                                        <img src={server.serverIcon} alt="" className="filter-hover-favicon" />
+                                                                    ) : (
+                                                                        <div className="filter-hover-favicon-placeholder">
+                                                                            <Code2 size={10} />
+                                                                        </div>
+                                                                    )}
+                                                                    <span className="filter-hover-server-name">{server.serverName}</span>
+                                                                    <span className="filter-hover-tool-count">{server.tools.length}</span>
+                                                                </div>
+                                                                <div className="filter-hover-tools">
+                                                                    {server.tools.map((toolName, toolIdx) => (
+                                                                        <span key={toolIdx} className="filter-hover-tool">
+                                                                            {toolName}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="message-content-hybrid">
+                                                {message.role === 'tool' && message.toolResult ? (
+                                                    <div
+                                                        className="tool-call-card"
+                                                        onClick={() => setSelectedMessage(index)}
+                                                    >
+                                                        <div className="tool-call-header">
+                                                            <div className="tool-call-icon">
+                                                                {message.toolResult.serverIcon ? (
+                                                                    <img
+                                                                        src={message.toolResult.serverIcon}
+                                                                        alt=""
+                                                                        className="tool-call-favicon"
+                                                                    />
                                                                 ) : (
-                                                                    <div className="filter-hover-favicon-placeholder">
-                                                                        <Code2 size={10} />
+                                                                    <Code2 size={12} />
+                                                                )}
+                                                            </div>
+                                                            <div className="tool-call-info">
+                                                                <div className="tool-call-name">
+                                                                    {message.toolResult.name}
+                                                                </div>
+                                                                {(message.toolResult.serverName || message.toolResult.executionTime) && (
+                                                                    <div className="tool-call-meta">
+                                                                        {message.toolResult.serverName && (
+                                                                            <span className="tool-call-server">{message.toolResult.serverName}</span>
+                                                                        )}
+                                                                        {message.toolResult.serverName && message.toolResult.executionTime && (
+                                                                            <span className="tool-call-meta-divider">•</span>
+                                                                        )}
+                                                                        {message.toolResult.executionTime && (
+                                                                            <span className="tool-call-time">
+                                                                                {message.toolResult.executionTime.toFixed(0)}ms
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                 )}
-                                                                <span className="filter-hover-server-name">{server.serverName}</span>
-                                                                <span className="filter-hover-tool-count">{server.tools.length}</span>
                                                             </div>
-                                                            <div className="filter-hover-tools">
-                                                                {server.tools.map((toolName, toolIdx) => (
-                                                                    <span key={toolIdx} className="filter-hover-tool">
-                                                                        {toolName}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
+                                                            <ChevronRight
+                                                                size={16}
+                                                                className="tool-call-chevron"
+                                                            />
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            );
-                                        })()}
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="message-content-hybrid">
-                                            {message.role === 'tool' && message.toolResult ? (
-                                                <div
-                                                    className="tool-call-card"
-                                                    onClick={() => setSelectedMessage(index)}
-                                                >
-                                                    <div className="tool-call-header">
-                                                        <div className="tool-call-icon">
-                                                            {message.toolResult.serverIcon ? (
-                                                                <img
-                                                                    src={message.toolResult.serverIcon}
-                                                                    alt=""
-                                                                    className="tool-call-favicon"
-                                                                />
-                                                            ) : (
-                                                                <Code2 size={12} />
-                                                            )}
-                                                        </div>
-                                                        <div className="tool-call-info">
-                                                            <div className="tool-call-name">
-                                                                {message.toolResult.name}
-                                                            </div>
-                                                            {(message.toolResult.serverName || message.toolResult.executionTime) && (
-                                                                <div className="tool-call-meta">
-                                                                    {message.toolResult.serverName && (
-                                                                        <span className="tool-call-server">{message.toolResult.serverName}</span>
-                                                                    )}
-                                                                    {message.toolResult.serverName && message.toolResult.executionTime && (
-                                                                        <span className="tool-call-meta-divider">•</span>
-                                                                    )}
-                                                                    {message.toolResult.executionTime && (
-                                                                        <span className="tool-call-time">
-                                                                            {message.toolResult.executionTime.toFixed(0)}ms
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <ChevronRight
-                                                            size={16}
-                                                            className="tool-call-chevron"
-                                                        />
                                                     </div>
-                                                </div>
-                                            ) : message.role === 'assistant' ? (
-                                                <MarkdownRenderer
-                                                    content={message.content}
-                                                    isStreaming={index === streamingMessageIndex}
-                                                />
-                                            ) : message.role === 'system' ? (
-                                                // System message with clickable model name
-                                                <div className="message-text-hybrid">
-                                                    {(() => {
-                                                        const currentModel = localStorage.getItem('hoot-selected-model') || '@openai/gpt-4o-mini';
-                                                        const modelName = getDisplayModelName(currentModel);
-                                                        const parts = message.content.split(modelName);
+                                                ) : message.role === 'assistant' ? (
+                                                    <MarkdownRenderer
+                                                        content={message.content}
+                                                        isStreaming={index === streamingMessageIndex}
+                                                    />
+                                                ) : message.role === 'system' ? (
+                                                    // System message with clickable model name
+                                                    <div className="message-text-hybrid">
+                                                        {(() => {
+                                                            const currentModel = localStorage.getItem('hoot-selected-model') || '@openai/gpt-4o-mini';
+                                                            const modelName = getDisplayModelName(currentModel);
+                                                            const parts = message.content.split(modelName);
 
-                                                        if (parts.length > 1) {
-                                                            return (
-                                                                <>
-                                                                    {parts[0]}
-                                                                    <span
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setShowSettings(true);
-                                                                        }}
-                                                                        style={{
-                                                                            cursor: 'pointer',
-                                                                            fontWeight: 600,
-                                                                            color: 'var(--theme-accent-primary)',
-                                                                            textDecoration: 'underline',
-                                                                            textDecorationStyle: 'dotted',
-                                                                            textUnderlineOffset: '2px'
-                                                                        }}
-                                                                    >
-                                                                        {modelName}
-                                                                    </span>
-                                                                    {parts.slice(1).join(modelName)}
-                                                                </>
-                                                            );
-                                                        }
-                                                        return message.content;
-                                                    })()}
-                                                </div>
-                                            ) : (
-                                                <div className="message-text-hybrid">{message.content}</div>
-                                            )}
-                                            {(message.apiRequest || message.apiResponse) && !message.toolResult && (
-                                                <div className="api-indicator">
-                                                    <Code2 size={12} />
-                                                    Click to view API details
-                                                </div>
-                                            )}
+                                                            if (parts.length > 1) {
+                                                                return (
+                                                                    <>
+                                                                        {parts[0]}
+                                                                        <span
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setShowSettings(true);
+                                                                            }}
+                                                                            style={{
+                                                                                cursor: 'pointer',
+                                                                                fontWeight: 600,
+                                                                                color: 'var(--theme-accent-primary)',
+                                                                                textDecoration: 'underline',
+                                                                                textDecorationStyle: 'dotted',
+                                                                                textUnderlineOffset: '2px'
+                                                                            }}
+                                                                        >
+                                                                            {modelName}
+                                                                        </span>
+                                                                        {parts.slice(1).join(modelName)}
+                                                                    </>
+                                                                );
+                                                            }
+                                                            return message.content;
+                                                        })()}
+                                                    </div>
+                                                ) : (
+                                                    <div className="message-text-hybrid">{message.content}</div>
+                                                )}
+                                                {(message.apiRequest || message.apiResponse) && !message.toolResult && (
+                                                    <div className="api-indicator">
+                                                        <Code2 size={12} />
+                                                        Click to view API details
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+
+                            {isProcessing && (
+                                <div className="chat-message-hybrid chat-message-assistant">
+                                    <div className="message-content-hybrid">
+                                        <div className="typing-indicator-hybrid">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
                                         </div>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-
-                        {isProcessing && (
-                            <div className="chat-message-hybrid chat-message-assistant">
-                                <div className="message-content-hybrid">
-                                    <div className="typing-indicator-hybrid">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        <div ref={messagesEndRef} />
+                            <div ref={messagesEndRef} />
+                        </div>
                     </div>
 
                     <div className="chat-input-container-hybrid">

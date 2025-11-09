@@ -92,13 +92,12 @@ export const EditServerModal = memo(function EditServerModal({
             if (e.key === 'Escape') {
                 onClose();
             } else if (e.key === 'Enter' && !e.shiftKey && !isConnecting) {
-                // Don't trigger if user is in an input field (let them type normally)
+                // Allow Enter in input fields to trigger submit (standard form behavior)
                 const target = e.target as HTMLElement;
                 if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-                    return;
+                    e.preventDefault();
+                    handleSubmit();
                 }
-                e.preventDefault();
-                handleSubmit();
             }
         };
 

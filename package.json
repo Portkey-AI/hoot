@@ -17,7 +17,7 @@
     "server:worker": "source .env 2>/dev/null || true && wrangler dev",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "dev:worker": "concurrently \"npm run server:worker\" \"npm run dev\"",
-    "build": "VITE_BACKEND_URL=https://hoot-server-production.portkey-ai.workers.dev tsc && vite build",
+    "build": "export VITE_BACKEND_URL=https://hoot-server-production.portkey-ai.workers.dev tsc && vite build",
     "deploy:cloudflare": "source .env 2>/dev/null || true && wrangler deploy",
     "deploy:pages": "npm run build && wrangler pages deploy dist --project-name=hoot",
     "preview": "vite preview",

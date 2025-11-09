@@ -1,4 +1,4 @@
-import { useState, memo, useEffect } from 'react';
+import { useState, memo, useEffect, useCallback } from 'react';
 import type { ServerConfig, TransportType, AuthType, AuthConfig } from '../types';
 import * as backendClient from '../lib/backendClient';
 import { toast } from '../stores/toastStore';
@@ -112,7 +112,7 @@ export const ServerConfigForm = memo(function ServerConfigForm({
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         setError('');
 
         if (!name.trim()) {
@@ -197,18 +197,27 @@ export const ServerConfigForm = memo(function ServerConfigForm({
         };
 
         await onSubmit(config);
-    };
+    }, [name, transport, command, url, authType, headers, clientId, clientSecret, tokenUrl, additionalHeaders, customAuthEndpoint, customTokenEndpoint, customClientId, onSubmit]);
 
     // Handle Enter key to submit
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !isSubmitting) {
-            e.preventDefault();
-            handleSubmit();
-        }
-    };
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && !e.shiftKey && !isSubmitting) {
+                // Allow Enter in input fields to trigger submit (standard form behavior)
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                    e.preventDefault();
+                    handleSubmit();
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isSubmitting, handleSubmit]);
 
     return (
-        <div onKeyDown={handleKeyDown}>
+        <div>
             {(error || externalError) && <div className="error-message">{error || externalError}</div>}
 
             {/* 1. URL or Command based on transport */}

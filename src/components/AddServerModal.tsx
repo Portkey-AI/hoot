@@ -80,8 +80,14 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
       return;
     }
 
+    // Add https:// if no protocol is specified
+    let normalizedUrl = url.trim();
+    if (!normalizedUrl.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//)) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
     try {
-      new URL(url.trim());
+      new URL(normalizedUrl);
     } catch {
       setError('Please enter a valid URL (e.g., http://localhost:3000)');
       return;
@@ -99,7 +105,7 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
     try {
       await new Promise(resolve => setTimeout(resolve, 400));
 
-      const result = await backendClient.autoDetectServer(url.trim());
+      const result = await backendClient.autoDetectServer(normalizedUrl);
 
       if (!result.success) {
         updateStage('connect', 'error', result.error || 'Connection failed');
@@ -138,7 +144,7 @@ export const AddServerModal = memo(function AddServerModal({ onClose }: AddServe
       const config: Partial<ServerConfig> = {
         id: `server-${Date.now()}`,
         name: serverName,
-        url: url.trim(),
+        url: normalizedUrl,
         transport: result.transport || 'http',
       };
 

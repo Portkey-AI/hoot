@@ -189,13 +189,12 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-                // Don't trigger if user is in an input field (let them type normally)
+                // Allow Enter in input fields to trigger save (standard form behavior)
                 const target = e.target as HTMLElement;
                 if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-                    return;
+                    e.preventDefault();
+                    handleSave();
                 }
-                e.preventDefault();
-                handleSave();
             }
         };
 

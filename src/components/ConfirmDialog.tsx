@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from './ui';
 import './Modal.css';
@@ -22,6 +22,22 @@ export const ConfirmDialog = memo(function ConfirmDialog({
     onCancel,
     danger = false,
 }: ConfirmDialogProps) {
+    // Handle Enter key to confirm and Escape to cancel
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                onConfirm();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                onCancel();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [onConfirm, onCancel]);
+
     return createPortal(
         <div className="modal-overlay" onClick={onCancel}>
             <div className="modal modal-small" onClick={(e) => e.stopPropagation()}>

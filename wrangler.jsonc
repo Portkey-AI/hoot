@@ -1,0 +1,165 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hoot-server",
+  "main": "server/server-worker.js",
+  "compatibility_date": "2024-11-04",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  // Note: Pages deployment is done separately with: wrangler pages deploy dist --project-name=hoot
+  // Development configuration
+  "dev": {
+    "port": 8008,
+    "local_protocol": "http"
+  },
+  // Workers AI binding for semantic tool filtering
+  // Set remote = true to use Workers AI in local development (wrangler dev)
+  // Note: This will make actual API calls to Cloudflare and may incur usage charges
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+  // Durable Objects configuration
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "USER_DATA",
+        "class_name": "UserDataDO"
+      },
+      {
+        "name": "FAVICON_CACHE",
+        "class_name": "FaviconCacheDO"
+      },
+      {
+        "name": "MCP_CONNECTION_POOL",
+        "class_name": "MCPConnectionPoolDO"
+      }
+    ]
+  },
+  // Migrations for fresh local development
+  // For production with existing DOs, migrations are handled separately
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": [
+        "UserDataDO",
+        "FaviconCacheDO",
+        "MCPConnectionPoolDO"
+      ]
+    }
+  ],
+  // Production migrations - DO NOT modify existing classes
+  // Only add new migration entries when introducing new DO classes
+  "env": {
+    "production": {
+      "migrations": [
+        {
+          "tag": "v1",
+          "new_classes": [
+            "UserDataDO",
+            "FaviconCacheDO",
+            "MCPConnectionPoolDO"
+          ]
+        },
+        {
+          "tag": "v2",
+          "renamed_classes": [],
+          "deleted_classes": []
+        },
+        {
+          "tag": "v3",
+          "renamed_classes": [],
+          "deleted_classes": []
+        },
+        {
+          "tag": "v4",
+          "renamed_classes": [],
+          "deleted_classes": []
+        },
+        {
+          "tag": "v5",
+          // Migration for v0.11.0 - no changes to Durable Object classes
+          "renamed_classes": [],
+          "deleted_classes": []
+        }
+      ],
+      "name": "hoot-server-production",
+      "vars": {
+        "FRONTEND_URL": "https://hoot.run"
+      },
+      "ai": {
+        "binding": "AI"
+      },
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "USER_DATA",
+            "class_name": "UserDataDO"
+          },
+          {
+            "name": "FAVICON_CACHE",
+            "class_name": "FaviconCacheDO"
+          },
+          {
+            "name": "MCP_CONNECTION_POOL",
+            "class_name": "MCPConnectionPoolDO"
+          }
+        ]
+      }
+    },
+    "staging": {
+      "name": "hoot-server-staging",
+      "vars": {
+        "FRONTEND_URL": "https://staging.hoot.yourdomain.com"
+      },
+      "ai": {
+        "binding": "AI"
+      },
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "USER_DATA",
+            "class_name": "UserDataDO"
+          },
+          {
+            "name": "FAVICON_CACHE",
+            "class_name": "FaviconCacheDO"
+          },
+          {
+            "name": "MCP_CONNECTION_POOL",
+            "class_name": "MCPConnectionPoolDO"
+          }
+        ]
+      }
+    }
+  },
+  // Environment variables (non-secret)
+  "vars": {
+    "FRONTEND_URL": "http://localhost:8009"
+    // Add your Cloudflare Account ID (required for Workers AI)
+    // "CLOUDFLARE_ACCOUNT_ID": "your-account-id-here"
+    // Optional: Choose Workers AI embedding model (default: @cf/baai/bge-base-en-v1.5)
+    // "WORKERS_AI_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5"
+    // Other options:
+    //   @cf/baai/bge-small-en-v1.5 (faster, 384-dim)
+    //   @cf/baai/bge-large-en-v1.5 (more accurate, 1024-dim)
+    //   @cf/google/embeddinggemma-300m (multilingual, 100+ languages)
+    //   @cf/baai/bge-m3 (multi-lingual, multi-granularity)
+    // PORTKEY_ORG_ID and PORTKEY_WORKSPACE_SLUG should be set as secrets
+  },
+  // Secrets (set with: wrangler secret put SECRET_NAME)
+  // Run these commands to set secrets:
+  // wrangler secret put JWT_PRIVATE_KEY
+  // wrangler secret put JWT_JWKS
+  // wrangler secret put PORTKEY_ORG_ID
+  // wrangler secret put PORTKEY_WORKSPACE_SLUG
+  // Note: CLOUDFLARE_API_TOKEN is only needed for local dev with remote = true
+  //       In production, the Workers AI binding (env.AI) handles auth automatically
+  // Production configuration
+  // Note: Set CLOUDFLARE_ACCOUNT_ID environment variable instead of hardcoding account_id
+  // Add to your .env file: CLOUDFLARE_ACCOUNT_ID=your_account_id_here
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
