@@ -5,6 +5,15 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] - 2025-11-09
+
+### Fixed
+- **Favicon Loading Performance**: Added frontend caching to eliminate redundant favicon requests
+  - Implemented persistent favicon cache in app store to prevent repeated fetches
+  - Fixed issue where favicons were reloaded every time switching between Test Tools and Chat tabs
+  - Reduced network requests by caching favicon URLs in localStorage
+  - Eliminated 70ms delay on tab switches caused by uncached POST requests
+
 ## [0.11.1] - 2025-11-09
 
 ### Changed
@@ -617,6 +626,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.11.2** - Fixed favicon loading performance with frontend caching
 - **0.11.1** - Configuration migration to wrangler.jsonc and improved JWT expiration handling
 - **0.11.0** - Workers AI support for semantic tool filtering and improved OAuth detection
 - **0.10.1** - Welcome modal, package security improvements, and server URL display fixes

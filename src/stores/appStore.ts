@@ -34,6 +34,10 @@ interface AppStore extends AppState {
     // UI actions
     setSearchQuery: (query: string) => void;
 
+    // Favicon cache actions
+    faviconCache: Record<string, string | null>; // key: serverUrl, value: faviconUrl
+    setFaviconUrl: (serverUrl: string, faviconUrl: string | null) => void;
+
     // Tool filter actions
     toolFilterEnabled: boolean;
     toolFilterConfig: ToolFilterConfig;
@@ -92,6 +96,7 @@ export const useAppStore = create<AppStore>()(
             history: [],
             searchQuery: '',
             executingTools: [],
+            faviconCache: {},
 
             // Tool filter state
             toolFilterEnabled: true, // Enabled by default (now backend-based)
@@ -185,6 +190,12 @@ export const useAppStore = create<AppStore>()(
             // UI actions
             setSearchQuery: (query) => set({ searchQuery: query }),
 
+            // Favicon cache actions
+            setFaviconUrl: (serverUrl, faviconUrl) =>
+                set((state) => ({
+                    faviconCache: { ...state.faviconCache, [serverUrl]: faviconUrl },
+                })),
+
             // Tool filter actions
             setToolFilterEnabled: (enabled) => set({ toolFilterEnabled: enabled }),
 
@@ -207,6 +218,7 @@ export const useAppStore = create<AppStore>()(
                     error: undefined, // Don't persist errors
                 })),
                 tools: state.tools, // Cache discovered tools
+                faviconCache: state.faviconCache, // Cache favicons
                 history: state.history.slice(0, 50), // Keep last 50 history items
                 selectedServerId: null, // Reset selected server on load
                 selectedToolName: null, // Reset selected tool on load

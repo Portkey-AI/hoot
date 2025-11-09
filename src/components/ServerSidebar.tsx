@@ -87,31 +87,40 @@ const ServerItem = memo(function ServerItem({
     const removeServer = useAppStore((state) => state.removeServer);
     const updateServer = useAppStore((state) => state.updateServer);
     const setTools = useAppStore((state) => state.setTools);
+    const faviconCache = useAppStore((state) => state.faviconCache);
+    const setFaviconUrl = useAppStore((state) => state.setFaviconUrl);
     const { connect, disconnect } = useMCPConnection();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Fetch favicon from backend
+    // Get favicon URL from cache or fetch if not cached
+    const cacheKey = server.url || '';
+    const cachedFaviconUrl = faviconCache[cacheKey];
+
+    // Fetch favicon from backend if not in cache
     useEffect(() => {
         if (!server.url) {
             // No URL means no favicon possible (stdio server)
-            setFaviconUrl(null);
+            return;
+        }
+
+        // Check if already cached
+        if (cachedFaviconUrl !== undefined) {
             return;
         }
 
         // Fetch favicon from backend (backend handles caching)
         const oauthLogoUri = server.auth?.oauthServerMetadata?.logo_uri;
         backendClient.getFaviconUrl(server.url, oauthLogoUri).then((url) => {
-            setFaviconUrl(url);
+            setFaviconUrl(server.url, url);
         }).catch((error) => {
             console.warn(`Failed to fetch favicon for ${server.name}:`, error);
-            setFaviconUrl(null);
+            setFaviconUrl(server.url, null);
         });
-    }, [server.url, server.name, server.auth?.oauthServerMetadata?.logo_uri]);
+    }, [server.url, server.name, server.auth?.oauthServerMetadata?.logo_uri, cachedFaviconUrl, setFaviconUrl]);
 
     // Fetch OAuth metadata when server connects
     useEffect(() => {
@@ -386,10 +395,10 @@ const ServerItem = memo(function ServerItem({
             onClick={onClick}
         >
             <div className="server-header">
-                {faviconUrl ? (
+                {cachedFaviconUrl ? (
                     <div className="server-favicon-container">
                         <img
-                            src={faviconUrl}
+                            src={cachedFaviconUrl}
                             alt={`${server.name} favicon`}
                             className="server-favicon"
                         />
