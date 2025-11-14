@@ -6,7 +6,7 @@
 testing tool for MCP servers. like postman but for MCP.
 
 
-https://github.com/user-attachments/assets/76bad3b4-9206-4b68-ba3d-a1e299802740
+https://github.com/user-attachments/assets/e3add38e-9636-4f40-99d8-f4a2b8f0f056
 
 
 ## why
@@ -26,6 +26,9 @@ or install globally if you want:
 npm install -g @portkey-ai/hoot
 hoot
 ```
+
+![npx-hoot](https://github.com/user-attachments/assets/3c8c80e2-6ad3-439e-80eb-e2f6c4d22d8e)
+
 
 ## what works
 
