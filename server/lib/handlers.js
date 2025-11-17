@@ -107,60 +107,112 @@ export function createOAuthProvider(options) {
 export async function autoDetectServer({ url }) {
   logger.info(`🔍 Auto-detecting configuration for: ${url}`);
 
-  // Step 1: Check for WWW-Authenticate header (MCP-spec-compliant OAuth detection)
+  // Step 1: Check for OAuth in parallel using multiple methods
   let requiresOAuthFromHeader = false;
+  let requiresOAuthFromMetadata = false;
   let resourceMetadata = null;
   let scope = null;
 
-  try {
-    logger.verbose(`Probing for WWW-Authenticate header...`);
-    const probeResponse = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'initialize',
-        id: 1,
-        params: {
-          protocolVersion: '2024-11-05',
-          capabilities: {},
-          clientInfo: { name: 'hoot-backend', version: '0.2.0' }
+  // Probe both WWW-Authenticate header AND RFC 9728 metadata in parallel
+  const [wwwAuthResult, metadataResult] = await Promise.allSettled([
+    // Probe 1: Check WWW-Authenticate header
+    (async () => {
+      try {
+        logger.verbose(`Probing for WWW-Authenticate header...`);
+        const probeResponse = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'initialize',
+            id: 1,
+            params: {
+              protocolVersion: '2024-11-05',
+              capabilities: {},
+              clientInfo: { name: 'hoot-backend', version: '0.2.0' }
+            }
+          })
+        });
+
+        if (probeResponse.status === 401) {
+          const wwwAuth = probeResponse.headers.get('www-authenticate');
+          logger.verbose(`WWW-Authenticate:`, wwwAuth);
+
+          if (wwwAuth && wwwAuth.toLowerCase().includes('bearer')) {
+            logger.info(`🔐 OAuth detected via WWW-Authenticate header (MCP spec compliant)`);
+
+            // Extract resource_metadata URL (RFC 9728)
+            const resourceMatch = wwwAuth.match(/resource_metadata="([^"]+)"/);
+            if (resourceMatch) {
+              resourceMetadata = resourceMatch[1];
+              logger.verbose(`Resource metadata URL:`, resourceMetadata);
+            }
+
+            // Extract scope (RFC 6750)
+            const scopeMatch = wwwAuth.match(/scope="([^"]+)"/);
+            if (scopeMatch) {
+              scope = scopeMatch[1];
+              logger.verbose(`Required scope:`, scope);
+            }
+
+            return { requiresOAuth: true };
+          }
         }
-      })
-    });
-
-    if (probeResponse.status === 401) {
-      const wwwAuth = probeResponse.headers.get('www-authenticate');
-      logger.verbose(`WWW-Authenticate:`, wwwAuth);
-
-      if (wwwAuth && wwwAuth.toLowerCase().includes('bearer')) {
-        requiresOAuthFromHeader = true;
-        logger.info(`🔐 OAuth detected via WWW-Authenticate header (MCP spec compliant)`);
-
-        // Extract resource_metadata URL (RFC 9728)
-        const resourceMatch = wwwAuth.match(/resource_metadata="([^"]+)"/);
-        if (resourceMatch) {
-          resourceMetadata = resourceMatch[1];
-          logger.verbose(`Resource metadata URL:`, resourceMetadata);
-        }
-
-        // Extract scope (RFC 6750)
-        const scopeMatch = wwwAuth.match(/scope="([^"]+)"/);
-        if (scopeMatch) {
-          scope = scopeMatch[1];
-          logger.verbose(`Required scope:`, scope);
-        }
+        return { requiresOAuth: false };
+      } catch (error) {
+        logger.verbose(`WWW-Authenticate probe failed:`, error.message);
+        return { requiresOAuth: false };
       }
-    }
-  } catch (probeError) {
-    logger.verbose(`WWW-Authenticate probe failed:`, probeError.message);
+    })(),
+
+    // Probe 2: Check RFC 9728 OAuth metadata endpoint in parallel
+    (async () => {
+      try {
+        logger.verbose(`Probing for RFC 9728 OAuth metadata...`);
+        const wellKnownUrl = new URL(url);
+        wellKnownUrl.pathname = '/.well-known/oauth-protected-resource';
+
+        const metadataRes = await fetch(wellKnownUrl.toString());
+        if (metadataRes.ok) {
+          const metadata = await metadataRes.json();
+          logger.verbose(`📋 OAuth metadata retrieved:`, JSON.stringify(metadata));
+
+          // Check for authorization_servers (required field in RFC 9728)
+          const authServers = metadata.authorization_servers || metadata.authorization_server;
+          if (authServers && (Array.isArray(authServers) ? authServers.length > 0 : authServers)) {
+            logger.info(`🔐 OAuth detected via RFC 9728 metadata endpoint`);
+            logger.verbose(`   Authorization server: ${Array.isArray(authServers) ? authServers[0] : authServers}`);
+            return { requiresOAuth: true, metadata };
+          } else {
+            logger.verbose(`⚠️ OAuth metadata found but no authorization servers listed`);
+          }
+        } else if (metadataRes.status === 404) {
+          logger.verbose(`No OAuth metadata endpoint found (404)`);
+        } else {
+          logger.verbose(`⚠️ OAuth metadata endpoint returned ${metadataRes.status}`);
+        }
+        return { requiresOAuth: false };
+      } catch (error) {
+        logger.verbose(`OAuth metadata probe failed:`, error.message);
+        return { requiresOAuth: false };
+      }
+    })()
+  ]);
+
+  // Process results from parallel probes
+  if (wwwAuthResult.status === 'fulfilled' && wwwAuthResult.value.requiresOAuth) {
+    requiresOAuthFromHeader = true;
+  }
+
+  if (metadataResult.status === 'fulfilled' && metadataResult.value.requiresOAuth) {
+    requiresOAuthFromMetadata = true;
   }
 
   // Step 2: Try transports in order: HTTP first, then SSE
   const transportsToTry = ['http', 'sse'];
   let detectedTransport = null;
   let serverInfo = null;
-  let requiresOAuth = requiresOAuthFromHeader;
+  let requiresOAuth = requiresOAuthFromHeader || requiresOAuthFromMetadata;
   let requiresClientCredentials = false;
   let requiresHeaderAuth = false;
   let lastError = null;
@@ -229,7 +281,15 @@ export async function autoDetectServer({ url }) {
 
       const isOAuthError = error.name === 'UnauthorizedError' && error.authorizationUrl;
       const is401or403 = error.message && (error.message.includes('401') || error.message.includes('403'));
-      const isHeaderAuthError = is401or403 && !isOAuthError && !requiresOAuthFromHeader;
+
+      // Check for OAuth 2.0 error codes in the error message (RFC 6750)
+      const hasOAuthErrorCode = error.message && (
+        error.message.includes('invalid_token') ||
+        error.message.includes('insufficient_scope') ||
+        error.message.includes('invalid_request')
+      );
+
+      const isHeaderAuthError = is401or403 && !isOAuthError && !requiresOAuthFromHeader && !requiresOAuthFromMetadata && !hasOAuthErrorCode;
 
       if (isOAuthError) {
         logger.info(`🔐 OAuth detected for ${transport.toUpperCase()} (SDK UnauthorizedError)`);
@@ -238,61 +298,34 @@ export async function autoDetectServer({ url }) {
         break;
       }
 
-      // Step 3: Try RFC 9728 OAuth Protected Resource Metadata discovery
-      // If we got a 401/403 but no WWW-Authenticate header, probe for OAuth metadata
-      if (is401or403 && !isOAuthError && !requiresOAuthFromHeader) {
-        logger.info(`🔍 Probing for OAuth metadata at well-known endpoint...`);
-        try {
-          // Manually fetch the metadata to handle servers that return arrays for resource field
-          // (GitLab returns resource as array, but SDK schema expects string)
-          const wellKnownUrl = new URL(url);
-          wellKnownUrl.pathname = '/.well-known/oauth-protected-resource';
-          
-          const metadataRes = await fetch(wellKnownUrl.toString());
-          if (metadataRes.ok) {
-            const metadata = await metadataRes.json();
-            logger.info(`📋 OAuth metadata retrieved:`, JSON.stringify(metadata));
-            
-            // Check for authorization_servers (required field in RFC 9728)
-            const authServers = metadata.authorization_servers || metadata.authorization_server;
-            if (authServers && (Array.isArray(authServers) ? authServers.length > 0 : authServers)) {
-              logger.info(`🔐 OAuth detected for ${transport.toUpperCase()} (RFC 9728 discovery)`);
-              logger.info(`   Authorization server: ${Array.isArray(authServers) ? authServers[0] : authServers}`);
-              detectedTransport = transport;
-              requiresOAuth = true;
-              
-              // Extract server name from URL
-              try {
-                const urlObj = new URL(url);
-                const hostname = urlObj.hostname;
-                const parts = hostname.split('.');
-                let extractedName = 'MCP Server';
+      // If we already detected OAuth from metadata/header, don't fall through to header auth
+      if (requiresOAuthFromHeader || requiresOAuthFromMetadata) {
+        if (is401or403) {
+          logger.info(`🔐 Using OAuth from ${requiresOAuthFromMetadata ? 'RFC 9728 metadata' : 'WWW-Authenticate header'} for ${transport.toUpperCase()}`);
+          detectedTransport = transport;
+          requiresOAuth = true;
 
-                if (parts.length >= 2) {
-                  const namePart = parts[parts.length - 2];
-                  extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-                }
+          // Extract server name from URL
+          try {
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname;
+            const parts = hostname.split('.');
+            let extractedName = 'MCP Server';
 
-                serverInfo = {
-                  name: extractedName,
-                  version: '1.0.0',
-                };
-              } catch (urlError) {
-                serverInfo = { name: 'MCP Server', version: '1.0.0' };
-              }
-
-              break;
-            } else {
-              logger.info(`⚠️ OAuth metadata found but no authorization servers listed`);
+            if (parts.length >= 2) {
+              const namePart = parts[parts.length - 2];
+              extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
             }
-          } else if (metadataRes.status === 404) {
-            logger.verbose(`No OAuth metadata endpoint found (404)`);
-          } else {
-            logger.info(`⚠️ OAuth metadata endpoint returned ${metadataRes.status}`);
+
+            serverInfo = {
+              name: extractedName,
+              version: '1.0.0',
+            };
+          } catch (urlError) {
+            serverInfo = { name: 'MCP Server', version: '1.0.0' };
           }
-        } catch (metadataError) {
-          logger.info(`❌ OAuth metadata discovery failed: ${metadataError.message}`);
-          // Fall through to header auth detection
+
+          break;
         }
       }
 
@@ -301,34 +334,6 @@ export async function autoDetectServer({ url }) {
         detectedTransport = transport;
         requiresOAuth = false;
         requiresHeaderAuth = true;
-
-        // Extract server name from URL
-        try {
-          const urlObj = new URL(url);
-          const hostname = urlObj.hostname;
-          const parts = hostname.split('.');
-          let extractedName = 'MCP Server';
-
-          if (parts.length >= 2) {
-            const namePart = parts[parts.length - 2];
-            extractedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-          }
-
-          serverInfo = {
-            name: extractedName,
-            version: '1.0.0',
-          };
-        } catch (urlError) {
-          serverInfo = { name: 'MCP Server', version: '1.0.0' };
-        }
-
-        break;
-      }
-
-      if (requiresOAuthFromHeader && is401or403) {
-        logger.info(`🔐 Using OAuth from WWW-Authenticate header for ${transport.toUpperCase()}`);
-        detectedTransport = transport;
-        requiresOAuth = true;
 
         // Extract server name from URL
         try {

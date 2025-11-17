@@ -77,6 +77,13 @@
   --theme-info: var(--duo-blue);
   --theme-special: var(--duo-purple);
 
+  /* Semantic color aliases for consistency */
+  --color-success: var(--theme-success);
+  --color-warning: var(--theme-warning);
+  --color-error: var(--theme-error);
+  --color-error-light: var(--duo-red);
+  --color-info: var(--theme-info);
+
   /* Hills - Forest green gradient layers */
   --hills-layer-1: #243330;
   /* Darkest back */

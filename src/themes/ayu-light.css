@@ -82,6 +82,13 @@
     --theme-info: var(--ayu-accent-blue);
     --theme-special: var(--ayu-accent-purple);
 
+    /* Semantic color aliases for consistency */
+    --color-success: var(--theme-success);
+    --color-warning: var(--theme-warning);
+    --color-error: var(--theme-error);
+    --color-error-light: var(--ayu-accent-red);
+    --color-info: var(--theme-info);
+
     /* Hills - Warm light gradient layers */
     --hills-layer-1: #f8f8f8;
     /* Lightest back */
