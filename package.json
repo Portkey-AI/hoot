@@ -1,6 +1,6 @@
 {
   "name": "@portkey-ai/hoot",
-  "version": "0.11.2",
+  "version": "0.12.0",
   "description": "Postman for MCP Servers - A fast, lightweight testing tool with full OAuth 2.1 support",
   "type": "module",
   "bin": {
