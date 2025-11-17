@@ -87,6 +87,13 @@
   --theme-info: var(--nord12);
   --theme-special: var(--nord15);
 
+  /* Semantic color aliases for consistency */
+  --color-success: var(--theme-success);
+  --color-warning: var(--theme-warning);
+  --color-error: var(--theme-error);
+  --color-error-light: var(--nord11);
+  --color-info: var(--theme-info);
+
   /* Hills - Nord ice gradient layers */
   --hills-layer-1: #2e3440;
   /* Darkest back */

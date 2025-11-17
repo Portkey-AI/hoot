@@ -86,6 +86,13 @@
     --theme-info: var(--nord-orange);
     --theme-special: var(--nord-purple);
 
+    /* Semantic color aliases for consistency */
+    --color-success: var(--theme-success);
+    --color-warning: var(--theme-warning);
+    --color-error: var(--theme-error);
+    --color-error-light: var(--nord-red);
+    --color-info: var(--theme-info);
+
     /* Hills - Light snow gradient layers */
     --hills-layer-1: #f5f7fa;
     /* Lightest back */
