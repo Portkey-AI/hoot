@@ -5,6 +5,20 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2025-11-17
+
+### Added
+- **Enhanced OAuth Detection**: Improved server auto-detection with parallel probing
+  - Simultaneously checks WWW-Authenticate header and RFC 9728 metadata
+  - Faster and more reliable OAuth server discovery
+  - Better handling of different OAuth implementation patterns
+
+### Changed
+- **Build Configuration**: Split build commands for npm and Cloudflare deployments
+  - `npm run build` now defaults to `localhost:8008` backend (for npm package users)
+  - Added `npm run build:cloudflare` for cloud deployments with production backend
+  - Ensures npm/npx users connect to local backend server automatically
+
 ## [0.11.2] - 2025-11-09
 
 ### Fixed
@@ -626,6 +640,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.12.0** - Enhanced OAuth detection with parallel probing and build configuration improvements for npm/Cloudflare
 - **0.11.2** - Fixed favicon loading performance with frontend caching
 - **0.11.1** - Configuration migration to wrangler.jsonc and improved JWT expiration handling
 - **0.11.0** - Workers AI support for semantic tool filtering and improved OAuth detection
