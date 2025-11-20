@@ -5,6 +5,15 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2025-11-20
+
+### Added
+- **OAuth Compliance Testing**: Comprehensive test suite for OAuth 2.0/2.1 compliance
+  - Automated testing of authorization code flow, token exchange, and refresh flows
+  - Detailed compliance reports with pass/fail status for each requirement
+  - Visual results viewer for analyzing compliance test outcomes
+  - Integrated with the "Try in Hoot" feature for easy testing
+
 ## [0.12.0] - 2025-11-17
 
 ### Added
@@ -640,6 +649,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.13.0** - Comprehensive OAuth compliance testing suite with automated tests, detailed reports, and visual results viewer
 - **0.12.0** - Enhanced OAuth detection with parallel probing and build configuration improvements for npm/Cloudflare
 - **0.11.2** - Fixed favicon loading performance with frontend caching
 - **0.11.1** - Configuration migration to wrangler.jsonc and improved JWT expiration handling
