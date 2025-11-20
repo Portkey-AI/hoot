@@ -1,9 +1,9 @@
-# 🦉 hoot
+# 🦉 Hoot
 > **⚠️ early beta** - things might break. if they do, [open an issue](https://github.com/Portkey-AI/hoot/issues).
 > 
 > **🤝 contributions welcome** - see something that could be better? PRs are appreciated!
 
-testing tool for MCP servers. like postman but for MCP.
+MCP testing tool. like Postman but for MCP.
 
 
 https://github.com/user-attachments/assets/e3add38e-9636-4f40-99d8-f4a2b8f0f056
@@ -37,10 +37,13 @@ hoot
 - see what tools they have
 - execute tools with params
 - view responses
-- oauth 2.1 if your server needs it
+- **oauth 2.1** with compliance testing ([docs](./docs/OAUTH-COMPLIANCE-COMPLETE.md))
+- **intelligent tool filtering** - context-aware tool selection
+- **chat interface** - test tools with AI assistance
 - copy stuff to clipboard
 - **🦉 "try in hoot" links** - share servers with just a URL ([docs](./docs/TRY_IN_HOOT.md))
 - **8 beautiful themes** - light & dark modes ([docs](./docs/THEMES.md))
+- **keyboard shortcuts** - fast navigation ([docs](./docs/KEYBOARD_SHORTCUTS.md))
 
 ## how it works
 
@@ -51,6 +54,8 @@ browser → backend → mcp servers
 ```
 
 no cors issues. backend handles oauth tokens in sqlite.
+
+can also deploy to Cloudflare Workers for edge hosting. [deployment guide](./docs/CLOUDFLARE_DEPLOYMENT.md)
 
 ### persistence
 
@@ -79,11 +84,11 @@ hootLogger.download()  // get logs
 
 ## 🔒 security
 
-hoot includes built-in security features for safe local development:
-- ✅ session-based authentication
+Hoot includes built-in security features for safe local development:
+- ✅ JWT-based session authentication
 - ✅ rate limiting
 - ✅ audit logging
-- ✅ localhost-only access
+- ✅ localhost-only access by default
 
 runs securely on your local machine. [read more](./docs/SECURITY.md)
 
@@ -91,7 +96,6 @@ runs securely on your local machine. [read more](./docs/SECURITY.md)
 
 - resources (coming)
 - prompts (coming)
-- more tests (working on it)
 
 ## tech
 
