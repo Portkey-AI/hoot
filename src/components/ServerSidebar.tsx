@@ -57,15 +57,19 @@ function ServersList({ onAddServer, onEditServer }: { onAddServer: () => void; o
 
     return (
         <div className="servers-list">
-            {servers.map((server) => (
-                <ServerItem
-                    key={server.id}
-                    server={server}
-                    isSelected={selectedServerId === server.id}
-                    onClick={() => handleServerSelect(server.id)}
-                    onEditServer={onEditServer}
-                />
-            ))}
+            {servers.map((server) => {
+                const hasDuplicateName = servers.filter(s => s.name === server.name).length > 1;
+                return (
+                    <ServerItem
+                        key={server.id}
+                        server={server}
+                        isSelected={selectedServerId === server.id}
+                        hasDuplicateName={hasDuplicateName}
+                        onClick={() => handleServerSelect(server.id)}
+                        onEditServer={onEditServer}
+                    />
+                );
+            })}
         </div>
     );
 }
@@ -73,6 +77,7 @@ function ServersList({ onAddServer, onEditServer }: { onAddServer: () => void; o
 interface ServerItemProps {
     server: ServerConfig;
     isSelected: boolean;
+    hasDuplicateName?: boolean;
     onClick: () => void;
     onEditServer: (server: ServerConfig) => void;
 }
@@ -80,6 +85,7 @@ interface ServerItemProps {
 const ServerItem = memo(function ServerItem({
     server,
     isSelected,
+    hasDuplicateName,
     onClick,
     onEditServer,
 }: ServerItemProps) {
@@ -115,10 +121,10 @@ const ServerItem = memo(function ServerItem({
         // Fetch favicon from backend (backend handles caching)
         const oauthLogoUri = server.auth?.oauthServerMetadata?.logo_uri;
         backendClient.getFaviconUrl(server.url, oauthLogoUri).then((url) => {
-            setFaviconUrl(server.url, url);
+            setFaviconUrl(server.url || '', url);
         }).catch((error) => {
             console.warn(`Failed to fetch favicon for ${server.name}:`, error);
-            setFaviconUrl(server.url, null);
+            setFaviconUrl(server.url || '', null);
         });
     }, [server.url, server.name, server.auth?.oauthServerMetadata?.logo_uri, cachedFaviconUrl, setFaviconUrl]);
 
@@ -414,6 +420,11 @@ const ServerItem = memo(function ServerItem({
                     />
                 )}
                 <span className="server-name">{server.name}</span>
+                {hasDuplicateName && (
+                    <span className="server-duplicate-hint" title={server.url || server.command}>
+                        {server.url ? new URL(server.url).hostname : 'stdio'}
+                    </span>
+                )}
                 <span className="tool-count">{tools?.length || 0}</span>
             </div>
             <div className="server-footer">

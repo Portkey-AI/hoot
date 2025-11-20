@@ -15,6 +15,7 @@ export default defineConfig({
   server: {
     port: 8009,
   },
+  publicDir: 'public',
   optimizeDeps: {
     exclude: ['@xenova/transformers'],
   },

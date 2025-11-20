@@ -1,0 +1,2969 @@
+{
+  "metadata": {
+    "testVersion": "2.0.0",
+    "description": "OAuth compliance test for remote MCP servers (server-side standards only)",
+    "specs": [
+      "RFC 6750 (OAuth 2.0 Bearer Token Usage) - WWW-Authenticate header",
+      "RFC 9728 (OAuth 2.1 Protected Resource Metadata) - /.well-known endpoint",
+      "RFC 6750 (OAuth 2.0 Bearer Token Usage) - Error codes"
+    ],
+    "note": "Score based on server-side standards only. SDK trigger is informational.",
+    "maxScore": 100,
+    "startTime": "2025-11-14T14:28:41.898Z",
+    "endTime": "2025-11-14T14:33:14.839Z"
+  },
+  "summary": {
+    "totalServers": 87,
+    "testedServers": 87,
+    "oauthCompliant": 59,
+    "headerAuth": 5,
+    "noAuth": 23,
+    "errors": 0
+  },
+  "results": [
+    {
+      "serverName": "Apify",
+      "url": "https://mcp.apify.com",
+      "timestamp": "2025-11-14T14:25:49.837Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://console.apify.com/authorize/oauth?response_type=code&client_id=b1L7jxj5cOvXWQ4V0&code_challenge=HnpQJTfMa56V86uiDeC7Qquel5RkeoQ0vRgAo5Sfonk&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://mcp.apify.com/favicon.ico"
+    },
+    {
+      "serverName": "Asana",
+      "url": "https://mcp.asana.com/mcp",
+      "timestamp": "2025-11-14T14:25:53.992Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", as_uri=\"https://mcp.asana.com/.well-known/oauth-protected-resource\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.asana.com",
+          "authorization_servers": [
+            "https://mcp.asana.com"
+          ],
+          "scopes_supported": [
+            "default"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_documentation": "https://developers.asana.com/docs/using-asanas-mcp-server",
+          "resource_name": "Asana MCP"
+        },
+        "authorizationServers": [
+          "https://mcp.asana.com"
+        ],
+        "resource": "https://mcp.asana.com",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "default"
+        ],
+        "authorizationUrl": "https://mcp.asana.com/authorize?response_type=code&client_id=nD9BCvkvNuNQcG9u&code_challenge=sDWtQgztzMDquQBLW01pXZcuLnA4xrQZxnpPJENZeF8&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.asana.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://asana.com/favicon.ico"
+    },
+    {
+      "serverName": "Astro Docs",
+      "url": "https://mcp.docs.astro.build/mcp",
+      "timestamp": "2025-11-14T14:25:55.723Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.docs.astro.build/favicon.svg"
+    },
+    {
+      "serverName": "Atlassian",
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "timestamp": "2025-11-14T14:25:57.128Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.atlassian.com/v1/authorize?response_type=code&client_id=yHncWIdPI4AXlABm&code_challenge=vHOP-rB4b9Oa6j1QEyDGCnbYIljWEIPeD4oKXKyD-BQ&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://atlassian.com/favicon.ico"
+    },
+    {
+      "serverName": "AWS Knowledge",
+      "url": "https://knowledge-mcp.global.api.aws",
+      "timestamp": "2025-11-14T14:25:59.017Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2025-03-26",
+            "capabilities": {
+              "tools": {
+                "listChanged": false
+              }
+            },
+            "serverInfo": {
+              "version": "1.0.0",
+              "name": "AWSDocumentationMCPProdGateway"
+            }
+          }
+        },
+        "metadataStatus": 200,
+        "metadataError": "Unexpected token '<', \"\n\n\n\n\n\n<!DOCTYPE \"... is not valid JSON"
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://github.com/fluidicon.png"
+    },
+    {
+      "serverName": "Audioscrape",
+      "url": "https://mcp.audioscrape.com",
+      "timestamp": "2025-11-14T14:26:03.301Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"MCP\", resource_metadata=\"https://mcp.audioscrape.com/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.audioscrape.com/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "unauthorized",
+          "error_description": "OAuth authorization required"
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "authorization_servers": [
+            "https://mcp.audioscrape.com"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource": "https://mcp.audioscrape.com",
+          "resource_documentation": "https://mcp.audioscrape.com/docs/mcp",
+          "resource_endpoints": [
+            "https://mcp.audioscrape.com"
+          ],
+          "resource_signing_alg_values_supported": [
+            "RS256"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.audioscrape.com"
+        ],
+        "resource": "https://mcp.audioscrape.com",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "authorizationUrl": "https://mcp.audioscrape.com/oauth/authorize?response_type=code&client_id=mcp_client_MB7dOeem2351TXY9&code_challenge=9aE_Ku03ohAHRMn5eaNPKJvOhahoDeCz4tgg4SSF0cM&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.audioscrape.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://audioscrape.com/favicon.ico"
+    },
+    {
+      "serverName": "Box",
+      "url": "https://mcp.box.com",
+      "timestamp": "2025-11-14T14:28:41.900Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"Service\", error=\"invalid_request\", error_description=\"The access token was not found.\", resource_metadata=\"https://mcp.box.com/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.box.com/.well-known/oauth-protected-resource",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.box.com/",
+          "resource_name": "Box Model Context Protocol Server",
+          "authorization_servers": [
+            "https://api.box.com/"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "scopes_supported": [
+            "root_readwrite",
+            "ai.readwrite"
+          ],
+          "resource_documentation": "https://developer.box.com/guides/box-mcp/remote/",
+          "resource_policy_uri": "https://www.box.com/legal/termsofservice",
+          "resource_tos_uri": "https://www.box.com/legal/termsofservice"
+        },
+        "authorizationServers": [
+          "https://api.box.com/"
+        ],
+        "resource": "https://mcp.box.com/",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "root_readwrite",
+          "ai.readwrite"
+        ],
+        "sdkError": "Incompatible auth server: does not support dynamic client registration"
+      },
+      "sdkTriggered": false,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://box.com/favicon.ico"
+    },
+    {
+      "serverName": "Buildkite",
+      "url": "https://mcp.buildkite.com/mcp",
+      "timestamp": "2025-11-14T14:28:44.519Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"https://mcp.buildkite.com\", error=\"access_denied\", error_description=\"Authentication required\", resource_metadata=\"https://mcp.buildkite.com/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.buildkite.com/.well-known/oauth-protected-resource/mcp",
+        "responseBody": {
+          "error": "access_denied",
+          "error_description": "Authentication required"
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.buildkite.com/mcp",
+          "authorization_servers": [
+            "https://mcp.buildkite.com"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.buildkite.com"
+        ],
+        "resource": "https://mcp.buildkite.com/mcp",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "authorizationUrl": "https://mcp.buildkite.com/oauth/authorize?response_type=code&client_id=79b66f61d93b2cae402b5497c86e14ca&code_challenge=ESQ1xoHLDKbH3hjhZ10K56aZdsPwdBtcsnRLZQPuvU8&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.buildkite.com%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://buildkite.com/favicon.ico"
+    },
+    {
+      "serverName": "Canva",
+      "url": "https://mcp.canva.com/mcp",
+      "timestamp": "2025-11-14T14:28:47.713Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.canva.com/authorize?response_type=code&client_id=ETNozaZOFGeFMxYs&code_challenge=2QPQ6I5OM4hBAOP-D-I4mf0bfZs2m7ebvcPpIfc3wuE&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://canva.com/favicon.ico"
+    },
+    {
+      "serverName": "Carbon Voice",
+      "url": "https://mcp.carbonvoice.app",
+      "timestamp": "2025-11-14T14:28:49.366Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Missing Authorization header\", resource_metadata=\"mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "mcp",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing Authorization header"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.carbonvoice.app",
+          "authorization_servers": [
+            "https://api.carbonvoice.app"
+          ],
+          "scopes_supported": [
+            "mcp:read",
+            "mcp:write"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_name": "Carbon Voice MCP Server"
+        },
+        "authorizationServers": [
+          "https://api.carbonvoice.app"
+        ],
+        "resource": "https://mcp.carbonvoice.app",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "mcp:read",
+          "mcp:write"
+        ],
+        "authorizationUrl": "https://api.carbonvoice.app/oauth/authorize?response_type=code&client_id=uxz3jiFFsARi9QQihi7ECaY1&code_challenge=LnsCiRFlz1nSFb8SjxCtR4_gOfHveLmlfkpsYoJZCO8&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.carbonvoice.app%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://mcp.carbonvoice.app/favicon.ico"
+    },
+    {
+      "serverName": "Close",
+      "url": "https://mcp.close.com/mcp",
+      "timestamp": "2025-11-14T14:28:53.843Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Authentication required\", resource_metadata=\"https://mcp.close.com/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.close.com/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Authentication required"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.close.com/",
+          "authorization_servers": [
+            "https://api.close.com/"
+          ],
+          "scopes_supported": [
+            "mcp.read",
+            "mcp.write_destructive",
+            "mcp.write_safe",
+            "offline_access"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "authorizationServers": [
+          "https://api.close.com/"
+        ],
+        "resource": "https://mcp.close.com/",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "mcp.read",
+          "mcp.write_destructive",
+          "mcp.write_safe",
+          "offline_access"
+        ],
+        "authorizationUrl": "https://app.close.com/oauth2/authorize/?response_type=code&client_id=oa2client_5Di4GxMNWJJjRS2TTALBRS&code_challenge=794CmmZp2eL5NE-gl_Q_go5icuOzlzgnfJ7WqrDfRkI&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.close.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://avatars.githubusercontent.com/u/2698511?s=200&v=4"
+    },
+    {
+      "serverName": "Cloudflare Docs",
+      "url": "https://docs.mcp.cloudflare.com/mcp",
+      "timestamp": "2025-11-14T14:28:57.903Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://cloudflare.com/favicon.ico"
+    },
+    {
+      "serverName": "Cloudflare Observability",
+      "url": "https://observability.mcp.cloudflare.com/mcp",
+      "timestamp": "2025-11-14T14:28:59.129Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://observability.mcp.cloudflare.com/oauth/authorize?response_type=code&client_id=jtRJYYJpcXiwn6pc&code_challenge=AeBVIOww9_E91chpYfhNgrTiiKyu5eaT_OosvblCYbY&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://cloudflare.com/favicon.ico"
+    },
+    {
+      "serverName": "Cloudflare Workers",
+      "url": "https://bindings.mcp.cloudflare.com/mcp",
+      "timestamp": "2025-11-14T14:29:00.785Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://bindings.mcp.cloudflare.com/oauth/authorize?response_type=code&client_id=O09EOJStKGsyJtK0&code_challenge=4xxR57Bjx4aoPR9bqj90i-OYq2j4XT_4EoDkMVOfFmM&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://cloudflare.com/favicon.ico"
+    },
+    {
+      "serverName": "Context Awesome",
+      "url": "https://www.context-awesome.com/api/mcp",
+      "timestamp": "2025-11-14T14:29:02.888Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://context-awesome.com/awesome-glasses.svg"
+    },
+    {
+      "serverName": "Cortex",
+      "url": "https://mcp.cortex.io/mcp",
+      "timestamp": "2025-11-14T14:29:05.200Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://cortex.io/favicon.ico"
+    },
+    {
+      "serverName": "DeepWiki",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "timestamp": "2025-11-14T14:29:07.337Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://deepwiki.com/favicon.ico"
+    },
+    {
+      "serverName": "Dialer",
+      "url": "https://getdialer.app/mcp",
+      "timestamp": "2025-11-14T14:29:14.710Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://getdialer.app/authorize?response_type=code&client_id=HRZO5HnUgpBFQYJw&code_challenge=yfhenG7o5UhTxu-FHn5-VjRTOC26JRoITMF8huwwjPU&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://getdialer.app/favicon.ico"
+    },
+    {
+      "serverName": "Dodo Payments",
+      "url": "https://mcp.dodopayments.com/mcp",
+      "timestamp": "2025-11-14T14:29:18.986Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.dodopayments.com/",
+          "authorization_servers": [
+            "https://mcp.dodopayments.com/"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.dodopayments.com/"
+        ],
+        "resource": "https://mcp.dodopayments.com/",
+        "authorizationUrl": "https://mcp.dodopayments.com/authorize?response_type=code&client_id=o5Xz0v0gghov6oWJ&code_challenge=4h2RVomxag_QSIlrtDSxwU3_4eyOfElVt3YNe5My570&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.dodopayments.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://avatars.githubusercontent.com/u/166188078?s=200&v=4"
+    },
+    {
+      "serverName": "EAN-Search.org",
+      "url": "https://www.ean-search.org/mcp",
+      "timestamp": "2025-11-14T14:29:20.794Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Authentication required\", resource_metadata=\"https://www.ean-search.org/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://www.ean-search.org/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Authentication required"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://www.ean-search.org/",
+          "authorization_servers": [
+            "https://www.ean-search.org/"
+          ],
+          "scopes_supported": [
+            "user"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "authorizationServers": [
+          "https://www.ean-search.org/"
+        ],
+        "resource": "https://www.ean-search.org/",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "user"
+        ],
+        "authorizationUrl": "https://www.ean-search.org/authorize?response_type=code&client_id=985e8c80-64e0-415a-a829-30512dff5c13&code_challenge=gt6X3BIlRHYZfQH1C2r5hadJtrF-vj1JL2phkwX4A24&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fwww.ean-search.org%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://www.ean-search.org/favicon.ico"
+    },
+    {
+      "serverName": "Egnyte",
+      "url": "https://mcp-server.egnyte.com/mcp",
+      "timestamp": "2025-11-14T14:29:24.245Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer",
+        "wwwAuthType": "bearer",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp-server.egnyte.com",
+          "resource_signing_alg_values_supported": [
+            "RS256"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "bearer"
+          ],
+          "authorization_servers": [
+            "https://mcp-oauth.egnyte.com"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp-oauth.egnyte.com"
+        ],
+        "resource": "https://mcp-server.egnyte.com",
+        "authorizationUrl": "https://mcp-oauth.egnyte.com/domain_picker.html?response_type=code&client_id=502bf172-75c3-415e-b70d-14bd87049eba&code_challenge=s5YB5XdKDfPIO7BM2C8EnzJ5gQyQvRPHFbs7gvc3fps&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp-server.egnyte.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://avatars.githubusercontent.com/u/5045750?s=200&v=4"
+    },
+    {
+      "serverName": "Exa Search",
+      "url": "https://mcp.exa.ai/mcp",
+      "timestamp": "2025-11-14T14:29:28.016Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.exa.ai/favicon.ico"
+    },
+    {
+      "serverName": "Ferryhopper",
+      "url": "https://mcp.ferryhopper.com/mcp",
+      "timestamp": "2025-11-14T14:29:31.848Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.ferryhopper.com/favicon.ico"
+    },
+    {
+      "serverName": "Figma",
+      "url": "https://mcp.figma.com/mcp",
+      "timestamp": "2025-11-14T14:29:34.705Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer resource_metadata=\"https://mcp.figma.com/.well-known/oauth-protected-resource\",scope=\"mcp:connect\",authorization_uri=\"https://api.figma.com/.well-known/oauth-authorization-server\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.figma.com/.well-known/oauth-protected-resource",
+        "scope": "mcp:connect",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.figma.com/mcp",
+          "authorization_servers": [
+            "https://api.figma.com"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "scopes_supported": [
+            "mcp:connect"
+          ],
+          "resource_name": "Figma MCP",
+          "resource_documentation": "https://developers.figma.com/docs/figma-mcp-server/"
+        },
+        "authorizationServers": [
+          "https://api.figma.com"
+        ],
+        "resource": "https://mcp.figma.com/mcp",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "mcp:connect"
+        ],
+        "sdkError": "HTTP 403: Invalid OAuth error response: SyntaxError: Unexpected token 'F', \"Forbidden\" is not valid JSON. Raw body: Forbidden"
+      },
+      "sdkTriggered": false,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://static.figma.com/app/icon/1/favicon.png"
+    },
+    {
+      "serverName": "Find-A-Domain",
+      "url": "https://api.findadomain.dev/mcp",
+      "timestamp": "2025-11-14T14:29:38.324Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {
+              "tools": {}
+            },
+            "serverInfo": {
+              "name": "findadomain-api",
+              "version": "1.0.0"
+            }
+          }
+        },
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://findadomain.dev/favicon.ico"
+    },
+    {
+      "serverName": "Fireflies",
+      "url": "https://api.fireflies.ai/mcp",
+      "timestamp": "2025-11-14T14:29:41.391Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Missing Authorization header\", resource_metadata=\"https://api.fireflies.ai/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://api.fireflies.ai/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing Authorization header"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://api.fireflies.ai/",
+          "authorization_servers": [
+            "https://api.fireflies.ai/"
+          ],
+          "scopes_supported": [
+            "profile",
+            "email"
+          ],
+          "resource_documentation": "https://docs.fireflies.ai/"
+        },
+        "authorizationServers": [
+          "https://api.fireflies.ai/"
+        ],
+        "resource": "https://api.fireflies.ai/",
+        "scopesSupported": [
+          "profile",
+          "email"
+        ],
+        "authorizationUrl": "https://api.fireflies.ai/authorize?response_type=code&client_id=9350fa03-4727-4edb-99b8-16aa70d38acb&code_challenge=MaRWsCMT_JRccsaeISFQILB171jq-AZCnX6WmIKy5VA&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fapi.fireflies.ai%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://fireflies.ai/favicon.ico"
+    },
+    {
+      "serverName": "GitHub",
+      "url": "https://api.githubcopilot.com/mcp",
+      "timestamp": "2025-11-14T14:29:44.585Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_request\", error_description=\"No access token was provided in this request\", resource_metadata=\"https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp",
+        "metadataStatus": 404,
+        "sdkError": "Incompatible auth server: does not support dynamic client registration"
+      },
+      "sdkTriggered": false,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://cdn.simpleicons.org/github"
+    },
+    {
+      "serverName": "GitMCP",
+      "url": "https://gitmcp.io/docs",
+      "timestamp": "2025-11-14T14:29:48.024Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 200,
+        "metadataError": "Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON"
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://gitmcp.io/favicon.ico"
+    },
+    {
+      "serverName": "Globalping",
+      "url": "https://mcp.globalping.dev/mcp",
+      "timestamp": "2025-11-14T14:29:51.881Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.globalping.dev/authorize?response_type=code&client_id=zIcml57Prxz8Cfsd&code_challenge=JbiY_6mpAUz18UT59k5T7B2giR3Wxwgic3uswR8uGAA&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://github.com/fluidicon.png"
+    },
+    {
+      "serverName": "Grafbase",
+      "url": "https://api.grafbase.com/mcp",
+      "timestamp": "2025-11-14T14:29:53.669Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "metadataStatus": 200,
+        "metadata": {
+          "authorization_servers": [
+            "https://auth.grafbase.com"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "jwks_uri": "https://api.workos.com/sso/jwks/client_01HGTJ0BJY89TZMMYRV3CQT16Y",
+          "resource": "https://api.grafbase.com"
+        },
+        "authorizationServers": [
+          "https://auth.grafbase.com"
+        ],
+        "resource": "https://api.grafbase.com",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "authorizationUrl": "https://auth.grafbase.com/oauth2/authorize?response_type=code&client_id=client_01KA1CBR8NBTJDPQVMCDVCYRJR&code_challenge=JPkO1fIzEaiBOLmPsr2wuPDwWeS3VmeJm14QEwF7BZc&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fapi.grafbase.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://grafbase.com/favicon.ico"
+    },
+    {
+      "serverName": "Hive Intelligence",
+      "url": "https://hiveintelligence.xyz/mcp",
+      "timestamp": "2025-11-14T14:29:58.471Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://hiveintelligence.xyz/favicon.ico"
+    },
+    {
+      "serverName": "HubSpot",
+      "url": "https://app.hubspot.com/mcp/v1/http",
+      "timestamp": "2025-11-14T14:30:02.913Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "https://mcp.hubspot.com/.well-known/oauth-authorization-server",
+        "metadataStatus": 404,
+        "sdkError": "Incompatible auth server: does not support dynamic client registration"
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "header_auth",
+      "iconUrl": "https://hubspot.com/favicon.ico"
+    },
+    {
+      "serverName": "Hugging Face",
+      "url": "https://hf.co/mcp",
+      "timestamp": "2025-11-14T14:30:05.995Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "result": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {
+              "tools": {
+                "listChanged": false
+              },
+              "prompts": {
+                "listChanged": false
+              }
+            },
+            "serverInfo": {
+              "name": "@huggingface/mcp-services",
+              "version": "0.2.45",
+              "title": "Hugging Face",
+              "websiteUrl": "https://huggingface.co/mcp",
+              "icons": [
+                {
+                  "src": "https://huggingface.co/favicon.ico"
+                }
+              ]
+            },
+            "instructions": "You have tools for searching the Hugging Face Hub. arXiv paper id's are often used as references between datasets, models and papers. There are over 100 tags in use, common tags include 'Text Generation', 'Transformers', 'Image Classification' and so on.\nThe User has access to 'Prompts' that provide ways to summarise various types of Hugging Face hub content, and you may guide them to check this feature. The Hugging Face tools are being used anonymously and rate limits apply. Direct the User to set their HF_TOKEN (instructions at https://hf.co/settings/mcp/), or create an account at https://hf.co/join for higher limits."
+          },
+          "jsonrpc": "2.0",
+          "id": 1
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://huggingface.co/mcp",
+          "authorization_servers": [
+            "https://huggingface.co"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "scopes_supported": [
+            "openid",
+            "profile",
+            "read-mcp",
+            "read-repos",
+            "jobs"
+          ]
+        },
+        "authorizationServers": [
+          "https://huggingface.co"
+        ],
+        "resource": "https://huggingface.co/mcp",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "openid",
+          "profile",
+          "read-mcp",
+          "read-repos",
+          "jobs"
+        ]
+      },
+      "sdkTriggered": false,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://hf.co/favicon.ico"
+    },
+    {
+      "serverName": "Indeed",
+      "url": "https://mcp.indeed.com/claude/mcp",
+      "timestamp": "2025-11-14T14:30:09.880Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Authentication required\", resource_metadata=\"https://mcp.indeed.com/.well-known/oauth-protected-resource/claude/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.indeed.com/.well-known/oauth-protected-resource/claude/mcp",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Authentication required"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://secure.indeed.com/oauth/v2/authorize?response_type=code&client_id=b8307aad33e4acf0ea75d94cab9d4f10d74b82458c340d41f60c0d0ad0b88240&code_challenge=64Q_1up81n6FbZRSZh9tIa9WLByPjWtpvGV6nYxU4Q4&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.indeed.com%2Fclaude%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://indeed.com/favicon.ico"
+    },
+    {
+      "serverName": "Instant",
+      "url": "https://mcp.instantdb.com/mcp",
+      "timestamp": "2025-11-14T14:30:13.558Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Missing Authorization header\", resource_metadata=\"https://mcp.instantdb.com/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.instantdb.com/.well-known/oauth-protected-resource/mcp",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing Authorization header"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.instantdb.com/",
+          "authorization_servers": [
+            "https://mcp.instantdb.com/"
+          ],
+          "scopes_supported": [
+            "apps-read",
+            "apps-write"
+          ],
+          "resource_documentation": "https://instantdb.com/docs"
+        },
+        "authorizationServers": [
+          "https://mcp.instantdb.com/"
+        ],
+        "resource": "https://mcp.instantdb.com/",
+        "scopesSupported": [
+          "apps-read",
+          "apps-write"
+        ],
+        "authorizationUrl": "https://mcp.instantdb.com/authorize?response_type=code&client_id=7662f3f2-82f7-4982-b600-0ea1a6842331&code_challenge=eCm-v4X4d0XJgj_pAAC3c8SEW6o_Ke4LYwPd1kcHxmU&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.instantdb.com%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://instantdb.com/img/icon/apple-touch-icon-57x57.png"
+    },
+    {
+      "serverName": "Intercom",
+      "url": "https://mcp.intercom.com/mcp",
+      "timestamp": "2025-11-14T14:30:16.604Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.intercom.com/authorize?response_type=code&client_id=428LjrdtqYjO2A28&code_challenge=V5NuMrpHX51eWDVsAeXFKFbfBzlnKI8BlvRZLh0wlPI&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://intercom.com/intercom-marketing-site/favicons/favicon-32x32.png"
+    },
+    {
+      "serverName": "InVideo",
+      "url": "https://mcp.invideo.io/mcp",
+      "timestamp": "2025-11-14T14:30:18.428Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://invideo.io/favicon.ico"
+    },
+    {
+      "serverName": "Jam",
+      "url": "https://mcp.jam.dev/mcp",
+      "timestamp": "2025-11-14T14:30:22.171Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer resource_metadata=\"https://mcp.jam.dev/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.jam.dev/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Access token is missing or invalid"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.jam.dev/mcp",
+          "resource_server": "https://mcp.jam.dev/",
+          "authorization_servers": [
+            "https://api.jam.dev"
+          ],
+          "scopes_supported": [
+            "mcp:read",
+            "mcp:write"
+          ],
+          "introspection_endpoint": "https://api.jam.dev/oauth/introspect"
+        },
+        "authorizationServers": [
+          "https://api.jam.dev"
+        ],
+        "resource": "https://mcp.jam.dev/mcp",
+        "scopesSupported": [
+          "mcp:read",
+          "mcp:write"
+        ],
+        "authorizationUrl": "https://api.jam.dev/oauth/authorize?response_type=code&client_id=2nn35IODU86PIRlO3AAoYw5ngpRB11F6&code_challenge=fQsLVBdpeY1-P7HkEdNaEAsuPWBgj7QcU_ZbzYLtXQs&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.jam.dev%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://jam.dev/favicon.ico"
+    },
+    {
+      "serverName": "Javadocs",
+      "url": "https://www.javadocs.dev/mcp",
+      "timestamp": "2025-11-14T14:30:25.876Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2025-03-26",
+            "capabilities": {
+              "tools": {
+                "listChanged": false
+              }
+            },
+            "serverInfo": {
+              "name": "javadocs.dev",
+              "version": "0.0.2"
+            }
+          }
+        },
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://javadocs.dev/favicon.ico"
+    },
+    {
+      "serverName": "Linear",
+      "url": "https://mcp.linear.app/mcp",
+      "timestamp": "2025-11-14T14:30:28.707Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.linear.app/authorize?response_type=code&client_id=hRniwDF_fz3Jz_Jn&code_challenge=7P8TyOGpXR_HD3uJwcPTh9nXVDqWgecIn1hwrWuTPDA&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://linear.app/favicon.ico"
+    },
+    {
+      "serverName": "Manifold",
+      "url": "https://api.manifold.markets/v0/mcp",
+      "timestamp": "2025-11-14T14:30:30.514Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://manifold.markets/favicon.ico"
+    },
+    {
+      "serverName": "Mercado Libre",
+      "url": "https://mcp.mercadolibre.com/mcp",
+      "timestamp": "2025-11-14T14:30:33.578Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "code": "unauthorized",
+          "message": "authorization value not present"
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.mercadolibre.com",
+          "authorization_servers": [
+            "https://mcp.mercadolibre.com"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.mercadolibre.com"
+        ],
+        "resource": "https://mcp.mercadolibre.com",
+        "sdkError": ""
+      },
+      "sdkTriggered": false,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/favicon.svg"
+    },
+    {
+      "serverName": "Mercado Pago",
+      "url": "https://mcp.mercadopago.com/mcp",
+      "timestamp": "2025-11-14T14:30:39.251Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "error": "Unauthenticated",
+          "message": "No X-Caller and no authorization header provided"
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.mercadopago.com",
+          "authorization_servers": [
+            "https://mcp.mercadopago.com"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.mercadopago.com"
+        ],
+        "resource": "https://mcp.mercadopago.com",
+        "sdkError": ""
+      },
+      "sdkTriggered": false,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://mercadopago.com/favicon.ico"
+    },
+    {
+      "serverName": "Meta Ads by Pipeboard",
+      "url": "https://mcp.pipeboard.co/meta-ads-mcp",
+      "timestamp": "2025-11-14T14:30:44.881Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token",
+          "details": {
+            "message": "Authentication failed - missing or invalid access token"
+          },
+          "result": "Authentication failed: Missing or invalid access token. Please include a valid Bearer token."
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.pipeboard.co/",
+          "authorization_servers": [
+            "https://pipeboard.co"
+          ],
+          "scopes_supported": [
+            "mcp:read",
+            "mcp:write",
+            "mcp:admin",
+            "claudeai"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_documentation": "https://pipeboard.co/.well-known/oauth-authorization-server"
+        },
+        "authorizationServers": [
+          "https://pipeboard.co"
+        ],
+        "resource": "https://mcp.pipeboard.co/",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "mcp:read",
+          "mcp:write",
+          "mcp:admin",
+          "claudeai"
+        ],
+        "authorizationUrl": "https://pipeboard.co/oauth/authorize?response_type=code&client_id=04e3e81037633c72e155cdd606ef1ee1&code_challenge=jaHBtoBJP1YDa9le8mCiyegMEuaBjqRao-9riB2ixeM&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.pipeboard.co%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://mcp.pipeboard.co/favicon.ico"
+    },
+    {
+      "serverName": "monday.com",
+      "url": "https://mcp.monday.com/mcp",
+      "timestamp": "2025-11-14T14:30:48.592Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.monday.com/authorize?response_type=code&client_id=v-UwZmywbRJj0c7K&code_challenge=e_8fIBlcLjh8MxCaNpOdkeOJWUNtzoGfqXJ49cu2tq0&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://monday.com/favicon.ico"
+    },
+    {
+      "serverName": "MorningStar",
+      "url": "https://mcp.morningstar.com/mcp",
+      "timestamp": "2025-11-14T14:30:51.463Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Authentication failed. The provided bearer token is invalid, expired, or no longer recognized by the server. To resolve: clear authentication tokens in your MCP client and reconnect. Your client should automatically re-register and obtain new tokens.\", resource_metadata=\"https://mcp.morningstar.com/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.morningstar.com/.well-known/oauth-protected-resource/mcp",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Authentication failed. The provided bearer token is invalid, expired, or no longer recognized by the server. To resolve: clear authentication tokens in your MCP client and reconnect. Your client should automatically re-register and obtain new tokens."
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.morningstar.com/authorize?response_type=code&client_id=9fbadc60-9a5e-46e5-a719-b2f1d92760c6&code_challenge=7lEDlOoFCx7Z7m5Ziyhr8DUjTB_2u605_YlUn699dBE&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.morningstar.com%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://morningstar.com/favicon.ico"
+    },
+    {
+      "serverName": "mypromind.com",
+      "url": "https://www.mypromind.com/interface/mcp",
+      "timestamp": "2025-11-14T14:30:55.202Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"No authorization provided\", resource_metadata=\"https://www.mypromind.com/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://www.mypromind.com/.well-known/oauth-protected-resource/mcp",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "No authorization provided"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://clerk.mypromind.com/oauth/authorize?response_type=code&client_id=bFVIqTrZX2y0hwGZ&code_challenge=bvVHCWUpiyFBldqyls2psdHxb5e0OpF_6HNM7hS7GKE&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fwww.mypromind.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://www.mypromind.com/favicon.ico"
+    },
+    {
+      "serverName": "Needle",
+      "url": "https://mcp.needle-ai.com/mcp",
+      "timestamp": "2025-11-14T14:30:59.405Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404,
+        "sdkError": "HTTP 404: Invalid OAuth error response: SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON. Raw body: <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /register</pre>\n</body>\n</html>\n"
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "header_auth",
+      "iconUrl": "https://needle-ai.com/images/favicon.png"
+    },
+    {
+      "serverName": "Neon",
+      "url": "https://mcp.neon.tech/mcp",
+      "timestamp": "2025-11-14T14:31:08.978Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "error": "Unauthorized"
+        },
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.neon.tech/authorize?response_type=code&client_id=z11uo7LT&code_challenge=PIzTozjzh5gGzqzCo6PvQ1sA9ELkwhpAEhPrfMIiuAU&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 0,
+      "status": "oauth",
+      "iconUrl": "https://mcp.neon.tech/favicon.ico"
+    },
+    {
+      "serverName": "Netlify",
+      "url": "https://netlify-mcp.netlify.app/mcp",
+      "timestamp": "2025-11-14T14:31:12.807Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"MCP Server\", resource_metadata=\"https://netlify-mcp.netlify.app/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://netlify-mcp.netlify.app/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "unauthenticated",
+          "error_description": "You must authenticate to use this tool"
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "authorization_endpoint": "https://netlify-mcp.netlify.app/oauth-server/auth",
+          "device_authorization_endpoint": "https://netlify-mcp.netlify.app/oauth-server/device/auth",
+          "claims_parameter_supported": false,
+          "claims_supported": [
+            "sub",
+            "sid",
+            "auth_time",
+            "iss"
+          ],
+          "code_challenge_methods_supported": [
+            "S256"
+          ],
+          "end_session_endpoint": "https://netlify-mcp.netlify.app/oauth-server/session/end",
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:device_code"
+          ],
+          "issuer": "https://netlify-mcp.netlify.app/",
+          "jwks_uri": "https://netlify-mcp.netlify.app/404-jwks",
+          "registration_endpoint": "https://netlify-mcp.netlify.app/oauth-server/reg",
+          "authorization_response_iss_parameter_supported": true,
+          "response_modes_supported": [
+            "form_post",
+            "fragment",
+            "query"
+          ],
+          "response_types_supported": [
+            "code"
+          ],
+          "scopes_supported": [
+            "openid",
+            "offline_access",
+            "read",
+            "write",
+            "claudeai"
+          ],
+          "subject_types_supported": [
+            "public"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_jwt",
+            "client_secret_post",
+            "private_key_jwt",
+            "none"
+          ],
+          "token_endpoint_auth_signing_alg_values_supported": [
+            "HS256",
+            "RS256",
+            "PS256",
+            "ES256",
+            "Ed25519",
+            "EdDSA"
+          ],
+          "token_endpoint": "https://netlify-mcp.netlify.app/oauth-server/token",
+          "id_token_signing_alg_values_supported": [
+            "RS256"
+          ],
+          "pushed_authorization_request_endpoint": "https://netlify-mcp.netlify.app/oauth-server/request",
+          "request_uri_parameter_supported": false,
+          "dpop_signing_alg_values_supported": [
+            "ES256",
+            "Ed25519",
+            "EdDSA"
+          ],
+          "revocation_endpoint": "https://netlify-mcp.netlify.app/oauth-server/token/revocation",
+          "claim_types_supported": [
+            "normal"
+          ],
+          "resource": "https://netlify-mcp.netlify.app/mcp"
+        },
+        "resource": "https://netlify-mcp.netlify.app/mcp",
+        "scopesSupported": [
+          "openid",
+          "offline_access",
+          "read",
+          "write",
+          "claudeai"
+        ],
+        "authorizationUrl": "https://netlify-mcp.netlify.app/oauth-server/auth?response_type=code&client_id=UIBXegGylzkAgcIue_EXwa_PGPOywLXEponu7hvNjbF&code_challenge=Vc4cgQUEsNhYFCVJrpKfE1fz3I9dZ1OXOKDuSC84A_Q&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fnetlify-mcp.netlify.app%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://netlify.app/favicon.ico"
+    },
+    {
+      "serverName": "Notion",
+      "url": "https://mcp.notion.com/mcp",
+      "timestamp": "2025-11-14T14:31:17.462Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.notion.com",
+          "resource_name": "Notion MCP (Beta)",
+          "resource_documentation": "https://developers.notion.com/docs/mcp",
+          "authorization_servers": [
+            "https://mcp.notion.com"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.notion.com"
+        ],
+        "resource": "https://mcp.notion.com",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "authorizationUrl": "https://mcp.notion.com/authorize?response_type=code&client_id=R8vgpNVPS6rR1T5H&code_challenge=rSwMHw_NBAqj2QruV8sDM1vGpYMRRcMaeCxKi07cVio&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.notion.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://notion.com/front-static/favicon.ico"
+    },
+    {
+      "serverName": "Octagon",
+      "url": "https://mcp.octagonagents.com/mcp",
+      "timestamp": "2025-11-14T14:31:19.202Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"unauthorized\", error_description=\"Authorization needed\", resource_metadata=\"https://mcp.example.com/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.example.com/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "No bearer token provided."
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.octagonagents.com",
+          "authorization_servers": [
+            "https://login.octagonai.co"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "authorizationServers": [
+          "https://login.octagonai.co"
+        ],
+        "resource": "https://mcp.octagonagents.com",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "authorizationUrl": "https://login.octagonai.co/oauth2/authorize?response_type=code&client_id=client_01KA1CEBHV1VQF48N8WJY8MEW3&code_challenge=9CKuryQCQmMPAXLZ2djEktTXifr8AE79EJyaTOzhZtQ&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://avatars.githubusercontent.com/u/139239186?s=200&v=4"
+    },
+    {
+      "serverName": "OpenZeppelin Cairo Contracts",
+      "url": "https://mcp.openzeppelin.com/contracts/cairo/mcp",
+      "timestamp": "2025-11-14T14:31:23.792Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.openzeppelin.com/favicon.ico"
+    },
+    {
+      "serverName": "OpenZeppelin Solidity Contracts",
+      "url": "https://mcp.openzeppelin.com/contracts/solidity/mcp",
+      "timestamp": "2025-11-14T14:31:26.559Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.openzeppelin.com/favicon.ico"
+    },
+    {
+      "serverName": "OpenZeppelin Stellar Contracts",
+      "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp",
+      "timestamp": "2025-11-14T14:31:28.498Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.openzeppelin.com/favicon.ico"
+    },
+    {
+      "serverName": "OpenZeppelin Stylus Contracts",
+      "url": "https://mcp.openzeppelin.com/contracts/stylus/mcp",
+      "timestamp": "2025-11-14T14:31:30.413Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.openzeppelin.com/favicon.ico"
+    },
+    {
+      "serverName": "Parallel Search MCP",
+      "url": "https://search-mcp.parallel.ai/mcp",
+      "timestamp": "2025-11-14T14:31:32.336Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://search-mcp.parallel.ai",
+          "authorization_servers": [
+            "https://platform.parallel.ai"
+          ],
+          "scopes_supported": [
+            "key:read"
+          ],
+          "bearer_methods_supported": [
+            "header",
+            "body"
+          ],
+          "resource_documentation": "https://search-mcp.parallel.ai"
+        },
+        "authorizationServers": [
+          "https://platform.parallel.ai"
+        ],
+        "resource": "https://search-mcp.parallel.ai",
+        "bearerMethodsSupported": [
+          "header",
+          "body"
+        ],
+        "scopesSupported": [
+          "key:read"
+        ],
+        "authorizationUrl": "https://platform.parallel.ai/getKeys/authorize?response_type=code&client_id=localhost&code_challenge=qz1iJWC8HneWXDFTNWsOsY8pBTyDnz6GEfu6Lsrtvzw&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fsearch-mcp.parallel.ai%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://parallel.ai/favicon.ico"
+    },
+    {
+      "serverName": "Parallel Task MCP",
+      "url": "https://task-mcp.parallel.ai/mcp",
+      "timestamp": "2025-11-14T14:31:34.151Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"main\", resource_metadata=\"https://task-mcp.parallel.ai/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://task-mcp.parallel.ai/.well-known/oauth-protected-resource/mcp",
+        "responseBody": {
+          "error": "Authentication required",
+          "detail": "Missing x-api-key or Authorization header. Please provide a valid API key."
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://task-mcp.parallel.ai",
+          "authorization_servers": [
+            "https://platform.parallel.ai"
+          ],
+          "scopes_supported": [
+            "key:read"
+          ],
+          "bearer_methods_supported": [
+            "header",
+            "body"
+          ],
+          "resource_documentation": "https://task-mcp.parallel.ai"
+        },
+        "authorizationServers": [
+          "https://platform.parallel.ai"
+        ],
+        "resource": "https://task-mcp.parallel.ai",
+        "bearerMethodsSupported": [
+          "header",
+          "body"
+        ],
+        "scopesSupported": [
+          "key:read"
+        ],
+        "authorizationUrl": "https://platform.parallel.ai/getKeys/authorize?response_type=code&client_id=localhost&code_challenge=IBHgUIG8CQWZqRz2j3KCyBWRUJpEsyyoPCZUs2drig8&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Ftask-mcp.parallel.ai%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://parallel.ai/favicon.ico"
+    },
+    {
+      "serverName": "PayPal",
+      "url": "https://mcp.paypal.com/mcp",
+      "timestamp": "2025-11-14T14:31:35.876Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.paypal.com/authorize?response_type=code&client_id=9bzBu7iDgudbev3H&code_challenge=G6xq9vxTaRCEAwEpWV8y_sY-tudgR0202V53pVKa96I&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://paypal.com/favicon.ico"
+    },
+    {
+      "serverName": "Peek.com",
+      "url": "https://mcp.peek.com",
+      "timestamp": "2025-11-14T14:31:37.912Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "result": {
+            "capabilities": {
+              "tools": {}
+            },
+            "protocolVersion": "2025-03-26",
+            "serverInfo": {
+              "name": "Experiences MCP",
+              "version": "1.0.0"
+            }
+          }
+        },
+        "metadataStatus": 406
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://mcp.peek.com/favicon.ico"
+    },
+    {
+      "serverName": "Plaid",
+      "url": "https://api.dashboard.plaid.com/mcp/mcp",
+      "timestamp": "2025-11-14T14:31:41.251Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "error": "Unauthorized"
+        },
+        "metadataStatus": 404,
+        "sdkError": "HTTP 400: Invalid OAuth error response: SyntaxError: Unexpected end of JSON input. Raw body: "
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "header_auth",
+      "iconUrl": "https://plaid.com/assets/img/favicons/apple-touch-icon.png"
+    },
+    {
+      "serverName": "Polar Signals",
+      "url": "https://api.polarsignals.com/api/mcp/",
+      "timestamp": "2025-11-14T14:31:44.931Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "failed to read user from request",
+        "responseBody": {
+          "code": 16,
+          "message": "failed to read user from request",
+          "details": []
+        },
+        "metadataStatus": 404,
+        "sdkError": "HTTP 404: Invalid OAuth error response: SyntaxError: Unexpected token 'd', \"default ba\"... is not valid JSON. Raw body: default backend - 404"
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "header_auth",
+      "iconUrl": "https://polarsignals.com/favicon.png"
+    },
+    {
+      "serverName": "Prisma Postgres",
+      "url": "https://mcp.prisma.io/mcp",
+      "timestamp": "2025-11-14T14:31:48.799Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.prisma.io",
+          "authorization_servers": [
+            "https://mcp.prisma.io"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.prisma.io"
+        ],
+        "resource": "https://mcp.prisma.io",
+        "authorizationUrl": "https://mcp.prisma.io/authorize?response_type=code&client_id=RjCb2aK4EvCbIWuS&code_challenge=LtChwvPsBnqms2zBB8s3P5BaaKLByOmrf2bskRRUxTs&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.prisma.io%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://prisma.io/favicon.ico"
+    },
+    {
+      "serverName": "Ramp",
+      "url": "https://ramp-mcp-remote.ramp.com/mcp",
+      "timestamp": "2025-11-14T14:31:50.581Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "detail": "No access token provided"
+        },
+        "metadataStatus": 404,
+        "authorizationUrl": "https://ramp-mcp-remote.ramp.com/oauth/authorize?auth_level=auto&scope=bills%3Aread+cards%3Aread+departments%3Aread+entities%3Aread+limits%3Aread+locations%3Aread+memos%3Aread+purchase_orders%3Aread+reimbursements%3Aread+spend_programs%3Aread+transactions%3Aread+users%3Aread+vendors%3Aread+cards%3Awrite+limits%3Aread+memos%3Aread+memos%3Awrite+transactions%3Aread+transactions%3Awrite+trips%3Aread&response_type=code&client_id=REDACTED&code_challenge=1w3XBeBR3Ry0PHq9pON8AKLc1MJ_pBRh6iEP_JZ8_DY&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 0,
+      "status": "oauth",
+      "iconUrl": "https://ramp.com/favicon.ico"
+    },
+    {
+      "serverName": "Remote MCP",
+      "url": "https://mcp.remote-mcp.com",
+      "timestamp": "2025-11-14T14:31:54.266Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://remote-mcp.com/favicon.ico"
+    },
+    {
+      "serverName": "Rube",
+      "url": "https://rube.app/mcp",
+      "timestamp": "2025-11-14T14:32:01.984Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"No authorization provided\", resource_metadata=\"https://rube.app/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://rube.app/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "No authorization provided"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://rube.app/mcp",
+          "authorization_servers": [
+            "https://rube.app"
+          ],
+          "jwks_uri": "https://rube.app/api/auth/mcp/jwks",
+          "bearer_methods_supported": [
+            "header",
+            "body"
+          ],
+          "resource_documentation": "https://rube.app/docs",
+          "resource_registration": "https://rube.app/api/auth/mcp/auth"
+        },
+        "authorizationServers": [
+          "https://rube.app"
+        ],
+        "resource": "https://rube.app/mcp",
+        "bearerMethodsSupported": [
+          "header",
+          "body"
+        ],
+        "authorizationUrl": "https://rube.app/api/auth/mcp/authorize?response_type=code&client_id=client_01KA1CFN0A9SHEQFV6KZ189K6D&code_challenge=2FP7gv_XMVo_mPbcNnktxQFAZOXQvIneY1FRM1RgPbo&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Frube.app%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://rube.app/favicon.ico"
+    },
+    {
+      "serverName": "Semgrep",
+      "url": "https://mcp.semgrep.ai/mcp",
+      "timestamp": "2025-11-14T14:32:06.186Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {
+              "experimental": {},
+              "prompts": {
+                "listChanged": false
+              },
+              "resources": {
+                "subscribe": false,
+                "listChanged": false
+              },
+              "tools": {
+                "listChanged": false
+              }
+            },
+            "serverInfo": {
+              "name": "Semgrep",
+              "version": "1.12.2"
+            }
+          }
+        },
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://semgrep.ai/favicon.ico"
+    },
+    {
+      "serverName": "Sentry",
+      "url": "https://mcp.sentry.dev/mcp",
+      "timestamp": "2025-11-14T14:32:10.537Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.sentry.dev/oauth/authorize?response_type=code&client_id=vdZPu9eALE2ITpuP&code_challenge=ys5dwUs3FEx2mqDIG7lbLsF_65kZ-9Q34vggbhCygeI&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://mcp.sentry.dev/favicon.ico"
+    },
+    {
+      "serverName": "Short.io",
+      "url": "https://ai-assistant.short.io/mcp",
+      "timestamp": "2025-11-14T14:32:12.600Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "error": {
+            "code": -32000,
+            "message": "Unauthorized: No API key provided"
+          },
+          "id": null
+        },
+        "metadataStatus": 404,
+        "sdkError": "[\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"issuer\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"token_endpoint\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"array\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"response_types_supported\"\n    ],\n    \"message\": \"Required\"\n  }\n]"
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "header_auth",
+      "iconUrl": "https://short.io/favicon.png"
+    },
+    {
+      "serverName": "Simplescraper",
+      "url": "https://mcp.simplescraper.io/mcp",
+      "timestamp": "2025-11-14T14:32:16.170Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"Simplescraper MCP\", resource_metadata_uri=\"https://mcp.simplescraper.io/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "error": {
+            "code": -32000,
+            "message": "Missing Bearer token"
+          },
+          "id": 1
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "authorization_servers": [
+            {
+              "issuer": "https://mcp.simplescraper.io",
+              "authorization_endpoint": "https://mcp.simplescraper.io/authorize"
+            }
+          ]
+        },
+        "authorizationServers": [
+          {
+            "issuer": "https://mcp.simplescraper.io",
+            "authorization_endpoint": "https://mcp.simplescraper.io/authorize"
+          }
+        ],
+        "authorizationUrl": "https://mcp.simplescraper.io/authorize?response_type=code&client_id=688c7bda-7b75-4618-ade0-54e24b02ce49&code_challenge=Z67_Xh8-IKkGBZDXSNe1Fb--mA8LYDEY-18xaq68H_k&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://simplescraper.io/favicon.ico"
+    },
+    {
+      "serverName": "Square",
+      "url": "https://mcp.squareup.com/mcp",
+      "timestamp": "2025-11-14T14:32:19.773Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.squareup.com/authorize?response_type=code&client_id=ghKTdTf7Q5htLs4L&code_challenge=c1kzvnh5YWTPch5oWzV2_YrTnW_PkU9zJiED7DkZhoY&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://squareup.com/favicon.ico"
+    },
+    {
+      "serverName": "Stack Overflow",
+      "url": "https://mcp.stackoverflow.com",
+      "timestamp": "2025-11-14T14:32:29.415Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer",
+        "wwwAuthType": "bearer",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.stackoverflow.com/authorize?response_type=code&client_id=ea0789a153e94e47b4a84890f31fbf33&code_challenge=HkyX2dQRw_quc-dJuQD0B3-XVdpQWaoFM5zboAa9xsE&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://stackoverflow.com/favicon.ico"
+    },
+    {
+      "serverName": "Stripe",
+      "url": "https://mcp.stripe.com/",
+      "timestamp": "2025-11-14T14:32:32.702Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer resource_metadata=https://mcp.stripe.com/.well-known/oauth-protected-resource",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "Unauthorized. See https://docs.stripe.com/mcp for usage instructions."
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.stripe.com",
+          "authorization_servers": [
+            "https://mcp.stripe.com"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.stripe.com"
+        ],
+        "resource": "https://mcp.stripe.com",
+        "authorizationUrl": "https://marketplace.stripe.com/oauth/v2/authorize?response_type=code&client_id=dca_TQEWCVDX0a6z9T&code_challenge=wjHM8tCJ0jFbg6fR3XakuPPefETeyn8YCsIAQhg27FE&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.stripe.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://stripe.com/favicon.ico"
+    },
+    {
+      "serverName": "Stytch",
+      "url": "http://mcp.stytch.dev/mcp",
+      "timestamp": "2025-11-14T14:32:35.777Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"Unauthorized\", error_description=\"Unauthorized\", resource_metadata=\"https://mcp.stytch.dev/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.stytch.dev/.well-known/oauth-protected-resource",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.stytch.dev",
+          "authorization_servers": [
+            "https://rustic-kilogram-6347.customers.stytch.com"
+          ],
+          "scopes_supported": [
+            "openid",
+            "email",
+            "profile",
+            "admin:projects",
+            "manage:api_keys",
+            "manage:api_keys:test",
+            "manage:project_settings",
+            "manage:project_data"
+          ]
+        },
+        "authorizationServers": [
+          "https://rustic-kilogram-6347.customers.stytch.com"
+        ],
+        "resource": "https://mcp.stytch.dev",
+        "scopesSupported": [
+          "openid",
+          "email",
+          "profile",
+          "admin:projects",
+          "manage:api_keys",
+          "manage:api_keys:test",
+          "manage:project_settings",
+          "manage:project_data"
+        ],
+        "sdkError": "Protected resource https://mcp.stytch.dev does not match expected http://mcp.stytch.dev/mcp (or origin)"
+      },
+      "sdkTriggered": false,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "http://mcp.stytch.dev/favicon.ico"
+    },
+    {
+      "serverName": "Supabase",
+      "url": "https://mcp.supabase.com/mcp",
+      "timestamp": "2025-11-14T14:32:37.130Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_request\", error_description=\"No access token was provided in this request\", resource_metadata=\"https://mcp.supabase.com/.well-known/oauth-protected-resource/mcp\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.supabase.com/.well-known/oauth-protected-resource/mcp",
+        "responseBody": {
+          "message": "Unauthorized"
+        },
+        "metadataStatus": 404,
+        "authorizationUrl": "https://api.supabase.com/v1/oauth/authorize?response_type=code&client_id=b402fb72-9819-4577-a1e6-336a57d9d668&code_challenge=JpK-Iiuvf15e5hMhm_T0O5YghK8r9xk2iyL8mscjg-M&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.supabase.com%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://supabase.com/favicon/apple-icon-57x57.png"
+    },
+    {
+      "serverName": "Telnyx",
+      "url": "https://api.telnyx.com/v2/mcp",
+      "timestamp": "2025-11-14T14:32:38.739Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "errors": [
+            {
+              "code": "10009",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+              },
+              "title": "Authentication failed",
+              "source": {
+                "pointer": "/"
+              },
+              "detail": "Could not find any usable credentials in the request."
+            }
+          ]
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://api.telnyx.com",
+          "authorization_servers": [
+            "https://api.telnyx.com"
+          ]
+        },
+        "authorizationServers": [
+          "https://api.telnyx.com"
+        ],
+        "resource": "https://api.telnyx.com",
+        "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize?response_type=code&client_id=YWHtJaeGaYbLx0V-JA9Qdw&code_challenge=W2E4Swd188jPWRm5mSdvn44bBrEislGS6k6JjWGFYx8&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fapi.telnyx.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 33,
+      "status": "oauth",
+      "iconUrl": "https://telnyx.com/favicon.ico"
+    },
+    {
+      "serverName": "ThoughtSpot",
+      "url": "https://agent.thoughtspot.app/mcp",
+      "timestamp": "2025-11-14T14:32:41.688Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://agent.thoughtspot.app/authorize?response_type=code&client_id=LjjdZckcmU5PUdhV&code_challenge=RNbrIw75be9ssi64E_FutZ0kEe8OGFUmckYsXDm7EGw&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://thoughtspot.app/favicon.ico"
+    },
+    {
+      "serverName": "Turkish Airlines",
+      "url": "https://mcp.turkishtechlab.com/mcp",
+      "timestamp": "2025-11-14T14:32:43.579Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.turkishtechlab.com/authorize?response_type=code&client_id=dMGSw496USgo5Ab5&code_challenge=-X54I35R3y-ahotAzxPWbgIrOhBMP_GEdz2sAFkyusY&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://turkishtechlab.com/favicon.ico"
+    },
+    {
+      "serverName": "Vercel",
+      "url": "https://mcp.vercel.com/",
+      "timestamp": "2025-11-14T14:32:46.132Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"No authorization provided\", resource_metadata=\"https://mcp.vercel.com/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.vercel.com/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "No authorization provided"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.vercel.com/",
+          "authorization_servers": [
+            "https://mcp.vercel.com"
+          ],
+          "scopes_supported": [
+            "openid",
+            "offline_access"
+          ],
+          "resource_name": "Vercel MCP",
+          "resource_documentation": "https://vercel.com/docs/mcp/vercel-mcp"
+        },
+        "authorizationServers": [
+          "https://mcp.vercel.com"
+        ],
+        "resource": "https://mcp.vercel.com/",
+        "scopesSupported": [
+          "openid",
+          "offline_access"
+        ],
+        "authorizationUrl": "https://vercel.com/oauth/authorize?response_type=code&client_id=cl_WbdtcToDrMR4ZHvXLGAmbfoYCsQjMeS8&code_challenge=Pfh9i0VdqxAkQ8DqGdX0K_JO4pRYwzYkp9VT_3JQA38&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.vercel.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://mcp.vercel.com/favicon.ico"
+    },
+    {
+      "serverName": "VibeMarketing",
+      "url": "https://vibemarketing.ninja/mcp",
+      "timestamp": "2025-11-14T14:32:49.377Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2024-11-05",
+            "serverInfo": {
+              "name": "vibemarketing-mcp",
+              "version": "1.0.0"
+            },
+            "capabilities": {
+              "tools": {}
+            }
+          }
+        },
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://vibemarketing.ninja/favicon.ico"
+    },
+    {
+      "serverName": "WayStation",
+      "url": "https://waystation.ai/mcp",
+      "timestamp": "2025-11-14T14:32:52.100Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"mcp\", resource=\"https://waystation.ai/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "Unauthorized"
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://waystation.ai",
+          "authorization_servers": [
+            "https://waystation.ai"
+          ],
+          "scopes_supported": [
+            "openid",
+            "profile",
+            "email"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_documentation": "https://waystation.ai"
+        },
+        "authorizationServers": [
+          "https://waystation.ai"
+        ],
+        "resource": "https://waystation.ai",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "openid",
+          "profile",
+          "email"
+        ],
+        "authorizationUrl": "https://waystation.ai/api/oauth/authorize?response_type=code&client_id=waystation-odpNsjbDGclI6wLS&code_challenge=7_4csD1yepMnhJAczD93Z3OhO5EfDbvaebBWWSBHIGU&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fwaystation.ai%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://waystation.ai/images/icon.ico"
+    },
+    {
+      "serverName": "Webflow",
+      "url": "https://mcp.webflow.com/mcp",
+      "timestamp": "2025-11-14T14:32:55.552Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.webflow.com/oauth/authorize?response_type=code&client_id=mYRgp9KuiUKCD2tC&code_challenge=OM0vndnQy_gC7wC7cfUm0MBowzQVnqMy5YDCI73sxRI&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://webflow.com/favicon.ico"
+    },
+    {
+      "serverName": "Wix",
+      "url": "https://mcp.wix.com/mcp",
+      "timestamp": "2025-11-14T14:32:58.002Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"OAuth\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Missing or invalid access token"
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 404,
+        "authorizationUrl": "https://mcp.wix.com/authorize?response_type=code&client_id=3VPzguoAYV0Wq2Zy&code_challenge=6ORlUgJOqLXIP1dH_oltln9uCZWx934GoktXsDkCatQ&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://wix.com/favicon.ico"
+    },
+    {
+      "serverName": "Zapier",
+      "url": "https://mcp.zapier.com/api/mcp/mcp",
+      "timestamp": "2025-11-14T14:32:59.772Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"Zapier MCP\", error=\"invalid_token\"",
+        "wwwAuthType": "bearer",
+        "responseBody": {
+          "jsonrpc": "2.0",
+          "id": null,
+          "error": {
+            "code": -31996,
+            "message": "None of the security schemes (mcpBearerAuth) successfully authenticated this request."
+          }
+        },
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.zapier.com",
+          "authorization_servers": [
+            "https://mcp.zapier.com"
+          ],
+          "scopes_supported": [
+            "openid",
+            "claudeai"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "none",
+            "client_secret_post"
+          ]
+        },
+        "authorizationServers": [
+          "https://mcp.zapier.com"
+        ],
+        "resource": "https://mcp.zapier.com",
+        "scopesSupported": [
+          "openid",
+          "claudeai"
+        ],
+        "authorizationUrl": "https://mcp.zapier.com/authorize?response_type=code&client_id=nla-KgS8xCrbdPEB3bhacKo0Q7GgM8ozXR4bFnXf&code_challenge=ORb-esZKj8dh3rr6b8sJp7mmifqWS3p7B1ElzezT1HE&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.zapier.com%2F"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://mcp.zapier.com/favicon.ico"
+    },
+    {
+      "serverName": "Zenable",
+      "url": "https://mcp.zenable.app/",
+      "timestamp": "2025-11-14T14:33:04.238Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": true
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer error=\"invalid_token\", error_description=\"Authentication failed. The provided bearer token is invalid, expired, or no longer recognized by the server. To resolve: clear authentication tokens in your MCP client and reconnect. Your client should automatically re-register and obtain new tokens.\", resource_metadata=\"https://mcp.zenable.app/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://mcp.zenable.app/.well-known/oauth-protected-resource",
+        "responseBody": {
+          "error": "invalid_token",
+          "error_description": "Authentication failed. The provided bearer token is invalid, expired, or no longer recognized by the server. To resolve: clear authentication tokens in your MCP client and reconnect. Your client should automatically re-register and obtain new tokens."
+        },
+        "oauthErrorCode": "invalid_token",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://mcp.zenable.app/",
+          "authorization_servers": [
+            "https://zenable.us.auth0.com/authorize"
+          ],
+          "scopes_supported": [
+            "openid",
+            "profile",
+            "email"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "authorizationServers": [
+          "https://zenable.us.auth0.com/authorize"
+        ],
+        "resource": "https://mcp.zenable.app/",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "openid",
+          "profile",
+          "email"
+        ],
+        "authorizationUrl": "https://zenable.us.auth0.com/authorize?response_type=code&client_id=DcOtTVfEmYAFwJwtUsNZhgae6CmyPfmx&code_challenge=rEfAAerO9UmYQifYZ3ogHW-594atvwZzr2s3EPFpGnI&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fmcp.zenable.app%2F"
+      },
+      "sdkTriggered": true,
+      "score": 100,
+      "status": "oauth",
+      "iconUrl": "https://avatars.githubusercontent.com/u/139062894?s=200&v=4"
+    },
+    {
+      "serverName": "Zine",
+      "url": "https://www.zine.ai/mcp",
+      "timestamp": "2025-11-14T14:33:08.613Z",
+      "compliance": {
+        "wwwAuthenticateHeader": true,
+        "rfc9728Metadata": true,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 401,
+        "wwwAuthenticate": "Bearer realm=\"Zine MCP\", resource_metadata=\"https://www.zine.ai/.well-known/oauth-protected-resource\"",
+        "wwwAuthType": "bearer",
+        "resourceMetadataUrl": "https://www.zine.ai/.well-known/oauth-protected-resource",
+        "metadataStatus": 200,
+        "metadata": {
+          "resource": "https://www.zine.ai/mcp",
+          "authorization_servers": [
+            "https://www.zine.ai"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_policy_uri": "https://www.zine.ai/legal/privacy",
+          "scopes_supported": [
+            "mcp:read",
+            "mcp:write"
+          ]
+        },
+        "authorizationServers": [
+          "https://www.zine.ai"
+        ],
+        "resource": "https://www.zine.ai/mcp",
+        "bearerMethodsSupported": [
+          "header"
+        ],
+        "scopesSupported": [
+          "mcp:read",
+          "mcp:write"
+        ],
+        "authorizationUrl": "https://www.zine.ai/api/auth/mcp-oauth/authorize?response_type=code&client_id=mcp_cfef7c5db3594077278be441bd9216bb&code_challenge=zD7AUKOJgjh-uXsGSnF0fzhKB2RHfIGafqHCW8QDd1w&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&state=test-state&resource=https%3A%2F%2Fwww.zine.ai%2Fmcp"
+      },
+      "sdkTriggered": true,
+      "score": 67,
+      "status": "oauth",
+      "iconUrl": "https://www.zine.ai/favicon.ico"
+    },
+    {
+      "serverName": "zip1.io",
+      "url": "https://zip1.io/mcp",
+      "timestamp": "2025-11-14T14:33:11.857Z",
+      "compliance": {
+        "wwwAuthenticateHeader": false,
+        "rfc9728Metadata": false,
+        "oauthErrorCodes": false
+      },
+      "details": {
+        "httpStatus": 200,
+        "wwwAuthenticate": null,
+        "responseBody": {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "result": {
+            "capabilities": {
+              "tools": {}
+            },
+            "protocolVersion": "2024-11-05",
+            "serverInfo": {
+              "name": "zip1-io-mcp",
+              "version": "1.0.0"
+            }
+          }
+        },
+        "metadataStatus": 404
+      },
+      "sdkTriggered": false,
+      "score": 0,
+      "status": "no_auth",
+      "iconUrl": "https://zip1.io/static/images/favicon.png"
+    }
+  ]
+}

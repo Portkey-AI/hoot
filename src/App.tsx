@@ -6,6 +6,7 @@ import { HybridInterface } from './components/HybridInterface';
 import { AddServerModal } from './components/AddServerModal';
 import { EditServerModal } from './components/EditServerModal';
 import { OAuthCallback } from './components/OAuthCallback';
+import { OAuthComplianceResults } from './components/OAuthComplianceResults';
 import { TryInHootHandler } from './components/TryInHootHandler';
 import { ToastContainer } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -36,7 +37,8 @@ type ViewMode = 'test' | 'hybrid';
 /**
  * Get view mode from URL path
  */
-function getViewModeFromPath(pathname: string): ViewMode {
+function getViewModeFromPath(pathname: string): ViewMode | 'oauth-compliance' {
+  if (pathname.startsWith('/oauth-compliance')) return 'oauth-compliance';
   if (pathname.startsWith('/chat')) return 'hybrid';
   return 'test';
 }
@@ -78,7 +80,7 @@ function App() {
 
   // Welcome modal for first-time users
   const { showWelcome, setShowWelcome } = useWelcomeModal();
-  
+
   // Don't show welcome modal if coming from a server link (Try in Hoot)
   const urlParams = new URLSearchParams(window.location.search);
   const hasServerParam = urlParams.has('s') || urlParams.has('server') || urlParams.has('try');
@@ -164,21 +166,69 @@ function App() {
         const name = urlState.server.substring(0, colonIndex);
         const url = urlState.server.substring(colonIndex + 1);
 
-        // Find matching server
-        const matchingServer = servers.find(s => {
-          // Match by URL primarily
-          if (s.url === url) return true;
-          // Fallback: match by name if URL is similar
-          if (s.name === name && s.url) {
-            const normalizeUrl = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
-            return normalizeUrl(s.url) === normalizeUrl(url);
-          }
-          return false;
-        });
+        // Define normalize helper locally
+        const normalizeUrl = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-        if (matchingServer && matchingServer.id !== selectedServerId) {
-          console.log('🖥️ Selecting server from URL:', matchingServer.name);
-          setSelectedServer(matchingServer.id);
+        // Check if currently selected server already matches the URL
+        // This prevents switching if we are already on a valid server that matches the URL description
+        // (Handles duplicate servers with same Name/URL)
+        if (selectedServerId) {
+          const currentServer = servers.find(s => s.id === selectedServerId);
+          if (currentServer) {
+            const isUrlMatch = currentServer.url === url;
+            const isFuzzyMatch = currentServer.name === name && currentServer.url &&
+              normalizeUrl(currentServer.url) === normalizeUrl(url);
+
+            if (isUrlMatch || isFuzzyMatch) {
+              console.log('✅ Current server matches URL, skipping switch to avoid duplicate conflict');
+              // We're already on a matching server, so don't switch
+              // This is crucial for duplicate servers (same Name/URL) where we want to keep the user's selection
+            } else {
+              // Find matching server to switch to
+              const matchingServer = servers.find(s => {
+                // Match by URL primarily
+                if (s.url === url) return true;
+                // Fallback: match by name if URL is similar
+                if (s.name === name && s.url) {
+                  return normalizeUrl(s.url) === normalizeUrl(url);
+                }
+                return false;
+              });
+
+              if (matchingServer) {
+                console.log('🖥️ Selecting server from URL:', matchingServer.name);
+                setSelectedServer(matchingServer.id);
+              }
+            }
+          } else {
+            // selectedServerId exists but server not found in list (rare)
+            // Proceed with standard logic
+            const matchingServer = servers.find(s => {
+              if (s.url === url) return true;
+              if (s.name === name && s.url) {
+                return normalizeUrl(s.url) === normalizeUrl(url);
+              }
+              return false;
+            });
+
+            if (matchingServer) {
+              setSelectedServer(matchingServer.id);
+            }
+          }
+        } else {
+          // No server selected, standard find logic
+          const matchingServer = servers.find(s => {
+            if (s.url === url) return true;
+            if (s.name === name && s.url) {
+              return normalizeUrl(s.url) === normalizeUrl(url);
+            }
+            return false;
+          });
+
+          if (matchingServer) {
+            console.log('🖥️ Selecting server from URL:', matchingServer.name);
+            setSelectedServer(matchingServer.id);
+          }
         }
       } else {
         // Legacy ID format
@@ -499,6 +549,8 @@ function App() {
 
         {/* Content Area */}
         <div className="app-content">
+          {viewMode === 'oauth-compliance' && <OAuthComplianceResults />}
+
           {viewMode === 'test' && (
             <div className="test-layout">
               <ServerSidebar

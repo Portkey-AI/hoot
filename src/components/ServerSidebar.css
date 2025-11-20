@@ -308,6 +308,18 @@
     white-space: nowrap;
 }
 
+.server-duplicate-hint {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    margin-left: 4px;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+}
+
 .tool-count {
     background: var(--bg-hover);
     padding: 2px 8px;
