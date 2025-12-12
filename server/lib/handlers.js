@@ -19,12 +19,14 @@ export function createOAuthProvider(options) {
     userId,
     serverId,
     frontendUrl,
-    existingClientInfo
+    existingClientInfo,
+    customOAuthMetadata
   } = options;
 
   const callbackUrl = `${frontendUrl}/oauth/callback`;
 
-  return {
+  // Build provider
+  const provider = {
     get redirectUrl() {
       return callbackUrl;
     },
@@ -99,6 +101,24 @@ export function createOAuthProvider(options) {
       await db.clearOAuthCredentials(userId, serverId, scope);
     },
   };
+
+  // Attach custom OAuth metadata if provided
+  // This will be used by the MCP SDK to override auto-discovery
+  if (customOAuthMetadata) {
+    provider.customOAuthMetadata = customOAuthMetadata;
+
+    if (customOAuthMetadata.authorization_endpoint || customOAuthMetadata.token_endpoint) {
+      logger.info(`🔧 Using custom OAuth endpoints for ${serverId}:`);
+      if (customOAuthMetadata.authorization_endpoint) {
+        logger.info(`   Authorization: ${customOAuthMetadata.authorization_endpoint}`);
+      }
+      if (customOAuthMetadata.token_endpoint) {
+        logger.info(`   Token: ${customOAuthMetadata.token_endpoint}`);
+      }
+    }
+  }
+
+  return provider;
 }
 
 /**
@@ -451,8 +471,53 @@ export async function connectToServer(options) {
       userId,
       serverId,
       frontendUrl,
-      existingClientInfo
+      existingClientInfo,
+      customOAuthMetadata: auth.customOAuthMetadata
     });
+
+    // If custom OAuth metadata is provided, create a custom fetch function
+    // that intercepts well-known metadata discovery and returns custom endpoints
+    if (auth.customOAuthMetadata &&
+      (auth.customOAuthMetadata.authorization_endpoint || auth.customOAuthMetadata.token_endpoint)) {
+
+      const serverOrigin = new URL(url).origin;
+      const customMetadata = {
+        issuer: auth.customOAuthMetadata.issuer || serverOrigin,
+        authorization_endpoint: auth.customOAuthMetadata.authorization_endpoint || '',
+        token_endpoint: auth.customOAuthMetadata.token_endpoint || '',
+        response_types_supported: auth.customOAuthMetadata.response_types_supported || ['code'],
+        grant_types_supported: auth.customOAuthMetadata.grant_types_supported || ['authorization_code', 'refresh_token'],
+        token_endpoint_auth_methods_supported: [auth.customOAuthMetadata.token_endpoint_auth_method || 'none'],
+      };
+
+      // Only override if both required endpoints are provided
+      if (customMetadata.authorization_endpoint && customMetadata.token_endpoint) {
+        logger.info(`🔧 Using custom OAuth endpoints for ${serverName}:`);
+
+        // Create a custom fetch function that intercepts metadata discovery
+        const originalFetch = transportOptions.fetch || global.fetch || fetch;
+        transportOptions.fetch = async (input, init) => {
+          const urlStr = input instanceof URL ? input.href : input.toString();
+
+          // Check if this is an OAuth authorization server metadata discovery request
+          const isMetadataRequest = urlStr.includes('/.well-known/oauth-authorization-server') ||
+            urlStr.includes('/.well-known/openid-configuration');
+
+          if (isMetadataRequest) {
+            logger.verbose(`🔧 Intercepting OAuth metadata discovery, returning custom endpoints`);
+
+            // Return a mock Response with our custom metadata
+            return new Response(JSON.stringify(customMetadata), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
+          // For all other requests, use the original fetch
+          return originalFetch(input, init);
+        };
+      }
+    }
   }
 
   // Create transport

@@ -75,18 +75,28 @@ Header Value: custom-value-123
    - Enter the **Access Token** in the field
    - Click "Connect"
 
+4. **Option C - Custom OAuth Endpoints**:
+   - Click "Advanced OAuth Options" to expand
+   - Enter custom **Authorization Endpoint** URL
+   - Enter custom **Token Endpoint** URL
+   - (Optional) Enter custom **Client ID**
+   - These custom endpoints override automatic discovery
+   - Use this for OAuth providers that don't follow RFC 8414 discovery
+
 **Full Features** (v0.2):
 - ✅ OAuth 2.1 authorization code flow
 - ✅ PKCE (Proof Key for Code Exchange)
 - ✅ Automatic token refresh
 - ✅ Token storage (localStorage)
 - ✅ Authorization discovery
+- ✅ **Custom OAuth endpoints** (override auto-discovery)
 - ✅ Redirect handling
 - ✅ Token expiration management
 
 **How It Works**:
 1. Hoot creates an `OAuthClientProvider` for your server
 2. Discovers OAuth endpoints (via `.well-known/oauth-authorization-server`)
+   - OR uses your custom endpoints if provided
 3. Generates PKCE code challenge
 4. Redirects to authorization URL
 5. Receives authorization code via callback
@@ -94,6 +104,12 @@ Header Value: custom-value-123
 7. Stores tokens securely
 8. Automatically refreshes when expired
 9. Includes tokens in all requests
+
+**Custom OAuth Endpoints**:
+Some OAuth providers don't support RFC 8414 auto-discovery or have non-standard endpoint locations. You can manually specify:
+- **Authorization Endpoint**: Where users are redirected to authorize (e.g., `https://auth.example.com/oauth/authorize`)
+- **Token Endpoint**: Where authorization codes are exchanged for tokens (e.g., `https://auth.example.com/oauth/token`)
+- **Custom Client ID**: If the server requires a specific pre-registered client ID
 
 **Based on**: [MCP SDK OAuth Example](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/src/examples/client/simpleOAuthClient.ts)
 
@@ -142,14 +158,32 @@ Authentication: Headers
   Header Value: Bearer eyJhbGciOiJIUzI1NiIs...
 ```
 
-### Example 3: OAuth (Manual Token)
+### Example 3: OAuth (Automatic Discovery)
 ```
 Server Name: OAuth Server
 URL: https://oauth-mcp.example.com
 Transport: HTTP
 Authentication: OAuth
-  Access Token: ya29.a0AfB_byC...
+  (Leave access token empty for automatic flow)
 ```
+
+### Example 4: OAuth (Custom Endpoints)
+```
+Server Name: Custom OAuth Server
+URL: https://api.example.com/mcp
+Transport: HTTP
+Authentication: OAuth
+  Advanced OAuth Options:
+    Authorization Endpoint: https://auth.example.com/oauth/authorize
+    Token Endpoint: https://auth.example.com/oauth/token
+    Custom Client ID: hoot-client-123 (optional)
+```
+
+This is useful for:
+- OAuth providers without RFC 8414 discovery support
+- Legacy OAuth implementations
+- Custom authorization servers
+- Testing with non-standard OAuth endpoints
 
 ---
 

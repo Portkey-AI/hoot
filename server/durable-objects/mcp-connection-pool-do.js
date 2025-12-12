@@ -249,7 +249,52 @@ export class MCPConnectionPoolDO {
     } else if (config.auth && config.auth.type === 'oauth') {
       // OAuth is handled by the SDK using the auth provider
       // The provider will fetch tokens from Durable Object storage
-      transportOptions.authProvider = this.createOAuthProvider(serverId, options);
+      transportOptions.authProvider = this.createOAuthProvider(serverId, options, config.auth.customOAuthMetadata);
+
+      // If custom OAuth metadata is provided, create a custom fetch function
+      // that intercepts well-known metadata discovery and returns custom endpoints
+      if (config.auth.customOAuthMetadata &&
+        (config.auth.customOAuthMetadata.authorization_endpoint || config.auth.customOAuthMetadata.token_endpoint)) {
+
+        const serverOrigin = new URL(config.url).origin;
+        const customMetadata = {
+          issuer: config.auth.customOAuthMetadata.issuer || serverOrigin,
+          authorization_endpoint: config.auth.customOAuthMetadata.authorization_endpoint || '',
+          token_endpoint: config.auth.customOAuthMetadata.token_endpoint || '',
+          response_types_supported: config.auth.customOAuthMetadata.response_types_supported || ['code'],
+          grant_types_supported: config.auth.customOAuthMetadata.grant_types_supported || ['authorization_code', 'refresh_token'],
+          token_endpoint_auth_methods_supported: [config.auth.customOAuthMetadata.token_endpoint_auth_method || 'none'],
+        };
+
+        // Only override if both required endpoints are provided
+        if (customMetadata.authorization_endpoint && customMetadata.token_endpoint) {
+          console.log(`🔧 Using custom OAuth endpoints for ${config.serverName}:`);
+          console.log(`   Authorization: ${customMetadata.authorization_endpoint}`);
+          console.log(`   Token: ${customMetadata.token_endpoint}`);
+
+          // Create a custom fetch function that intercepts metadata discovery
+          transportOptions.fetch = async (input, init) => {
+            const urlStr = input instanceof URL ? input.href : input.toString();
+
+            // Check if this is an OAuth authorization server metadata discovery request
+            const isMetadataRequest = urlStr.includes('/.well-known/oauth-authorization-server') ||
+              urlStr.includes('/.well-known/openid-configuration');
+
+            if (isMetadataRequest) {
+              console.log(`🔧 Intercepting OAuth metadata discovery, returning custom endpoints`);
+
+              // Return a mock Response with our custom metadata
+              return new Response(JSON.stringify(customMetadata), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+
+            // For all other requests, use the default fetch
+            return fetch(input, init);
+          };
+        }
+      }
     }
 
     // Create transport
@@ -287,14 +332,14 @@ export class MCPConnectionPoolDO {
     console.log(`✅ Connected to ${config.serverName} (${serverId})`);
   }
 
-  createOAuthProvider(serverId, options) {
+  createOAuthProvider(serverId, options, customOAuthMetadata) {
     const { userId, frontendUrl } = options;
     const callbackUrl = `${frontendUrl}/oauth/callback`;
 
     // Create DB adapter inside DO (can't pass functions via JSON)
     const db = new DurableObjectsAdapter(this.env);
 
-    return {
+    const provider = {
       get redirectUrl() {
         return callbackUrl;
       },
@@ -355,6 +400,17 @@ export class MCPConnectionPoolDO {
         await db.clearOAuthCredentials(userId, serverId, scope);
       },
     };
+
+    // Attach custom OAuth metadata if provided
+    if (customOAuthMetadata) {
+      provider.customOAuthMetadata = customOAuthMetadata;
+
+      if (customOAuthMetadata.authorization_endpoint || customOAuthMetadata.token_endpoint) {
+        console.log(`🔧 Custom OAuth metadata configured for ${serverId}`);
+      }
+    }
+
+    return provider;
   }
 
   async disconnectServer(serverId) {
