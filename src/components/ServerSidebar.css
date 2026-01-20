@@ -320,6 +320,20 @@
     flex-shrink: 1;
 }
 
+.server-instructions-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--blue-500);
+    opacity: 0.7;
+    cursor: help;
+    margin-left: 4px;
+    transition: opacity var(--transition-fast);
+}
+
+.server-instructions-icon:hover {
+    opacity: 1;
+}
+
 .tool-count {
     background: var(--bg-hover);
     padding: 2px 8px;

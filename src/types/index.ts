@@ -54,6 +54,7 @@ export interface ServerMetadata {
   description?: string;
   websiteUrl?: string;
   icons?: Icon[];
+  instructions?: string; // Hints for LLM about how to use the server
 }
 
 export interface ServerConfig {

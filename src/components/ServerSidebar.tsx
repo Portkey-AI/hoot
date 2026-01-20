@@ -1,5 +1,5 @@
 import { memo, useState, useRef, useEffect } from 'react';
-import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings } from 'lucide-react';
+import { MoreVertical, RefreshCw, Key, LogOut, Trash2, Settings, Info } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { useMCPConnection } from '../hooks/useMCP';
 import { NoServersState } from './EmptyState';
@@ -462,6 +462,14 @@ const ServerItem = memo(function ServerItem({
                 {hasDuplicateName && (
                     <span className="server-duplicate-hint" title={server.url || server.command}>
                         {server.url ? new URL(server.url).hostname : 'stdio'}
+                    </span>
+                )}
+                {server.metadata?.instructions && (
+                    <span 
+                        className="server-instructions-icon" 
+                        title={`Server Instructions:\n\n${server.metadata.instructions}`}
+                    >
+                        <Info size={12} />
                     </span>
                 )}
                 <span className="tool-count">{tools?.length || 0}</span>

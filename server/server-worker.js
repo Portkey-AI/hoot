@@ -495,6 +495,12 @@ async function handleRequest(request, env) {
         if (serverVersion.icons && Array.isArray(serverVersion.icons)) {
           serverInfo.icons = serverVersion.icons;
         }
+
+        // Get instructions from initialize result
+        const instructions = client.getInstructions();
+        if (instructions) {
+          serverInfo.instructions = instructions;
+        }
       }
 
       return jsonResponse({

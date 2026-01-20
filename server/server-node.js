@@ -548,6 +548,12 @@ app.get('/mcp/server-info/:serverId', async (req, res) => {
         metadata.icons = serverVersion.icons;
       }
 
+      // Get instructions from initialize result
+      const instructions = client.getInstructions();
+      if (instructions) {
+        metadata.instructions = instructions;
+      }
+
       res.json({
         success: true,
         serverInfo: metadata
