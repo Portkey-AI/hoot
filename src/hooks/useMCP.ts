@@ -3,6 +3,7 @@ import { mcpClient } from '../lib/mcpClient';
 import { useAppStore } from '../stores/appStore';
 import { toast } from '../stores/toastStore';
 import type { ServerConfig } from '../types';
+import * as backendClient from '../lib/backendClient';
 
 // Import UnauthorizedError to detect OAuth redirects
 import { UnauthorizedError } from '@modelcontextprotocol/sdk/client/auth.js';
@@ -40,6 +41,19 @@ export function useMCPConnection() {
             // Fetch and cache tools immediately
             const tools = await mcpClient.listTools(server.id);
             setTools(server.id, tools);
+
+            // Fetch server metadata (name, version, icons, etc.)
+            try {
+                const serverInfo = await backendClient.getServerInfo(server.id);
+                if (serverInfo) {
+                    updateServer(server.id, {
+                        metadata: serverInfo,
+                    });
+                }
+            } catch (metadataError) {
+                // Non-fatal - just log and continue
+                console.warn('Failed to fetch server metadata:', metadataError);
+            }
 
             console.log(`✓ Successfully connected to ${server.name}`);
             // Toast removed - connection success is obvious from UI state

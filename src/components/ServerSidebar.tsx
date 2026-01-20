@@ -106,8 +106,47 @@ const ServerItem = memo(function ServerItem({
     const cacheKey = server.url || '';
     const cachedFaviconUrl = faviconCache[cacheKey];
 
-    // Fetch favicon from backend if not in cache
+    // Helper to get the best icon URL from server metadata
+    const getServerIconUrl = (): string | null => {
+        // Priority 1: Server-provided icons from MCP protocol
+        if (server.metadata?.icons && server.metadata.icons.length > 0) {
+            // Prefer PNG/JPEG for safety and compatibility
+            const safeIcon = server.metadata.icons.find(icon =>
+                icon.mimeType?.includes('png') || icon.mimeType?.includes('jpeg')
+            );
+            if (safeIcon) return safeIcon.src;
+
+            // Fall back to SVG (check MIME type for security)
+            const svgIcon = server.metadata.icons.find(icon =>
+                icon.mimeType?.includes('svg')
+            );
+            if (svgIcon) return svgIcon.src;
+
+            // Use first icon as last resort
+            return server.metadata.icons[0].src;
+        }
+
+        // Priority 2: OAuth logo_uri
+        if (server.auth?.oauthServerMetadata?.logo_uri) {
+            return server.auth.oauthServerMetadata.logo_uri;
+        }
+
+        // Priority 3: Cached favicon from backend
+        return cachedFaviconUrl || null;
+    };
+
+    const iconUrl = getServerIconUrl();
+
+    // Fetch favicon from backend if no server icon and not in cache
     useEffect(() => {
+        // Skip if we have server-provided icon or OAuth logo
+        if (server.metadata?.icons && server.metadata.icons.length > 0) {
+            return;
+        }
+        if (server.auth?.oauthServerMetadata?.logo_uri) {
+            return;
+        }
+
         if (!server.url) {
             // No URL means no favicon possible (stdio server)
             return;
@@ -126,7 +165,7 @@ const ServerItem = memo(function ServerItem({
             console.warn(`Failed to fetch favicon for ${server.name}:`, error);
             setFaviconUrl(server.url || '', null);
         });
-    }, [server.url, server.name, server.auth?.oauthServerMetadata?.logo_uri, cachedFaviconUrl, setFaviconUrl]);
+    }, [server.url, server.name, server.metadata?.icons, server.auth?.oauthServerMetadata?.logo_uri, cachedFaviconUrl, setFaviconUrl]);
 
     // Fetch OAuth metadata when server connects
     useEffect(() => {
@@ -401,11 +440,11 @@ const ServerItem = memo(function ServerItem({
             onClick={onClick}
         >
             <div className="server-header">
-                {cachedFaviconUrl ? (
+                {iconUrl ? (
                     <div className="server-favicon-container">
                         <img
-                            src={cachedFaviconUrl}
-                            alt={`${server.name} favicon`}
+                            src={iconUrl}
+                            alt={`${server.name} icon`}
                             className="server-favicon"
                         />
                         <div
