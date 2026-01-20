@@ -187,6 +187,13 @@
     gap: 6px;
 }
 
+.tool-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .tool-pulse {
     width: 8px;
     height: 8px;

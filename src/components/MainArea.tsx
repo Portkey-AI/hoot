@@ -374,7 +374,18 @@ function ToolExecutionView({ tool, serverId }: ToolExecutionViewProps) {
     return (
         <div className="main-area">
             <div className="main-header">
-                <h2>{tool.name}</h2>
+                <div className="main-header-title">
+                    {tool.icons && tool.icons.length > 0 && (
+                        <img 
+                            src={tool.icons.find(icon => icon.mimeType?.includes('png') || icon.mimeType?.includes('jpeg'))?.src 
+                                 || tool.icons.find(icon => icon.mimeType?.includes('svg'))?.src 
+                                 || tool.icons[0].src}
+                            alt=""
+                            className="tool-header-icon"
+                        />
+                    )}
+                    <h2>{tool.annotations?.title || tool.title || tool.name}</h2>
+                </div>
                 <div className="description-container">
                     <p
                         ref={descriptionRef}

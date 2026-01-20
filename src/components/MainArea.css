@@ -17,11 +17,25 @@
   justify-content: center;
 }
 
+.main-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.tool-header-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .main-header h2 {
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-sm);
+  margin: 0;
   font-family: var(--font-mono);
   letter-spacing: -0.5px;
 }

@@ -112,6 +112,16 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                         const toolKey = selectedServerId ? `${selectedServerId}:${tool.name}` : tool.name;
                         const isExecuting = executingTools.includes(toolKey);
 
+                        // Get best icon for tool (prefer PNG/JPEG, then SVG)
+                        const toolIcon = tool.icons && tool.icons.length > 0 
+                            ? (tool.icons.find(icon => icon.mimeType?.includes('png') || icon.mimeType?.includes('jpeg'))?.src 
+                               || tool.icons.find(icon => icon.mimeType?.includes('svg'))?.src 
+                               || tool.icons[0].src)
+                            : null;
+
+                        // Use title from annotations or metadata, fallback to name
+                        const displayName = tool.annotations?.title || tool.title || tool.name;
+
                         return (
                             <div
                                 key={tool.name}
@@ -121,7 +131,14 @@ export const ToolsSidebar = memo(function ToolsSidebar() {
                             >
                                 <div className="tool-name">
                                     {isExecuting && <span className="tool-pulse" />}
-                                    {tool.name}
+                                    {toolIcon && (
+                                        <img 
+                                            src={toolIcon} 
+                                            alt="" 
+                                            className="tool-icon"
+                                        />
+                                    )}
+                                    {displayName}
                                     {hasParameters && (
                                         <span
                                             className="tool-has-params-dot"
