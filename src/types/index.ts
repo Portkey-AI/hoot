@@ -38,6 +38,24 @@ export interface AuthConfig {
   };
 }
 
+// MCP Icon (2025-11-25 spec)
+export interface Icon {
+  src: string;
+  mimeType?: string;
+  sizes?: string[];
+  theme?: 'light' | 'dark';
+}
+
+// Server metadata from MCP initialize response (Implementation type)
+export interface ServerMetadata {
+  name: string;
+  version: string;
+  title?: string;
+  description?: string;
+  websiteUrl?: string;
+  icons?: Icon[];
+}
+
 export interface ServerConfig {
   id: string;
   name: string;
@@ -48,6 +66,22 @@ export interface ServerConfig {
   connected: boolean;
   lastConnected?: Date;
   error?: string;
+  // Server metadata from MCP protocol
+  metadata?: ServerMetadata;
+}
+
+// Tool annotations (2025-11-25 spec)
+export interface ToolAnnotations {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
+// Tool execution metadata (2025-11-25 spec)
+export interface ToolExecution {
+  taskSupport?: 'forbidden' | 'optional' | 'required';
 }
 
 export interface ToolSchema {
@@ -58,6 +92,16 @@ export interface ToolSchema {
     properties?: Record<string, PropertySchema>;
     required?: string[];
   };
+  // New fields from 2025-11-25 spec
+  title?: string;
+  icons?: Icon[];
+  outputSchema?: {
+    type: string;
+    properties?: Record<string, PropertySchema>;
+    required?: string[];
+  };
+  execution?: ToolExecution;
+  annotations?: ToolAnnotations;
 }
 
 export interface PropertySchema {
