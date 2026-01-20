@@ -147,7 +147,7 @@ export async function autoDetectServer({ url }) {
             method: 'initialize',
             id: 1,
             params: {
-              protocolVersion: '2024-11-05',
+              protocolVersion: '2025-11-25',
               capabilities: {},
               clientInfo: { name: 'hoot-backend', version: '0.2.0' }
             }

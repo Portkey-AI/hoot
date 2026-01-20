@@ -20,7 +20,7 @@ async function testConnection() {
                 jsonrpc: '2.0',
                 method: 'initialize',
                 params: {
-                    protocolVersion: '2024-11-05',
+                    protocolVersion: '2025-11-25',
                     capabilities: {},
                     clientInfo: {
                         name: 'screech-test',
