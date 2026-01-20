@@ -597,11 +597,23 @@ export async function listTools({ serverId, clientManager, connectionPool }) {
   logger.info(`🔧 Listing tools for server: ${serverId}`);
   const response = await client.listTools();
 
-  const tools = response.tools.map(tool => ({
-    name: tool.name,
-    description: tool.description || '',
-    inputSchema: tool.inputSchema,
-  }));
+  // Map tools and include all metadata from 2025-11-25 spec
+  const tools = response.tools.map(tool => {
+    const mappedTool = {
+      name: tool.name,
+      description: tool.description || '',
+      inputSchema: tool.inputSchema,
+    };
+
+    // Add optional fields if present
+    if (tool.title) mappedTool.title = tool.title;
+    if (tool.icons && Array.isArray(tool.icons)) mappedTool.icons = tool.icons;
+    if (tool.outputSchema) mappedTool.outputSchema = tool.outputSchema;
+    if (tool.execution) mappedTool.execution = tool.execution;
+    if (tool.annotations) mappedTool.annotations = tool.annotations;
+
+    return mappedTool;
+  });
 
   return {
     success: true,

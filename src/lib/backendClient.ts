@@ -3,7 +3,7 @@
  * Communicates with the Node.js MCP backend server
  */
 
-import type { ServerConfig, ToolSchema } from '../types';
+import type { ServerConfig, ToolSchema, ServerMetadata } from '../types';
 import { getUserId } from './sessionManager';
 
 // Support both local development and production deployment
@@ -160,11 +160,11 @@ export async function autoDetectServer(
     url: string
 ): Promise<{
     success: boolean;
-    serverInfo?: { name: string; version: string; authMethods?: string[] };
+    serverInfo?: ServerMetadata;
     transport?: 'http' | 'sse';
     requiresOAuth?: boolean;
     requiresClientCredentials?: boolean;
-    requiresHeaderAuth?: boolean; // NEW: indicates header-based auth is needed
+    requiresHeaderAuth?: boolean;
     error?: string
 }> {
     try {
@@ -365,9 +365,9 @@ export async function getConnectionStatus(serverId: string): Promise<boolean> {
 }
 
 /**
- * Get server information (name, version) from a connected server
+ * Get server information from a connected server
  */
-export async function getServerInfo(serverId: string): Promise<{ name: string; version: string } | null> {
+export async function getServerInfo(serverId: string): Promise<ServerMetadata | null> {
     try {
         const response = await authenticatedFetch(`${BACKEND_URL}/mcp/server-info/${serverId}`, {
             method: 'GET',

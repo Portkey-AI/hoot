@@ -534,12 +534,23 @@ app.get('/mcp/server-info/:serverId', async (req, res) => {
         version: serverVersion.version
       });
 
+      // Build metadata object with all available fields from 2025-11-25 spec
+      const metadata = {
+        name: serverVersion.name,
+        version: serverVersion.version
+      };
+
+      // Add optional fields if present
+      if (serverVersion.title) metadata.title = serverVersion.title;
+      if (serverVersion.description) metadata.description = serverVersion.description;
+      if (serverVersion.websiteUrl) metadata.websiteUrl = serverVersion.websiteUrl;
+      if (serverVersion.icons && Array.isArray(serverVersion.icons)) {
+        metadata.icons = serverVersion.icons;
+      }
+
       res.json({
         success: true,
-        serverInfo: {
-          name: serverVersion.name,
-          version: serverVersion.version
-        }
+        serverInfo: metadata
       });
     } else {
       res.json({

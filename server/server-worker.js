@@ -480,12 +480,26 @@ async function handleRequest(request, env) {
 
       const serverVersion = client.getServerVersion();
 
-      return jsonResponse({
-        success: true,
-        serverInfo: serverVersion ? {
+      // Build metadata object with all available fields from 2025-11-25 spec
+      let serverInfo = null;
+      if (serverVersion) {
+        serverInfo = {
           name: serverVersion.name,
           version: serverVersion.version
-        } : null
+        };
+
+        // Add optional fields if present
+        if (serverVersion.title) serverInfo.title = serverVersion.title;
+        if (serverVersion.description) serverInfo.description = serverVersion.description;
+        if (serverVersion.websiteUrl) serverInfo.websiteUrl = serverVersion.websiteUrl;
+        if (serverVersion.icons && Array.isArray(serverVersion.icons)) {
+          serverInfo.icons = serverVersion.icons;
+        }
+      }
+
+      return jsonResponse({
+        success: true,
+        serverInfo
       }, 200, headers);
     }
 
