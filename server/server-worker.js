@@ -155,8 +155,8 @@ async function authenticateRequest(request, auditLogger) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // Allow health check and token endpoint without auth
-  if (pathname === '/health' || pathname === '/auth/token') {
+  // Allow health check, token endpoint, and auto-detect without auth
+  if (pathname === '/health' || pathname === '/auth/token' || pathname === '/mcp/auto-detect') {
     return { success: true };
   }
 

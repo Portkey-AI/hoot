@@ -136,8 +136,8 @@ app.use(express.json({ limit: '10mb' }));
 
 // Security: Authentication middleware
 async function authenticateRequest(req, res, next) {
-  // Allow health check and token endpoint without auth
-  if (req.path === '/health' || req.path === '/auth/token') {
+  // Allow health check, token endpoint, and auto-detect without auth
+  if (req.path === '/health' || req.path === '/auth/token' || req.path === '/mcp/auto-detect') {
     return next();
   }
 
