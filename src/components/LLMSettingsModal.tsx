@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Settings, Sparkles, Filter, RefreshCw } from 'lucide-react';
-import { Button, Tabs, ToggleGroup, Switch } from './ui';
+import { Settings, Sparkles, Filter, RefreshCw, Key } from 'lucide-react';
+import { Button, Tabs, ToggleGroup, Switch, APIKeyInput } from './ui';
 import { Modal } from './Modal';
 import { useAppStore } from '../stores/appStore';
-import { getPortkeyClient, getDisplayModelName } from '../lib/portkeyClient';
+import { getPortkeyClient, getDisplayModelName, clearPortkeyClient } from '../lib/portkeyClient';
 import './Modal.css';
 import './LLMSettingsModal.css';
 
@@ -36,17 +36,28 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
     const [localTopK, setLocalTopK] = useState(toolFilterConfig.topK.toString());
     const [localMinScore, setLocalMinScore] = useState(toolFilterConfig.minScore.toFixed(2));
 
+    // Portkey auth state
+    const portkeyAuth = useAppStore((state) => state.portkeyAuth);
+    const setPortkeyUseApiKey = useAppStore((state) => state.setPortkeyUseApiKey);
+    const setPortkeyApiKey = useAppStore((state) => state.setPortkeyApiKey);
+
+    const [localUseApiKey, setLocalUseApiKey] = useState(portkeyAuth.useApiKey);
+    const [localApiKey, setLocalApiKey] = useState(portkeyAuth.apiKey || '');
+
     // Sync local state with store when modal opens
     useEffect(() => {
         setLocalFilterEnabled(toolFilterEnabled);
         setLocalTopK(toolFilterConfig.topK.toString());
         setLocalMinScore(toolFilterConfig.minScore.toFixed(2)); // Keep 2 decimal places
+        setLocalUseApiKey(portkeyAuth.useApiKey);
+        setLocalApiKey(portkeyAuth.apiKey || '');
 
         console.log('🔧 Modal sync:', {
             topK: toolFilterConfig.topK.toString(),
             minScore: toolFilterConfig.minScore.toFixed(2),
+            useApiKey: portkeyAuth.useApiKey,
         });
-    }, [toolFilterEnabled, toolFilterConfig]);
+    }, [toolFilterEnabled, toolFilterConfig, portkeyAuth]);
 
     // Function to fetch models (used by both initial load and refresh)
     const fetchModels = async (forceRefresh = false) => {
@@ -168,6 +179,19 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
             minScore: parseFloat(localMinScore),
         });
 
+        // Save Portkey auth settings
+        const authChanged = localUseApiKey !== portkeyAuth.useApiKey ||
+            localApiKey !== (portkeyAuth.apiKey || '');
+        
+        setPortkeyUseApiKey(localUseApiKey);
+        setPortkeyApiKey(localApiKey || null);
+
+        // Clear Portkey client if auth changed so it reinitializes
+        if (authChanged) {
+            clearPortkeyClient();
+            console.log('🔄 Portkey auth changed, client will reinitialize');
+        }
+
         onClose();
     };
 
@@ -200,7 +224,7 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [localFilterEnabled, localTopK, localMinScore]); // Dependencies for handleSave
+    }, [localFilterEnabled, localTopK, localMinScore, localUseApiKey, localApiKey]); // Dependencies for handleSave
 
     return (
         <Modal onClose={onClose}>
@@ -232,6 +256,7 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
                     <Tabs
                         tabs={[
                             { value: 'model', label: 'Model', icon: <Sparkles size={16} /> },
+                            { value: 'auth', label: 'Authentication', icon: <Key size={16} /> },
                             { value: 'filtering', label: 'Tool Filtering', icon: <Filter size={16} /> },
                         ]}
                         value={activeTab}
@@ -271,7 +296,7 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
                                                             fontSize: '12px',
                                                             color: 'var(--text-secondary)'
                                                         }}>
-                                                            Authenticated via JWT • Portkey Gateway
+                                                            {localUseApiKey && localApiKey ? 'Authenticated via API Key' : 'Authenticated via JWT'} • Portkey Gateway
                                                         </div>
                                                     </div>
                                                     <div style={{
@@ -393,6 +418,61 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
                                                         </div>
                                                     </div>
                                                 ) : null}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            if (tab === 'auth') {
+                                return (
+                                    <div className="tab-content-wrapper">
+                                        {/* Authentication Section */}
+                                        <div className="info-section" style={{ marginBottom: '0', marginTop: 0 }}>
+                                            <div className="info-box">
+                                                <div className="info-box-header">
+                                                    <Key size={14} style={{ marginRight: '6px' }} />
+                                                    Portkey Authentication
+                                                </div>
+                                                <p style={{ marginTop: '8px', marginBottom: '16px' }}>
+                                                    Choose how to authenticate with Portkey. Use JWT for production (more secure) or API key for local development.
+                                                </p>
+
+                                                <div className="form-group" style={{ marginBottom: '16px' }}>
+                                                    <Switch
+                                                        label="Use API Key"
+                                                        checked={localUseApiKey}
+                                                        onChange={(e) => setLocalUseApiKey(e.target.checked)}
+                                                        helperText="When enabled, uses your Portkey API key directly instead of JWT"
+                                                    />
+                                                </div>
+
+                                                {localUseApiKey && (
+                                                    <div className="form-group">
+                                                        <APIKeyInput
+                                                            label="Portkey API Key"
+                                                            value={localApiKey}
+                                                            onChange={(e) => setLocalApiKey(e.target.value)}
+                                                            placeholder="pk-..."
+                                                            helperText="Get your API key from portkey.ai/api-keys"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {!localUseApiKey && (
+                                                    <div style={{
+                                                        padding: '12px',
+                                                        background: 'var(--bg-secondary)',
+                                                        borderRadius: '6px',
+                                                        border: '1px solid var(--border-color)',
+                                                        fontSize: '13px',
+                                                        color: 'var(--text-secondary)'
+                                                    }}>
+                                                        <strong style={{ color: 'var(--text-primary)' }}>JWT Mode (Default)</strong>
+                                                        <br />
+                                                        Token is automatically generated by the backend server. No configuration needed.
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

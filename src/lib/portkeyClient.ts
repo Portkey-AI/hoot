@@ -1,5 +1,6 @@
 import Portkey from 'portkey-ai';
 import { getSessionToken } from './backendClient';
+import { useAppStore } from '../stores/appStore';
 
 export interface ChatMessage {
     role: 'system' | 'user' | 'assistant' | 'tool';
@@ -51,25 +52,54 @@ export function getDisplayModelName(model: string): string {
 export class PortkeyClient {
     private client: Portkey | null = null;
     private jwtToken: string | null = null;
+    private lastAuthMode: 'jwt' | 'apiKey' | null = null;
 
     constructor() {
         // Initialize without client - will be created on first use
     }
 
+    /**
+     * Get current auth configuration from store
+     */
+    private getAuthConfig() {
+        const state = useAppStore.getState();
+        return state.portkeyAuth;
+    }
+
     private async ensureClient() {
-        if (!this.client || !this.jwtToken) {
-            // Get token (same one used by Hoot backend!)
-            this.jwtToken = await getSessionToken();
+        const authConfig = this.getAuthConfig();
+        const currentAuthMode = authConfig.useApiKey ? 'apiKey' : 'jwt';
 
-            // Create Portkey client with JWT
-            this.client = new Portkey({
-                apiKey: this.jwtToken, // Use JWT as API key
-                dangerouslyAllowBrowser: true,
-            });
+        // Recreate client if auth mode changed
+        if (this.lastAuthMode && this.lastAuthMode !== currentAuthMode) {
+            this.client = null;
+            this.jwtToken = null;
+        }
 
-            // Only log in development
-            if (import.meta.env.DEV) {
-                console.log('✅ Portkey client initialized with unified JWT');
+        if (!this.client) {
+            if (authConfig.useApiKey && authConfig.apiKey) {
+                // Use direct API key
+                this.client = new Portkey({
+                    apiKey: authConfig.apiKey,
+                    dangerouslyAllowBrowser: true,
+                });
+                this.lastAuthMode = 'apiKey';
+
+                if (import.meta.env.DEV) {
+                    console.log('✅ Portkey client initialized with API key');
+                }
+            } else {
+                // Use JWT (default)
+                this.jwtToken = await getSessionToken();
+                this.client = new Portkey({
+                    apiKey: this.jwtToken,
+                    dangerouslyAllowBrowser: true,
+                });
+                this.lastAuthMode = 'jwt';
+
+                if (import.meta.env.DEV) {
+                    console.log('✅ Portkey client initialized with unified JWT');
+                }
             }
         }
     }
@@ -168,12 +198,21 @@ export class PortkeyClient {
     }
 
     /**
-     * Refresh JWT token (useful for long sessions)
+     * Refresh token/client (useful for long sessions or auth config changes)
      */
     async refreshToken() {
         this.client = null;
         this.jwtToken = null;
+        this.lastAuthMode = null;
         await this.ensureClient();
+    }
+
+    /**
+     * Get current auth mode
+     */
+    getAuthMode(): 'jwt' | 'apiKey' {
+        const authConfig = this.getAuthConfig();
+        return authConfig.useApiKey && authConfig.apiKey ? 'apiKey' : 'jwt';
     }
 
     /**

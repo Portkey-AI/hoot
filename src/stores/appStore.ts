@@ -15,6 +15,11 @@ interface ToolFilterConfig {
     maxContextTokens: number;
 }
 
+interface PortkeyAuthConfig {
+    useApiKey: boolean;  // true = use API key, false = use JWT
+    apiKey: string | null;
+}
+
 interface AppStore extends AppState {
     // Server actions
     addServer: (server: Omit<ServerConfig, 'connected'> | Omit<ServerConfig, 'id' | 'connected'>) => void;
@@ -45,6 +50,11 @@ interface AppStore extends AppState {
     setToolFilterEnabled: (enabled: boolean) => void;
     updateToolFilterConfig: (config: Partial<ToolFilterConfig>) => void;
     setToolFilterReady: (ready: boolean) => void;
+
+    // Portkey auth actions
+    portkeyAuth: PortkeyAuthConfig;
+    setPortkeyUseApiKey: (useApiKey: boolean) => void;
+    setPortkeyApiKey: (apiKey: string | null) => void;
 }
 
 // Custom storage with proper Date handling
@@ -107,6 +117,12 @@ export const useAppStore = create<AppStore>()(
                 maxContextTokens: 500,
             },
             toolFilterReady: false,
+
+            // Portkey auth state
+            portkeyAuth: {
+                useApiKey: false,  // Default to JWT auth
+                apiKey: null,
+            },
 
             // Server actions
             addServer: (server) =>
@@ -205,6 +221,17 @@ export const useAppStore = create<AppStore>()(
                 })),
 
             setToolFilterReady: (ready) => set({ toolFilterReady: ready }),
+
+            // Portkey auth actions
+            setPortkeyUseApiKey: (useApiKey) =>
+                set((state) => ({
+                    portkeyAuth: { ...state.portkeyAuth, useApiKey },
+                })),
+
+            setPortkeyApiKey: (apiKey) =>
+                set((state) => ({
+                    portkeyAuth: { ...state.portkeyAuth, apiKey },
+                })),
         }),
         {
             name: 'hoot-storage',
@@ -227,6 +254,7 @@ export const useAppStore = create<AppStore>()(
                 toolFilterEnabled: state.toolFilterEnabled, // Persist filter enabled state
                 toolFilterConfig: state.toolFilterConfig, // Persist filter config
                 toolFilterReady: false, // Reset ready state on load
+                portkeyAuth: state.portkeyAuth, // Persist Portkey auth config
             }),
         }
     )
