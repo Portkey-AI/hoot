@@ -5,6 +5,13 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.1] - 2025-02-11
+
+### Changed
+- **Public Auto-Detect Endpoint**: `/mcp/auto-detect` no longer requires authentication
+  - Allows server configuration detection before user is fully authenticated
+  - Useful during initial server setup flow
+
 ## [0.14.0] - 2025-02-11
 
 ### Added
@@ -669,6 +676,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.14.1** - Public auto-detect endpoint (no auth required)
 - **0.14.0** - MCP 2025-11-25 protocol support (server/tool metadata, icons, instructions), custom OAuth endpoints, Portkey API key auth
 - **0.13.1** - Updated README documentation with improved formatting and clarity
 - **0.13.0** - Comprehensive OAuth compliance testing suite with automated tests, detailed reports, and visual results viewer
