@@ -6,7 +6,8 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  // Note: Pages deployment is done separately with: wrangler pages deploy dist --project-name=hoot
+  // Pages deployment output directory
+  "pages_build_output_dir": "dist"
   // Development configuration
   "dev": {
     "port": 8008,

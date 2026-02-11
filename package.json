@@ -20,7 +20,7 @@
     "build": "tsc && vite build",
     "build:cloudflare": "export VITE_BACKEND_URL=https://hoot-server-production.portkey-ai.workers.dev && tsc && vite build",
     "deploy:cloudflare": "source .env 2>/dev/null || true && wrangler deploy --env production",
-    "deploy:pages": "npm run build:cloudflare && wrangler pages deploy dist --project-name=hoot",
+    "deploy:pages": "npm run build:cloudflare && wrangler pages deploy --project-name=hoot",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "storybook": "storybook dev -p 6006",
