@@ -495,7 +495,7 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
                                                         type="url"
                                                         value={localBaseUrl}
                                                         onChange={(e) => setLocalBaseUrl(e.target.value)}
-                                                        placeholder="https://api.portkey.ai"
+                                                        placeholder="https://api.portkey.ai/v1"
                                                         style={{
                                                             width: '100%',
                                                             padding: '10px 12px',
@@ -512,7 +512,7 @@ export function LLMSettingsModal({ onClose }: LLMSettingsModalProps) {
                                                         fontSize: '12px',
                                                         color: 'var(--text-secondary)'
                                                     }}>
-                                                        Use a custom gateway endpoint for private deployments. Leave empty for default.
+                                                        Custom gateway endpoint for private deployments. Include /v1 suffix.
                                                     </div>
                                                 </div>
                                             </div>
