@@ -5,6 +5,14 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2025-02-11
+
+### Added
+- **Custom Gateway URL**: Configure custom Portkey gateway endpoints for private deployments
+  - Set custom base URL in Settings → Authentication
+  - Supports private/self-hosted Portkey gateway instances
+  - Default remains `https://api.portkey.ai` when not configured
+
 ## [0.14.1] - 2025-02-11
 
 ### Changed
@@ -676,6 +684,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.15.0** - Custom gateway URL support for private Portkey deployments
 - **0.14.1** - Public auto-detect endpoint (no auth required)
 - **0.14.0** - MCP 2025-11-25 protocol support (server/tool metadata, icons, instructions), custom OAuth endpoints, Portkey API key auth
 - **0.13.1** - Updated README documentation with improved formatting and clarity
