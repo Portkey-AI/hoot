@@ -18,6 +18,7 @@ interface ToolFilterConfig {
 interface PortkeyAuthConfig {
     useApiKey: boolean;  // true = use API key, false = use JWT
     apiKey: string | null;
+    baseUrl: string | null;  // Custom gateway URL (default: https://api.portkey.ai)
 }
 
 interface AppStore extends AppState {
@@ -55,6 +56,7 @@ interface AppStore extends AppState {
     portkeyAuth: PortkeyAuthConfig;
     setPortkeyUseApiKey: (useApiKey: boolean) => void;
     setPortkeyApiKey: (apiKey: string | null) => void;
+    setPortkeyBaseUrl: (baseUrl: string | null) => void;
 }
 
 // Custom storage with proper Date handling
@@ -122,6 +124,7 @@ export const useAppStore = create<AppStore>()(
             portkeyAuth: {
                 useApiKey: false,  // Default to JWT auth
                 apiKey: null,
+                baseUrl: null,  // Default: https://api.portkey.ai
             },
 
             // Server actions
@@ -231,6 +234,11 @@ export const useAppStore = create<AppStore>()(
             setPortkeyApiKey: (apiKey) =>
                 set((state) => ({
                     portkeyAuth: { ...state.portkeyAuth, apiKey },
+                })),
+
+            setPortkeyBaseUrl: (baseUrl) =>
+                set((state) => ({
+                    portkeyAuth: { ...state.portkeyAuth, baseUrl },
                 })),
         }),
         {

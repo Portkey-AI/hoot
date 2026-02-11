@@ -53,6 +53,7 @@ export class PortkeyClient {
     private client: Portkey | null = null;
     private jwtToken: string | null = null;
     private lastAuthMode: 'jwt' | 'apiKey' | null = null;
+    private lastBaseUrl: string | null = null;
 
     constructor() {
         // Initialize without client - will be created on first use
@@ -69,36 +70,47 @@ export class PortkeyClient {
     private async ensureClient() {
         const authConfig = this.getAuthConfig();
         const currentAuthMode = authConfig.useApiKey ? 'apiKey' : 'jwt';
+        const currentBaseUrl = authConfig.baseUrl || null;
 
-        // Recreate client if auth mode changed
-        if (this.lastAuthMode && this.lastAuthMode !== currentAuthMode) {
+        // Recreate client if auth mode or base URL changed
+        if ((this.lastAuthMode && this.lastAuthMode !== currentAuthMode) ||
+            (this.lastBaseUrl !== currentBaseUrl)) {
             this.client = null;
             this.jwtToken = null;
         }
 
         if (!this.client) {
+            // Build client options with optional custom base URL
+            const clientOptions: { apiKey: string; dangerouslyAllowBrowser: boolean; baseURL?: string } = {
+                apiKey: '',
+                dangerouslyAllowBrowser: true,
+            };
+
+            // Add custom base URL if configured
+            if (authConfig.baseUrl) {
+                clientOptions.baseURL = authConfig.baseUrl;
+            }
+
             if (authConfig.useApiKey && authConfig.apiKey) {
                 // Use direct API key
-                this.client = new Portkey({
-                    apiKey: authConfig.apiKey,
-                    dangerouslyAllowBrowser: true,
-                });
+                clientOptions.apiKey = authConfig.apiKey;
+                this.client = new Portkey(clientOptions);
                 this.lastAuthMode = 'apiKey';
+                this.lastBaseUrl = currentBaseUrl;
 
                 if (import.meta.env.DEV) {
-                    console.log('✅ Portkey client initialized with API key');
+                    console.log('✅ Portkey client initialized with API key' + (authConfig.baseUrl ? ` (${authConfig.baseUrl})` : ''));
                 }
             } else {
                 // Use JWT (default)
                 this.jwtToken = await getSessionToken();
-                this.client = new Portkey({
-                    apiKey: this.jwtToken,
-                    dangerouslyAllowBrowser: true,
-                });
+                clientOptions.apiKey = this.jwtToken;
+                this.client = new Portkey(clientOptions);
                 this.lastAuthMode = 'jwt';
+                this.lastBaseUrl = currentBaseUrl;
 
                 if (import.meta.env.DEV) {
-                    console.log('✅ Portkey client initialized with unified JWT');
+                    console.log('✅ Portkey client initialized with unified JWT' + (authConfig.baseUrl ? ` (${authConfig.baseUrl})` : ''));
                 }
             }
         }
@@ -204,6 +216,7 @@ export class PortkeyClient {
         this.client = null;
         this.jwtToken = null;
         this.lastAuthMode = null;
+        this.lastBaseUrl = null;
         await this.ensureClient();
     }
 
