@@ -5,6 +5,21 @@ All notable changes to Hoot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2025-02-11
+
+### Added
+- **MCP 2025-11-25 Protocol Support**: Full support for the latest MCP specification
+  - Server metadata with icons and branding displayed in sidebar
+  - Tool metadata with icons and enhanced descriptions in UI
+  - Server instructions support for context-aware interactions
+  - Protocol version updated to 2025-11-25
+- **Custom OAuth Endpoints**: Configure custom OAuth authorization and token endpoints
+  - Override auto-discovered OAuth endpoints for non-standard implementations
+  - Flexible authentication for diverse OAuth server configurations
+- **Portkey API Key Authentication**: Alternative to JWT-based auth
+  - Toggle between JWT and API key authentication in LLM settings
+  - Direct API key input for Portkey integration
+
 ## [0.13.1] - 2025-11-20
 
 ### Changed
@@ -654,6 +669,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.14.0** - MCP 2025-11-25 protocol support (server/tool metadata, icons, instructions), custom OAuth endpoints, Portkey API key auth
 - **0.13.1** - Updated README documentation with improved formatting and clarity
 - **0.13.0** - Comprehensive OAuth compliance testing suite with automated tests, detailed reports, and visual results viewer
 - **0.12.0** - Enhanced OAuth detection with parallel probing and build configuration improvements for npm/Cloudflare
