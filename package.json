@@ -4,7 +4,7 @@
   "description": "Postman for MCP Servers - A fast, lightweight testing tool with full OAuth 2.1 support",
   "type": "module",
   "bin": {
-    "hoot": "./bin/hoot.js"
+    "hoot": "bin/hoot.js"
   },
   "exports": {
     ".": "./dist/index.html",
@@ -19,7 +19,7 @@
     "dev:worker": "concurrently \"npm run server:worker\" \"npm run dev\"",
     "build": "tsc && vite build",
     "build:cloudflare": "export VITE_BACKEND_URL=https://hoot-server-production.portkey-ai.workers.dev && tsc && vite build",
-    "deploy:cloudflare": "source .env 2>/dev/null || true && wrangler deploy",
+    "deploy:cloudflare": "source .env 2>/dev/null || true && wrangler deploy --env production",
     "deploy:pages": "npm run build:cloudflare && wrangler pages deploy dist --project-name=hoot",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
@@ -41,7 +41,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/portkey-ai/hoot.git"
+    "url": "git+https://github.com/portkey-ai/hoot.git"
   },
   "bugs": {
     "url": "https://github.com/portkey-ai/hoot/issues"
@@ -69,7 +69,8 @@
     "storybook": "^10.0.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.12",
-    "vitest": "^4.0.6"
+    "vitest": "^4.0.6",
+    "wrangler": "^4.64.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
