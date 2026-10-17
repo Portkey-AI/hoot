@@ -18,13 +18,13 @@ Open [hoot.run](https://hoot.run), or run Hoot locally using the [Quick Start Gu
    | Transport | **HTTP** (Streamable HTTP) |
    | Authentication | **None** |
 
-4. Click **Add Server** in the configuration form. The server's tool list should include `web_search` and `web_fetch`.
+4. Click **Add Server** in the configuration form. The server's tool list should include **Web search** (`web_search`) and **Web fetch** (`web_fetch`).
 
 Use the `/mcp` URL above for anonymous access. The separate `/mcp-oauth` endpoint requires authentication.
 
 ## Search the web
 
-1. Select `web_search` in the tools sidebar.
+1. Select **Web search** (`web_search`) in the tools sidebar.
 2. Under **Input Parameters**, choose **JSON** and replace the editor contents with:
 
    ```json
@@ -43,7 +43,7 @@ The `objective` describes the information you want; `search_queries` is an array
 
 ## Fetch a page
 
-Select `web_fetch`, switch to **JSON**, and replace the editor contents with:
+Select **Web fetch** (`web_fetch`), switch to **JSON**, and replace the editor contents with:
 
 ```json
 {
