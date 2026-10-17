@@ -8,6 +8,7 @@ Welcome to Hoot! A powerful MCP (Model Context Protocol) testing tool for develo
 
 - [Quick Start Guide](QUICKSTART.md) - Get up and running in 5 minutes
 - [Examples](EXAMPLES.md) - Common workflows and usage patterns
+- [Parallel Search MCP](PARALLEL_SEARCH.md) - Try web search and page fetching without an API key
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
 
 ## User Guides
