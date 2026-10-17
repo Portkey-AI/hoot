@@ -18,7 +18,7 @@ Open [hoot.run](https://hoot.run), or run Hoot locally using the [Quick Start Gu
    | Transport | **HTTP** (Streamable HTTP) |
    | Authentication | **None** |
 
-4. Click **Add & Connect**. The server's tool list should include `web_search` and `web_fetch`.
+4. Click **Add Server** in the configuration form. The server's tool list should include `web_search` and `web_fetch`.
 
 Use the `/mcp` URL above for anonymous access. The separate `/mcp-oauth` endpoint requires authentication.
 
